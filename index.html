@@ -1104,9 +1104,49 @@
         }
 
         async function generateAILyrics() {
+            const section = state.song.sections[state.song.activeSection];
+            if (!section.chords.length) { showToast('Generate chords first!'); return; }
+            
             showToast('🤖 Generating lyrics...');
-            // AI lyrics integration - to be implemented with Gemini
-            setTimeout(() => showToast('AI Lyrics coming in Phase 4!'), 1000);
+            
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'lyrics',
+                        chords: section.chords.map(c => c.symbol),
+                        genre: state.genre,
+                        mood: GENRE_PROGRESSIONS[state.genre]?.mood || 'emotional',
+                        theme: 'love and life'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.lyrics && Array.isArray(data.lyrics)) {
+                    // Update lyrics editor
+                    const inputs = document.querySelectorAll('.lyrics-text');
+                    data.lyrics.forEach((line, i) => {
+                        if (inputs[i]) inputs[i].value = line;
+                    });
+                    showToast('✨ Lyrics generated!');
+                } else {
+                    throw new Error('Invalid response');
+                }
+            } catch (error) {
+                console.error('AI Lyrics error:', error);
+                // Fallback: generate simple lyrics locally
+                const moods = { pop: 'feeling alive', rock: 'breaking free', jazz: 'in the night', blues: 'feeling low' };
+                const fallbackLyrics = [
+                    `When I hear these chords, I'm ${moods[state.genre] || 'feeling something'}`,
+                    `The melody takes me somewhere far away`,
+                    `Every note reminds me of you`,
+                    `And I know this feeling won't fade`
+                ];
+                const inputs = document.querySelectorAll('.lyrics-text');
+                fallbackLyrics.forEach((line, i) => { if (inputs[i]) inputs[i].value = line; });
+                showToast('✨ Lyrics generated (offline)');
+            }
         }
 
         // ===== PANELS & UI =====
@@ -1158,27 +1198,72 @@
             
             showToast('🤖 AI thinking...');
             
-            // Simple AI continue using theory rules
-            const lastChord = section.chords[section.chords.length - 1];
-            const suggestions = { 'I': [4, 3], 'ii': [4], 'IV': [4, 0], 'V': [0, 5], 'vi': [3, 1] };
-            const nextDegrees = suggestions[lastChord.numeral.replace('°', '')] || [0, 4];
-            
-            nextDegrees.slice(0, 2).forEach(degree => {
-                const genre = GENRE_PROGRESSIONS[state.genre];
-                const root = getScaleNote(state.key, state.scale, degree);
-                const quality = genre.qualities[degree] || 'major';
-                const notes = buildChord(root, quality);
-                section.chords.push({
-                    root, quality, symbol: root + CHORD_QUALITIES[quality].symbol,
-                    notes: notes.map((n, i) => n + (i === 0 ? '3' : '4')),
-                    bassNote: root + '2', degree,
-                    numeral: (state.scale === 'minor' ? NUMERALS.minor : NUMERALS.major)[degree],
-                    function: FUNCTIONS[degree]
+            try {
+                const response = await fetch('/api/ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'continue',
+                        chords: section.chords.map(c => c.symbol),
+                        key: state.key,
+                        scale: state.scale,
+                        genre: state.genre
+                    })
                 });
-            });
-            
-            updateAllDisplays();
-            showToast('🤖 Added chords!');
+                
+                const data = await response.json();
+                if (data.continue && Array.isArray(data.continue)) {
+                    // Add new chords from AI
+                    data.continue.forEach(symbol => {
+                        const root = symbol.replace(/m|7|maj|dim|aug/g, '');
+                        const hasMinor = symbol.includes('m') && !symbol.includes('maj');
+                        const has7 = symbol.includes('7');
+                        let quality = 'major';
+                        if (hasMinor && has7) quality = 'minor7';
+                        else if (hasMinor) quality = 'minor';
+                        else if (has7) quality = 'dominant7';
+                        else if (symbol.includes('maj7')) quality = 'major7';
+                        else if (symbol.includes('dim')) quality = 'diminished';
+                        
+                        const notes = buildChord(root, quality);
+                        section.chords.push({
+                            root, quality, symbol,
+                            notes: notes.map((n, i) => n + (i === 0 ? '3' : '4')),
+                            bassNote: root + '2',
+                            degree: NOTES.indexOf(root),
+                            numeral: symbol,
+                            function: 'AI Suggested'
+                        });
+                    });
+                    updateAllDisplays();
+                    showToast(`🤖 Added ${data.continue.length} chords!`);
+                } else {
+                    throw new Error('Invalid response');
+                }
+            } catch (error) {
+                console.error('AI Continue error:', error);
+                // Fallback: use theory rules
+                const lastChord = section.chords[section.chords.length - 1];
+                const suggestions = { 'I': [4, 3], 'ii': [4], 'IV': [4, 0], 'V': [0, 5], 'vi': [3, 1] };
+                const nextDegrees = suggestions[lastChord.numeral.replace('°', '')] || [0, 4];
+                
+                nextDegrees.slice(0, 2).forEach(degree => {
+                    const genre = GENRE_PROGRESSIONS[state.genre];
+                    const root = getScaleNote(state.key, state.scale, degree);
+                    const quality = genre.qualities[degree] || 'major';
+                    const notes = buildChord(root, quality);
+                    section.chords.push({
+                        root, quality, symbol: root + CHORD_QUALITIES[quality].symbol,
+                        notes: notes.map((n, i) => n + (i === 0 ? '3' : '4')),
+                        bassNote: root + '2', degree,
+                        numeral: (state.scale === 'minor' ? NUMERALS.minor : NUMERALS.major)[degree],
+                        function: FUNCTIONS[degree]
+                    });
+                });
+                
+                updateAllDisplays();
+                showToast('🤖 Added chords (offline)');
+            }
             toggleFab();
         }
 
@@ -1237,7 +1322,52 @@
             document.getElementById('overlay').addEventListener('click', closeAllPanels);
             document.getElementById('drawerHandle').addEventListener('click', toggleDrawer);
             document.getElementById('fabMain').addEventListener('click', () => { if (state.fabOpen) aiContinue(); else toggleFab(); });
-            document.getElementById('analyzeBtn').addEventListener('click', () => { showToast('🧠 AI Analyze coming soon!'); toggleFab(); });
+            document.getElementById('analyzeBtn').addEventListener('click', async () => { 
+                const section = state.song.sections[state.song.activeSection];
+                if (!section.chords.length) { showToast('Generate chords first!'); toggleFab(); return; }
+                
+                showToast('🧠 Analyzing...');
+                toggleFab();
+                
+                try {
+                    const response = await fetch('/api/ai', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'analyze',
+                            chords: section.chords.map(c => c.symbol),
+                            key: state.key,
+                            scale: state.scale,
+                            genre: state.genre
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.analyze) {
+                        // Show analysis in a modal
+                        const modal = document.createElement('div');
+                        modal.className = 'modal show';
+                        modal.innerHTML = `
+                            <div class="modal-content" style="max-width: 500px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <h2 class="modal-title">🧠 AI Analysis</h2>
+                                    <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                                </div>
+                                <div style="background: var(--bg-dark); padding: 1rem; border-radius: 10px; font-size: 0.9rem; line-height: 1.6;">
+                                    ${data.analyze.replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(modal);
+                        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+                    } else {
+                        showToast('Analysis unavailable');
+                    }
+                } catch (error) {
+                    console.error('AI Analyze error:', error);
+                    showToast('🧠 Analysis offline - check your connection');
+                }
+            });
             document.getElementById('practiceBtn').addEventListener('click', () => { showToast('🎓 Practice mode coming soon!'); toggleFab(); });
             document.getElementById('recordBtn').addEventListener('click', () => { showToast('🔴 Recording coming soon!'); toggleFab(); });
             document.getElementById('aiLyricsBtn').addEventListener('click', generateAILyrics);
