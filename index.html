@@ -231,6 +231,7 @@
         <div style="text-align: center; margin: 1.5rem 0; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <button class="btn" id="generateBtn" style="font-size: 1.1rem; padding: 0.9rem 2.5rem;">✨ Generate <span class="kbd">G</span></button>
             <button class="btn btn-ai" id="aiContinueBtn" style="padding: 0.9rem 2rem;">🤖 AI Continue</button>
+            <button class="btn btn-ai" id="aiAnalyzeBtn" style="padding: 0.9rem 2rem;" onclick="aiAnalyze()">🧠 AI Analyze</button>
             <button class="btn btn-practice" id="practiceBtn" style="padding: 0.9rem 2rem;">🎓 Practice Mode</button>
         </div>
 
@@ -968,7 +969,7 @@
                 case 'l': state.isLooping = !state.isLooping; document.getElementById('loopBtn').style.background = state.isLooping ? 'var(--accent-primary)' : ''; showToast(state.isLooping ? '🔁 Loop on' : '🔁 Loop off'); break;
                 case 'r': toggleRecording(); break;
                 case 't': toggleTheme(); break;
-                case 'a': aiContinue(); break;
+                case 'a': aiGeminiContinue(); break;
                 case 'p': togglePractice(); break;
                 case 'm': exportMidi(); break;
                 case 'c': copyChords(); break;
@@ -985,7 +986,7 @@
             if (savedHistory) { state.history = JSON.parse(savedHistory); updateHistoryDisplay(); }
 
             document.getElementById('generateBtn').addEventListener('click', generateProgression);
-            document.getElementById('aiContinueBtn').addEventListener('click', aiContinue);
+            document.getElementById('aiContinueBtn').addEventListener('click', aiGeminiContinue);
             document.getElementById('practiceBtn').addEventListener('click', togglePractice);
             document.getElementById('startPractice').addEventListener('click', startPractice);
             document.getElementById('playBtn').addEventListener('click', playProgression);
@@ -1043,6 +1044,114 @@
         }
 
         document.addEventListener('DOMContentLoaded', init);
+
+        // Gemini AI Continue - Uses secure serverless API
+        async function aiGeminiContinue() {
+            if (!state.currentProgression.length) { showToast('Generate a progression first!'); return; }
+            
+            const btn = document.getElementById('aiContinueBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '🤖 Thinking...';
+            btn.disabled = true;
+
+            const currentChords = state.currentProgression.map(c => c.symbol).join(' → ');
+            const prompt = `As a music theory expert, suggest the next 2 chords to continue this progression in ${state.key} ${state.scale}:
+Current: ${currentChords}
+Respond with ONLY the chord names separated by comma, like: Am, G
+No explanation, just the chords.`;
+
+            try {
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, action: 'continue' })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const suggestion = data.result || 'C, G';
+                const newChords = suggestion.split(',').map(c => c.trim()).slice(0, 2);
+                
+                // Add suggested chords
+                newChords.forEach(chordName => {
+                    const root = chordName.replace(/m|7|dim|maj|aug/gi, '');
+                    const quality = chordName.toLowerCase().includes('m') ? 'minor' : 'major';
+                    const notes = buildChord(root, quality);
+                    state.currentProgression.push({
+                        root, quality, symbol: chordName,
+                        notes: notes.map((n, i) => n + (i === 0 ? '3' : '4')),
+                        degree: 0, numeral: '?', function: 'AI', aiGenerated: true
+                    });
+                });
+
+                updateAllDisplays(GENRE_PROGRESSIONS[state.genre]);
+                showToast(`🤖 Gemini added: ${newChords.join(', ')}`);
+            } catch (error) {
+                console.error('Gemini API error:', error);
+                showToast('AI error - using local suggestions');
+                aiContinue(); // Fallback to local
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // AI Analyze - Deep musical analysis
+        async function aiAnalyze() {
+            if (!state.currentProgression.length) { showToast('Generate a progression first!'); return; }
+
+            const chords = state.currentProgression.map(c => c.symbol).join(' → ');
+            const prompt = `Analyze this chord progression briefly (3-4 sentences max):
+Key: ${state.key} ${state.scale}
+Genre: ${state.genre}
+Progression: ${chords}
+Cover: emotional feel, tension/resolution, and one similar famous song. Be concise.`;
+
+            try {
+                showToast('🧠 Analyzing...');
+                
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, action: 'analyze' })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const analysis = data.result || 'Analysis unavailable';
+                
+                // Show in a modal or toast
+                const modal = document.createElement('div');
+                modal.className = 'ai-analysis-modal';
+                modal.innerHTML = `
+                    <div class="ai-analysis-content">
+                        <h3>🧠 AI Analysis</h3>
+                        <p>${analysis}</p>
+                        <button onclick="this.parentElement.parentElement.remove()">Close</button>
+                    </div>
+                `;
+                modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;';
+                modal.querySelector('.ai-analysis-content').style.cssText = 'background:var(--bg-card);padding:2rem;border-radius:1rem;max-width:500px;margin:1rem;';
+                modal.querySelector('h3').style.cssText = 'color:var(--accent-primary);margin-bottom:1rem;';
+                modal.querySelector('p').style.cssText = 'color:var(--text-secondary);line-height:1.6;margin-bottom:1rem;';
+                modal.querySelector('button').style.cssText = 'background:var(--accent-primary);color:white;border:none;padding:0.5rem 1.5rem;border-radius:0.5rem;cursor:pointer;';
+                document.body.appendChild(modal);
+                
+                showToast('✅ Analysis complete!');
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showToast('Analysis failed - try again');
+            }
+        }
+
     </script>
 </body>
 </html>
