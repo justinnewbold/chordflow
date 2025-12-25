@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChordFlow | Progression Generator with Tablature</title>
+    <title>ChordFlow Pro | Complete Music Creation Suite</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,126 +25,209 @@
         .bg-pattern { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
             background: radial-gradient(ellipse at 20% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
                         radial-gradient(ellipse at 80% 80%, rgba(247, 197, 159, 0.05) 0%, transparent 50%); }
-        .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 2rem; }
-        .header { text-align: center; margin-bottom: 3rem; }
-        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; letter-spacing: 0.1em;
+        .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .logo { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 0.1em;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: var(--text-secondary); font-size: 1.1rem; margin-top: 0.5rem; }
-        .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .card-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem; }
-        .btn { background: linear-gradient(135deg, var(--accent-primary), #ff8c5a); color: white; border: none; padding: 0.75rem 1.5rem;
-            border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 1rem; }
+        .subtitle { color: var(--text-secondary); font-size: 1rem; margin-top: 0.25rem; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.25rem; }
+        .card-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .btn { background: linear-gradient(135deg, var(--accent-primary), #ff8c5a); color: white; border: none; padding: 0.6rem 1.25rem;
+            border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px var(--accent-glow); }
         .btn-secondary { background: var(--border-subtle); }
         .btn-secondary:hover { background: #2a2a3e; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
         select, input { background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-primary);
-            padding: 0.75rem 1rem; border-radius: 8px; font-size: 1rem; width: 100%; }
+            padding: 0.6rem 0.8rem; border-radius: 8px; font-size: 0.9rem; width: 100%; }
         select:focus, input:focus { outline: none; border-color: var(--accent-primary); }
         .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
-        .chord-display { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin: 2rem 0; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+        @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        @media (max-width: 1024px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+        
+        /* Chord Display */
+        .chord-display { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin: 1.5rem 0; }
         .chord-card { background: linear-gradient(145deg, #1a1a25, #15151f); border: 2px solid var(--border-subtle);
-            border-radius: 16px; padding: 1.5rem 2rem; text-align: center; min-width: 120px; transition: all 0.3s ease; cursor: pointer; }
-        .chord-card:hover, .chord-card.active { border-color: var(--accent-primary); box-shadow: 0 0 30px var(--accent-glow); transform: scale(1.05); }
-        .chord-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; }
-        .chord-numeral { color: var(--accent-secondary); font-size: 0.9rem; margin-top: 0.25rem; }
-        .chord-function { color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.25rem; }
-        .playback-controls { display: flex; gap: 1rem; justify-content: center; align-items: center; margin: 2rem 0; }
-        .play-btn { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #ff8c5a);
-            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; transition: all 0.3s ease; }
+            border-radius: 12px; padding: 1rem 1.5rem; text-align: center; min-width: 100px; transition: all 0.3s ease; cursor: pointer; position: relative; }
+        .chord-card:hover, .chord-card.active { border-color: var(--accent-primary); box-shadow: 0 0 25px var(--accent-glow); transform: scale(1.05); }
+        .chord-card.dragging { opacity: 0.5; }
+        .chord-card .drag-handle { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); color: var(--text-secondary); font-size: 0.7rem; cursor: grab; }
+        .chord-name { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; }
+        .chord-numeral { color: var(--accent-secondary); font-size: 0.85rem; }
+        .chord-function { color: var(--text-secondary); font-size: 0.7rem; }
+        
+        /* Playback */
+        .playback-controls { display: flex; gap: 0.75rem; justify-content: center; align-items: center; flex-wrap: wrap; margin: 1.5rem 0; }
+        .play-btn { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #ff8c5a);
+            border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white; transition: all 0.3s ease; }
         .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--accent-glow); }
-        .genre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+        
+        /* Genre Grid */
+        .genre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; }
         .genre-btn { background: var(--bg-dark); border: 1px solid var(--border-subtle); color: var(--text-secondary);
-            padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 0.9rem; }
+            padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; font-size: 0.8rem; }
         .genre-btn:hover, .genre-btn.active { border-color: var(--accent-primary); color: var(--text-primary); background: rgba(255, 107, 53, 0.1); }
-        .piano-roll { display: flex; justify-content: center; gap: 2px; background: var(--bg-dark); padding: 1rem; border-radius: 12px; overflow-x: auto; }
-        .piano-key { width: 40px; height: 140px; background: white; border-radius: 0 0 6px 6px; cursor: pointer; transition: all 0.1s ease; }
-        .piano-key.black { width: 28px; height: 90px; background: #1a1a25; margin: 0 -14px; z-index: 2; border-radius: 0 0 4px 4px; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.5rem; flex-wrap: wrap; }
+        .tab-btn { padding: 0.5rem 1rem; border-radius: 6px 6px 0 0; font-size: 0.8rem; background: transparent; border: 1px solid transparent;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; }
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active { border-color: var(--border-subtle); border-bottom-color: var(--bg-card); color: var(--accent-primary); background: var(--bg-card); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Instrument Diagrams */
+        .instrument-container { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 1rem 0; }
+        .instrument-chord { background: var(--bg-dark); border-radius: 10px; padding: 0.75rem; min-width: 120px; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .instrument-chord:hover { border-color: var(--accent-primary); transform: scale(1.05); }
+        .instrument-chord-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; color: var(--accent-primary); margin-bottom: 0.5rem; }
+        .chord-diagram { width: 90px; height: 100px; margin: 0 auto; }
+        .fret-info { font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem; font-family: 'JetBrains Mono', monospace; }
+        
+        /* Piano Diagram */
+        .piano-diagram { display: flex; justify-content: center; position: relative; height: 80px; margin: 0.5rem auto; width: fit-content; }
+        .piano-key-diagram { width: 24px; height: 70px; background: white; border: 1px solid #333; border-radius: 0 0 4px 4px; position: relative; }
+        .piano-key-diagram.black { width: 16px; height: 45px; background: #1a1a25; margin: 0 -8px; z-index: 2; border-radius: 0 0 3px 3px; }
+        .piano-key-diagram.active { background: var(--accent-primary) !important; }
+        .piano-key-diagram.black.active { background: var(--accent-secondary) !important; }
+        
+        /* Ukulele Diagram */
+        .uke-diagram { width: 70px; height: 90px; margin: 0 auto; }
+        
+        /* Strumming Pattern */
+        .strum-pattern { display: flex; justify-content: center; gap: 0.5rem; padding: 1rem; background: var(--bg-dark); border-radius: 8px; margin: 1rem 0; }
+        .strum-beat { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+        .strum-arrow { font-size: 1.5rem; color: var(--accent-primary); transition: all 0.2s ease; }
+        .strum-arrow.down { transform: rotate(180deg); }
+        .strum-arrow.muted { color: var(--text-secondary); opacity: 0.5; }
+        .strum-arrow.active { color: var(--accent-secondary); transform: scale(1.3); }
+        .strum-arrow.down.active { transform: rotate(180deg) scale(1.3); }
+        .strum-count { font-size: 0.7rem; color: var(--text-secondary); }
+        
+        /* Metronome */
+        .metronome { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: var(--bg-dark); border-radius: 8px; }
+        .metronome-light { width: 12px; height: 12px; border-radius: 50%; background: var(--border-subtle); transition: all 0.1s ease; }
+        .metronome-light.active { background: var(--accent-primary); box-shadow: 0 0 10px var(--accent-primary); }
+        
+        /* Lyrics Editor */
+        .lyrics-editor { background: var(--bg-dark); border-radius: 8px; padding: 1rem; }
+        .lyrics-line { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; align-items: flex-start; }
+        .lyrics-chord { background: var(--accent-primary); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; min-width: 50px; text-align: center; }
+        .lyrics-text { flex: 1; background: transparent; border: 1px solid var(--border-subtle); color: var(--text-primary); padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.9rem; }
+        .lyrics-text:focus { border-color: var(--accent-primary); outline: none; }
+        
+        /* Song Sections */
+        .section-builder { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .section-tag { padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; }
+        .section-tag.verse { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+        .section-tag.chorus { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid #a855f7; }
+        .section-tag.bridge { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+        .section-tag.intro { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .section-tag.outro { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .section-tag:hover, .section-tag.active { transform: scale(1.05); }
+        
+        /* Mood Sliders */
+        .mood-slider { margin: 0.75rem 0; }
+        .mood-slider label { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .mood-slider input[type="range"] { width: 100%; accent-color: var(--accent-primary); }
+        
+        /* Visualizer */
+        .visualizer { height: 50px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+        .viz-bar { width: 6px; background: linear-gradient(to top, var(--accent-primary), var(--accent-secondary)); border-radius: 3px; transition: height 0.1s ease; }
+        
+        /* Export Options */
+        .export-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; }
+        
+        /* History */
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem; background: var(--bg-dark); border-radius: 6px; margin-bottom: 0.4rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; }
+        .history-item:hover { background: rgba(255, 107, 53, 0.1); }
+        
+        /* Tags */
+        .tag { display: inline-block; background: rgba(255, 107, 53, 0.2); color: var(--accent-secondary); padding: 0.2rem 0.6rem; border-radius: 15px; font-size: 0.75rem; margin: 0.15rem; }
+        
+        /* Piano Roll */
+        .piano-roll { display: flex; justify-content: center; gap: 2px; background: var(--bg-dark); padding: 0.75rem; border-radius: 10px; overflow-x: auto; }
+        .piano-key { width: 32px; height: 110px; background: white; border-radius: 0 0 5px 5px; cursor: pointer; transition: all 0.1s ease; }
+        .piano-key.black { width: 22px; height: 70px; background: #1a1a25; margin: 0 -11px; z-index: 2; border-radius: 0 0 3px 3px; }
         .piano-key:hover { background: var(--accent-secondary); }
         .piano-key.black:hover { background: var(--accent-primary); }
         .piano-key.playing { background: var(--accent-primary) !important; }
-        .visualizer { height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
-        .viz-bar { width: 8px; background: linear-gradient(to top, var(--accent-primary), var(--accent-secondary)); border-radius: 4px; transition: height 0.1s ease; }
-        .export-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .tag { display: inline-block; background: rgba(255, 107, 53, 0.2); color: var(--accent-secondary); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; margin: 0.25rem; }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg-dark); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
-        .history-item:hover { background: rgba(255, 107, 53, 0.1); }
         
-        /* Tablature Styles */
-        .tab-container { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; padding: 1rem 0; }
-        .tab-chord { background: var(--bg-dark); border-radius: 12px; padding: 1rem; min-width: 140px; text-align: center; transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
-        .tab-chord:hover { border-color: var(--accent-primary); transform: scale(1.05); }
-        .tab-chord-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--accent-primary); margin-bottom: 0.5rem; }
-        .chord-diagram { position: relative; width: 100px; height: 120px; margin: 0 auto; }
-        .tab-staff { background: var(--bg-dark); border-radius: 12px; padding: 1.5rem; overflow-x: auto; margin-top: 1rem; }
-        .tab-notation { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; white-space: pre; color: var(--text-primary); line-height: 1.4; }
-        .view-toggle { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
-        .view-btn { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; background: var(--bg-dark); border: 1px solid var(--border-subtle);
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; }
-        .view-btn:hover, .view-btn.active { border-color: var(--accent-primary); color: var(--text-primary); background: rgba(255, 107, 53, 0.1); }
-        .tuning-select { display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-bottom: 1rem; }
-        .tuning-select label { color: var(--text-secondary); font-size: 0.85rem; }
-        .tuning-select select { width: auto; padding: 0.5rem 1rem; }
+        /* Substitutions */
+        .substitution { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--bg-dark); padding: 0.4rem 0.75rem; border-radius: 6px; margin: 0.25rem; cursor: pointer; transition: all 0.2s ease; font-size: 0.85rem; }
+        .substitution:hover { background: rgba(255, 107, 53, 0.2); }
+        .substitution .arrow { color: var(--accent-primary); }
+        
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--accent-primary); color: white; padding: 1rem 1.5rem; border-radius: 8px; z-index: 1000; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        
+        /* Capo Indicator */
+        .capo-indicator { background: var(--accent-secondary); color: var(--bg-dark); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="bg-pattern"></div>
     <div class="container">
         <header class="header">
-            <h1 class="logo">CHORDFLOW</h1>
-            <p class="subtitle">AI-Powered Chord Progression Generator with Guitar Tablature</p>
+            <h1 class="logo">CHORDFLOW PRO</h1>
+            <p class="subtitle">Complete Music Creation Suite • Guitar • Ukulele • Piano • Songwriting</p>
         </header>
 
-        <div class="grid-2">
+        <!-- Controls Row -->
+        <div class="grid-4">
             <div class="card">
-                <h3 class="card-title">🎵 Key & Scale</h3>
-                <div class="grid-2">
-                    <select id="keySelect">
-                        <option value="C">C</option><option value="C#">C# / Db</option><option value="D">D</option>
-                        <option value="D#">D# / Eb</option><option value="E">E</option><option value="F">F</option>
-                        <option value="F#">F# / Gb</option><option value="G">G</option><option value="G#">G# / Ab</option>
-                        <option value="A">A</option><option value="A#">A# / Bb</option><option value="B">B</option>
-                    </select>
-                    <select id="scaleSelect">
-                        <option value="major">Major (Ionian)</option><option value="minor">Natural Minor (Aeolian)</option>
-                        <option value="dorian">Dorian</option><option value="mixolydian">Mixolydian</option>
-                        <option value="phrygian">Phrygian</option><option value="lydian">Lydian</option>
-                        <option value="harmonic_minor">Harmonic Minor</option><option value="melodic_minor">Melodic Minor</option>
-                        <option value="pentatonic_major">Pentatonic Major</option><option value="pentatonic_minor">Pentatonic Minor</option>
-                        <option value="blues">Blues</option>
-                    </select>
+                <h3 class="card-title">🎵 Key</h3>
+                <select id="keySelect">
+                    <option value="C">C</option><option value="C#">C# / Db</option><option value="D">D</option>
+                    <option value="D#">D# / Eb</option><option value="E">E</option><option value="F">F</option>
+                    <option value="F#">F# / Gb</option><option value="G">G</option><option value="G#">G# / Ab</option>
+                    <option value="A">A</option><option value="A#">A# / Bb</option><option value="B">B</option>
+                </select>
+            </div>
+            <div class="card">
+                <h3 class="card-title">🎼 Scale</h3>
+                <select id="scaleSelect">
+                    <option value="major">Major</option><option value="minor">Minor</option>
+                    <option value="dorian">Dorian</option><option value="mixolydian">Mixolydian</option>
+                    <option value="phrygian">Phrygian</option><option value="lydian">Lydian</option>
+                    <option value="blues">Blues</option>
+                </select>
+            </div>
+            <div class="card">
+                <h3 class="card-title">⏱️ Tempo</h3>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="range" id="tempoSlider" min="40" max="200" value="120" style="flex:1;">
+                    <span id="tempoValue" style="font-family: 'JetBrains Mono'; min-width: 45px;">120</span>
                 </div>
             </div>
             <div class="card">
-                <h3 class="card-title">🎚️ Tempo & Time</h3>
-                <div class="grid-2">
-                    <div>
-                        <input type="range" id="tempoSlider" min="40" max="200" value="120">
-                        <div style="text-align: center; margin-top: 0.5rem; font-family: 'JetBrains Mono', monospace;">
-                            <span id="tempoValue">120</span> BPM
-                        </div>
-                    </div>
-                    <select id="timeSignature">
-                        <option value="4/4">4/4 - Common Time</option><option value="3/4">3/4 - Waltz</option>
-                        <option value="6/8">6/8 - Compound</option><option value="2/4">2/4 - March</option>
-                    </select>
-                </div>
+                <h3 class="card-title">🎸 Capo</h3>
+                <select id="capoSelect">
+                    <option value="0">No Capo</option>
+                    <option value="1">Capo 1</option><option value="2">Capo 2</option><option value="3">Capo 3</option>
+                    <option value="4">Capo 4</option><option value="5">Capo 5</option><option value="6">Capo 6</option>
+                    <option value="7">Capo 7</option>
+                </select>
             </div>
         </div>
 
+        <!-- Genre Selection -->
         <div class="card">
-            <h3 class="card-title">🎸 Genre Presets</h3>
+            <h3 class="card-title">🎸 Genre</h3>
             <div class="genre-grid" id="genreGrid">
                 <button class="genre-btn active" data-genre="pop">Pop</button>
                 <button class="genre-btn" data-genre="rock">Rock</button>
                 <button class="genre-btn" data-genre="jazz">Jazz</button>
                 <button class="genre-btn" data-genre="blues">Blues</button>
-                <button class="genre-btn" data-genre="rnb">R&B / Soul</button>
+                <button class="genre-btn" data-genre="rnb">R&B</button>
                 <button class="genre-btn" data-genre="edm">EDM</button>
                 <button class="genre-btn" data-genre="country">Country</button>
                 <button class="genre-btn" data-genre="folk">Folk</button>
-                <button class="genre-btn" data-genre="classical">Classical</button>
                 <button class="genre-btn" data-genre="hiphop">Hip-Hop</button>
                 <button class="genre-btn" data-genre="latin">Latin</button>
                 <button class="genre-btn" data-genre="gospel">Gospel</button>
@@ -155,90 +238,224 @@
             </div>
         </div>
 
-        <div style="text-align: center; margin: 2rem 0;">
-            <button class="btn" id="generateBtn" style="font-size: 1.2rem; padding: 1rem 3rem;">✨ Generate Progression</button>
+        <!-- Generate Button -->
+        <div style="text-align: center; margin: 1.5rem 0;">
+            <button class="btn" id="generateBtn" style="font-size: 1.1rem; padding: 0.9rem 2.5rem;">✨ Generate Progression</button>
         </div>
 
+        <!-- Chord Progression Display -->
         <div class="card">
-            <h3 class="card-title">🎹 Your Chord Progression</h3>
+            <h3 class="card-title">🎹 Your Progression <span id="sectionLabel" class="section-tag verse" style="margin-left: 0.5rem;">Verse</span></h3>
+            
+            <!-- Song Sections -->
+            <div class="section-builder">
+                <span class="section-tag intro" onclick="setSection('intro')">+ Intro</span>
+                <span class="section-tag verse active" onclick="setSection('verse')">+ Verse</span>
+                <span class="section-tag chorus" onclick="setSection('chorus')">+ Chorus</span>
+                <span class="section-tag bridge" onclick="setSection('bridge')">+ Bridge</span>
+                <span class="section-tag outro" onclick="setSection('outro')">+ Outro</span>
+            </div>
+            
             <div class="chord-display" id="chordDisplay"></div>
+            
+            <!-- Playback Controls -->
             <div class="playback-controls">
-                <button class="btn btn-secondary" id="stopBtn">⏹</button>
+                <button class="btn btn-secondary btn-sm" id="stopBtn">⏹ Stop</button>
                 <button class="play-btn" id="playBtn">▶</button>
-                <button class="btn btn-secondary" id="loopBtn">🔁</button>
-            </div>
-            <div class="visualizer" id="visualizer">
-                <div class="viz-bar" style="height: 20px;"></div><div class="viz-bar" style="height: 35px;"></div>
-                <div class="viz-bar" style="height: 50px;"></div><div class="viz-bar" style="height: 30px;"></div>
-                <div class="viz-bar" style="height: 45px;"></div><div class="viz-bar" style="height: 25px;"></div>
-                <div class="viz-bar" style="height: 40px;"></div><div class="viz-bar" style="height: 55px;"></div>
-                <div class="viz-bar" style="height: 35px;"></div><div class="viz-bar" style="height: 45px;"></div>
-            </div>
-        </div>
-
-        <!-- Guitar Tablature Section -->
-        <div class="card">
-            <h3 class="card-title">🎸 Guitar Tablature</h3>
-            <div class="view-toggle">
-                <button class="view-btn active" data-view="diagrams">Chord Diagrams</button>
-                <button class="view-btn" data-view="tab">Tab Notation</button>
-                <button class="view-btn" data-view="both">Both</button>
-            </div>
-            <div class="tuning-select">
-                <label>Tuning:</label>
-                <select id="tuningSelect">
-                    <option value="standard">Standard (EADGBE)</option>
-                    <option value="dropD">Drop D (DADGBE)</option>
-                    <option value="halfDown">Half Step Down</option>
-                    <option value="openG">Open G</option>
+                <button class="btn btn-secondary btn-sm" id="loopBtn">🔁 Loop</button>
+                <button class="btn btn-secondary btn-sm" id="metronomeBtn">🥁 Metro</button>
+                <select id="instrumentSelect" style="width: auto; padding: 0.4rem;">
+                    <option value="synth">🎹 Synth</option>
+                    <option value="acoustic">🎸 Acoustic</option>
+                    <option value="electric">⚡ Electric</option>
+                    <option value="piano">🎹 Piano</option>
+                    <option value="strings">🎻 Strings</option>
                 </select>
             </div>
-            <div id="tabDiagrams" class="tab-container"></div>
-            <div id="tabNotation" class="tab-staff" style="display: none;">
-                <div class="tab-notation" id="tabNotationContent"></div>
+            
+            <!-- Metronome Display -->
+            <div class="metronome" id="metronomeDisplay" style="display: none; justify-content: center;">
+                <div class="metronome-light" data-beat="1"></div>
+                <div class="metronome-light" data-beat="2"></div>
+                <div class="metronome-light" data-beat="3"></div>
+                <div class="metronome-light" data-beat="4"></div>
+                <span style="margin-left: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">4/4</span>
+            </div>
+            
+            <div class="visualizer" id="visualizer">
+                <div class="viz-bar" style="height: 15px;"></div><div class="viz-bar" style="height: 25px;"></div>
+                <div class="viz-bar" style="height: 40px;"></div><div class="viz-bar" style="height: 20px;"></div>
+                <div class="viz-bar" style="height: 35px;"></div><div class="viz-bar" style="height: 18px;"></div>
+                <div class="viz-bar" style="height: 30px;"></div><div class="viz-bar" style="height: 45px;"></div>
+                <div class="viz-bar" style="height: 25px;"></div><div class="viz-bar" style="height: 35px;"></div>
             </div>
         </div>
 
-        <div class="grid-2">
-            <div class="card">
-                <h3 class="card-title">🎹 Piano Preview</h3>
-                <div class="piano-roll" id="pianoRoll"></div>
+        <!-- Instrument Tabs -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="guitar">🎸 Guitar</button>
+                <button class="tab-btn" data-tab="ukulele">🪕 Ukulele</button>
+                <button class="tab-btn" data-tab="piano">🎹 Piano</button>
+                <button class="tab-btn" data-tab="strumming">👋 Strumming</button>
+                <button class="tab-btn" data-tab="tab">📝 Tab</button>
             </div>
-            <div class="card">
-                <h3 class="card-title">📋 Progression Info</h3>
-                <div id="progressionInfo">
-                    <p><strong>Pattern:</strong> <span id="patternName">I - V - vi - IV</span></p>
-                    <p><strong>Mood:</strong> <span id="moodName">Uplifting, Anthemic</span></p>
-                    <p><strong>Famous Songs:</strong></p>
-                    <div id="famousSongs"></div>
+            
+            <!-- Guitar Tab -->
+            <div class="tab-content active" id="tab-guitar">
+                <div class="instrument-container" id="guitarDiagrams"></div>
+            </div>
+            
+            <!-- Ukulele Tab -->
+            <div class="tab-content" id="tab-ukulele">
+                <div class="instrument-container" id="ukeDiagrams"></div>
+            </div>
+            
+            <!-- Piano Tab -->
+            <div class="tab-content" id="tab-piano">
+                <div class="instrument-container" id="pianoDiagrams"></div>
+            </div>
+            
+            <!-- Strumming Tab -->
+            <div class="tab-content" id="tab-strumming">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <select id="strumPatternSelect" style="width: auto;">
+                        <option value="basic">Basic (D-D-D-D)</option>
+                        <option value="folk">Folk (D-DU-UDU)</option>
+                        <option value="pop">Pop (D-DU-D-DU)</option>
+                        <option value="rock">Rock (D-D-DU-D)</option>
+                        <option value="reggae">Reggae (-U--U--U)</option>
+                        <option value="waltz">Waltz 3/4 (D-U-U)</option>
+                    </select>
+                </div>
+                <div class="strum-pattern" id="strumPattern"></div>
+                <p style="text-align: center; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">D = Down Strum, U = Up Strum, - = Mute/Rest</p>
+            </div>
+            
+            <!-- Tab Notation -->
+            <div class="tab-content" id="tab-tab">
+                <div style="background: var(--bg-dark); border-radius: 8px; padding: 1rem; overflow-x: auto;">
+                    <pre id="tabNotation" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-primary);"></pre>
                 </div>
             </div>
         </div>
 
+        <!-- Songwriting Tools -->
         <div class="card">
-            <h3 class="card-title">💾 Export & Save</h3>
-            <div class="export-options">
-                <button class="btn btn-secondary" id="exportTab">📄 Export Tab</button>
-                <button class="btn btn-secondary" id="exportText">📝 Text/Lyrics</button>
-                <button class="btn btn-secondary" id="copyChords">📋 Copy Chords</button>
-                <button class="btn btn-secondary" id="shareLink">🔗 Share Link</button>
+            <h3 class="card-title">✍️ Lyrics & Songwriting</h3>
+            <div class="lyrics-editor" id="lyricsEditor">
+                <div class="lyrics-line">
+                    <span class="lyrics-chord" id="lyricChord0">C</span>
+                    <input type="text" class="lyrics-text" placeholder="Write your lyrics here..." data-line="0">
+                </div>
+                <div class="lyrics-line">
+                    <span class="lyrics-chord" id="lyricChord1">G</span>
+                    <input type="text" class="lyrics-text" placeholder="Continue your verse..." data-line="1">
+                </div>
+                <div class="lyrics-line">
+                    <span class="lyrics-chord" id="lyricChord2">Am</span>
+                    <input type="text" class="lyrics-text" placeholder="Add more lyrics..." data-line="2">
+                </div>
+                <div class="lyrics-line">
+                    <span class="lyrics-chord" id="lyricChord3">F</span>
+                    <input type="text" class="lyrics-text" placeholder="Finish the section..." data-line="3">
+                </div>
+            </div>
+            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="addLyricLine()">+ Add Line</button>
+                <button class="btn btn-secondary btn-sm" onclick="clearLyrics()">🗑️ Clear</button>
+                <button class="btn btn-secondary btn-sm" onclick="exportLyrics()">📄 Export</button>
             </div>
         </div>
 
+        <!-- AI Tools & Mood -->
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="card-title">🎭 Mood Controls</h3>
+                <div class="mood-slider">
+                    <label><span>😢 Sad</span><span>😊 Happy</span></label>
+                    <input type="range" id="moodHappy" min="0" max="100" value="70">
+                </div>
+                <div class="mood-slider">
+                    <label><span>😌 Calm</span><span>⚡ Energetic</span></label>
+                    <input type="range" id="moodEnergy" min="0" max="100" value="50">
+                </div>
+                <div class="mood-slider">
+                    <label><span>🎸 Simple</span><span>🎷 Complex</span></label>
+                    <input type="range" id="moodComplex" min="0" max="100" value="30">
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">🔄 Chord Substitutions</h3>
+                <div id="substitutions">
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Generate a progression to see substitution options</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info & Theory -->
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="card-title">📋 Progression Info</h3>
+                <p><strong>Pattern:</strong> <span id="patternName">I - V - vi - IV</span></p>
+                <p><strong>Mood:</strong> <span id="moodName">Uplifting, Catchy</span></p>
+                <p style="margin-top: 0.5rem;"><strong>Famous Songs:</strong></p>
+                <div id="famousSongs"></div>
+            </div>
+            
+            <div class="card">
+                <h3 class="card-title">🎓 Theory</h3>
+                <div id="theoryExplanation">
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Generate a progression to see theory breakdown</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Piano Roll -->
         <div class="card">
-            <h3 class="card-title">📜 History</h3>
-            <div id="historyList"><p style="color: var(--text-secondary); text-align: center;">Generate progressions to see your history here</p></div>
+            <h3 class="card-title">🎹 Piano Roll</h3>
+            <div class="piano-roll" id="pianoRoll"></div>
+        </div>
+
+        <!-- Export -->
+        <div class="card">
+            <h3 class="card-title">💾 Export & Save</h3>
+            <div class="export-grid">
+                <button class="btn btn-secondary btn-sm" id="exportMidi">🎵 MIDI</button>
+                <button class="btn btn-secondary btn-sm" id="exportPdf">📄 PDF</button>
+                <button class="btn btn-secondary btn-sm" id="exportTab">📝 Tab File</button>
+                <button class="btn btn-secondary btn-sm" id="exportText">📋 Text</button>
+                <button class="btn btn-secondary btn-sm" id="copyChords">📎 Copy</button>
+                <button class="btn btn-secondary btn-sm" id="shareLink">🔗 Share</button>
+                <button class="btn btn-secondary btn-sm" id="addFavorite">⭐ Favorite</button>
+                <button class="btn btn-secondary btn-sm" id="saveHistory">💾 Save</button>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+            <h3 class="card-title">📜 History & Favorites</h3>
+            <div class="tabs" style="margin-bottom: 0.5rem;">
+                <button class="tab-btn active" onclick="showHistoryTab('history')">Recent</button>
+                <button class="tab-btn" onclick="showHistoryTab('favorites')">⭐ Favorites</button>
+            </div>
+            <div id="historyList"><p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem;">Generate progressions to see history</p></div>
+            <div id="favoritesList" style="display: none;"><p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem;">Star progressions to add favorites</p></div>
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
     <script>
+        // ==================== CONSTANTS ====================
         const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         
         const SCALES = {
             major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10],
             mixolydian: [0, 2, 4, 5, 7, 9, 10], phrygian: [0, 1, 3, 5, 7, 8, 10], lydian: [0, 2, 4, 6, 7, 9, 11],
-            harmonic_minor: [0, 2, 3, 5, 7, 8, 11], melodic_minor: [0, 2, 3, 5, 7, 9, 11],
-            pentatonic_major: [0, 2, 4, 7, 9], pentatonic_minor: [0, 3, 5, 7, 10], blues: [0, 3, 5, 6, 7, 10]
+            blues: [0, 3, 5, 6, 7, 10]
         };
 
         const CHORD_QUALITIES = {
@@ -251,50 +468,71 @@
         const NUMERALS = { major: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'], minor: ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'] };
         const FUNCTIONS = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Leading'];
 
-        // Guitar chord shapes: [E, A, D, G, B, e] where -1 = muted, 0 = open
+        // Guitar chords: [E, A, D, G, B, e]
         const GUITAR_CHORDS = {
-            'C': [-1, 3, 2, 0, 1, 0], 'C#': [-1, 4, 3, 1, 2, 1], 'D': [-1, -1, 0, 2, 3, 2], 'D#': [-1, -1, 1, 3, 4, 3],
-            'E': [0, 2, 2, 1, 0, 0], 'F': [1, 3, 3, 2, 1, 1], 'F#': [2, 4, 4, 3, 2, 2], 'G': [3, 2, 0, 0, 0, 3],
-            'G#': [4, 6, 6, 5, 4, 4], 'A': [-1, 0, 2, 2, 2, 0], 'A#': [-1, 1, 3, 3, 3, 1], 'B': [-1, 2, 4, 4, 4, 2],
-            'Cm': [-1, 3, 5, 5, 4, 3], 'C#m': [-1, 4, 6, 6, 5, 4], 'Dm': [-1, -1, 0, 2, 3, 1], 'D#m': [-1, -1, 1, 3, 4, 2],
-            'Em': [0, 2, 2, 0, 0, 0], 'Fm': [1, 3, 3, 1, 1, 1], 'F#m': [2, 4, 4, 2, 2, 2], 'Gm': [3, 5, 5, 3, 3, 3],
-            'G#m': [4, 6, 6, 4, 4, 4], 'Am': [-1, 0, 2, 2, 1, 0], 'A#m': [-1, 1, 3, 3, 2, 1], 'Bm': [-1, 2, 4, 4, 3, 2],
-            'C7': [-1, 3, 2, 3, 1, 0], 'D7': [-1, -1, 0, 2, 1, 2], 'E7': [0, 2, 0, 1, 0, 0], 'F7': [1, 3, 1, 2, 1, 1],
-            'G7': [3, 2, 0, 0, 0, 1], 'A7': [-1, 0, 2, 0, 2, 0], 'B7': [-1, 2, 1, 2, 0, 2],
-            'Cmaj7': [-1, 3, 2, 0, 0, 0], 'Dmaj7': [-1, -1, 0, 2, 2, 2], 'Emaj7': [0, 2, 1, 1, 0, 0],
-            'Fmaj7': [1, -1, 2, 2, 1, 0], 'Gmaj7': [3, 2, 0, 0, 0, 2], 'Amaj7': [-1, 0, 2, 1, 2, 0], 'Bmaj7': [-1, 2, 4, 3, 4, 2],
-            'Cm7': [-1, 3, 5, 3, 4, 3], 'Dm7': [-1, -1, 0, 2, 1, 1], 'Em7': [0, 2, 0, 0, 0, 0], 'Fm7': [1, 3, 1, 1, 1, 1],
-            'Gm7': [3, 5, 3, 3, 3, 3], 'Am7': [-1, 0, 2, 0, 1, 0], 'Bm7': [-1, 2, 0, 2, 0, 2],
-            'Cdim': [-1, 3, 4, 2, 4, 2], 'Ddim': [-1, -1, 0, 1, 0, 1], 'Edim': [0, 1, 2, 0, 2, 0],
-            'Fdim': [1, 2, 3, 1, 3, 1], 'Gdim': [3, 4, 5, 3, 5, 3], 'Adim': [-1, 0, 1, 2, 1, 2], 'Bdim': [-1, 2, 3, 4, 3, -1],
-            'Cm7b5': [-1, 3, 4, 3, 4, -1], 'Dm7b5': [-1, -1, 0, 1, 1, 1], 'Em7b5': [0, 1, 0, 0, 3, 0],
-            'Fm7b5': [1, 2, 1, 1, 4, 1], 'Gm7b5': [3, 4, 3, 3, 6, 3], 'Am7b5': [-1, 0, 1, 0, 1, 0], 'Bm7b5': [-1, 2, 3, 2, 3, -1]
+            'C': [-1, 3, 2, 0, 1, 0], 'D': [-1, -1, 0, 2, 3, 2], 'E': [0, 2, 2, 1, 0, 0], 'F': [1, 3, 3, 2, 1, 1],
+            'G': [3, 2, 0, 0, 0, 3], 'A': [-1, 0, 2, 2, 2, 0], 'B': [-1, 2, 4, 4, 4, 2],
+            'Cm': [-1, 3, 5, 5, 4, 3], 'Dm': [-1, -1, 0, 2, 3, 1], 'Em': [0, 2, 2, 0, 0, 0], 'Fm': [1, 3, 3, 1, 1, 1],
+            'Gm': [3, 5, 5, 3, 3, 3], 'Am': [-1, 0, 2, 2, 1, 0], 'Bm': [-1, 2, 4, 4, 3, 2],
+            'C7': [-1, 3, 2, 3, 1, 0], 'D7': [-1, -1, 0, 2, 1, 2], 'E7': [0, 2, 0, 1, 0, 0], 'G7': [3, 2, 0, 0, 0, 1], 'A7': [-1, 0, 2, 0, 2, 0],
+            'Cmaj7': [-1, 3, 2, 0, 0, 0], 'Dmaj7': [-1, -1, 0, 2, 2, 2], 'Emaj7': [0, 2, 1, 1, 0, 0], 'Gmaj7': [3, 2, 0, 0, 0, 2], 'Amaj7': [-1, 0, 2, 1, 2, 0],
+            'Cm7': [-1, 3, 5, 3, 4, 3], 'Dm7': [-1, -1, 0, 2, 1, 1], 'Em7': [0, 2, 0, 0, 0, 0], 'Am7': [-1, 0, 2, 0, 1, 0],
+            'Cdim': [-1, 3, 4, 2, 4, 2], 'Ddim': [-1, -1, 0, 1, 0, 1], 'Edim': [0, 1, 2, 0, 2, 0]
         };
 
+        // Ukulele chords: [G, C, E, A]
+        const UKE_CHORDS = {
+            'C': [0, 0, 0, 3], 'D': [2, 2, 2, 0], 'E': [1, 4, 0, 2], 'F': [2, 0, 1, 0], 'G': [0, 2, 3, 2], 'A': [2, 1, 0, 0], 'B': [4, 3, 2, 2],
+            'Cm': [0, 3, 3, 3], 'Dm': [2, 2, 1, 0], 'Em': [0, 4, 3, 2], 'Fm': [1, 0, 1, 3], 'Gm': [0, 2, 3, 1], 'Am': [2, 0, 0, 0], 'Bm': [4, 2, 2, 2],
+            'C7': [0, 0, 0, 1], 'D7': [2, 2, 2, 3], 'E7': [1, 2, 0, 2], 'G7': [0, 2, 1, 2], 'A7': [0, 1, 0, 0]
+        };
+
+        // Strumming patterns
+        const STRUM_PATTERNS = {
+            basic: ['D', 'D', 'D', 'D'],
+            folk: ['D', '-', 'D', 'U', '-', 'U', 'D', 'U'],
+            pop: ['D', '-', 'D', 'U', 'D', '-', 'D', 'U'],
+            rock: ['D', '-', 'D', '-', 'D', 'U', '-', 'D'],
+            reggae: ['-', 'U', '-', '-', 'U', '-', '-', 'U'],
+            waltz: ['D', '-', 'U', '-', 'U', '-']
+        };
+
+        // Genre progressions
         const GENRE_PROGRESSIONS = {
-            pop: { patterns: [[0, 4, 5, 3], [0, 5, 3, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Uplifting, Catchy', songs: ['Someone Like You', 'Let It Go', 'Shake It Off'] },
+            pop: { patterns: [[0, 4, 5, 3], [0, 5, 3, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Uplifting, Catchy', songs: ['Someone Like You', 'Let It Go'] },
             rock: { patterns: [[0, 3, 4, 4], [0, 4, 0, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'major'], mood: 'Powerful, Driving', songs: ['Smoke on the Water', 'Back in Black'] },
             jazz: { patterns: [[1, 4, 0, 0], [0, 5, 1, 4]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Sophisticated, Smooth', songs: ['Autumn Leaves', 'Fly Me To The Moon'] },
-            blues: { patterns: [[0, 0, 0, 3, 3, 0, 4, 3, 0, 4]], qualities: ['dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7'], mood: 'Soulful, Emotional', songs: ['The Thrill Is Gone', 'Sweet Home Chicago'] },
-            rnb: { patterns: [[0, 4, 3, 5], [1, 4, 0, 0]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Smooth, Sensual', songs: ['No Scrubs', 'Crazy In Love'] },
+            blues: { patterns: [[0, 0, 0, 3, 3, 0, 4, 3, 0, 4]], qualities: ['dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7', 'dominant7'], mood: 'Soulful, Emotional', songs: ['Sweet Home Chicago'] },
+            rnb: { patterns: [[0, 4, 3, 5], [1, 4, 0, 0]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Smooth, Sensual', songs: ['No Scrubs'] },
             edm: { patterns: [[0, 5, 3, 4], [0, 4, 5, 3]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'minor'], mood: 'Energetic, Euphoric', songs: ['Wake Me Up', 'Titanium'] },
-            country: { patterns: [[0, 4, 0, 4], [0, 3, 4, 0]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Warm, Storytelling', songs: ['Wagon Wheel', 'Jolene'] },
-            folk: { patterns: [[0, 4, 0, 4], [0, 3, 4, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Intimate, Acoustic', songs: ['Blowin In The Wind', 'Fast Car'] },
-            classical: { patterns: [[0, 3, 4, 0], [0, 4, 1, 4, 0]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Elegant, Timeless', songs: ['Canon in D', 'Moonlight Sonata'] },
-            hiphop: { patterns: [[0, 5, 3, 4], [5, 3, 0, 0]], qualities: ['minor7', 'minor7', 'minor7', 'minor7', 'minor7', 'minor7', 'minor7'], mood: 'Chill, Groovy', songs: ['Still D.R.E.', 'HUMBLE'] },
-            latin: { patterns: [[0, 3, 4, 4], [0, 4, 0, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Passionate, Rhythmic', songs: ['Despacito', 'La Bamba'] },
-            gospel: { patterns: [[0, 4, 3, 4, 0], [0, 3, 0, 4]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Uplifting, Spiritual', songs: ['Oh Happy Day', 'Lean On Me'] },
-            metal: { patterns: [[0, 5, 6, 4], [0, 1, 0, 4]], qualities: ['major', 'major', 'minor', 'major', 'major', 'minor', 'major'], mood: 'Aggressive, Powerful', songs: ['Enter Sandman', 'Paranoid'] },
-            lofi: { patterns: [[1, 4, 0, 5], [0, 3, 5, 3]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Chill, Nostalgic', songs: ['Lofi Study Beats'] },
-            cinematic: { patterns: [[0, 5, 3, 4], [0, 3, 0, 5]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Epic, Emotional', songs: ['Time (Inception)', 'Now We Are Free'] }
+            country: { patterns: [[0, 4, 0, 4], [0, 3, 4, 0]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Warm, Storytelling', songs: ['Wagon Wheel'] },
+            folk: { patterns: [[0, 4, 0, 4], [0, 3, 4, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Intimate, Acoustic', songs: ['Blowin In The Wind'] },
+            hiphop: { patterns: [[0, 5, 3, 4], [5, 3, 0, 0]], qualities: ['minor7', 'minor7', 'minor7', 'minor7', 'minor7', 'minor7', 'minor7'], mood: 'Chill, Groovy', songs: ['Still D.R.E.'] },
+            latin: { patterns: [[0, 3, 4, 4], [0, 4, 0, 4]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Passionate, Rhythmic', songs: ['Despacito'] },
+            gospel: { patterns: [[0, 4, 3, 4, 0]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Uplifting, Spiritual', songs: ['Oh Happy Day'] },
+            metal: { patterns: [[0, 5, 6, 4], [0, 1, 0, 4]], qualities: ['major', 'major', 'minor', 'major', 'major', 'minor', 'major'], mood: 'Aggressive, Powerful', songs: ['Enter Sandman'] },
+            lofi: { patterns: [[1, 4, 0, 5], [0, 3, 5, 3]], qualities: ['major7', 'minor7', 'minor7', 'major7', 'dominant7', 'minor7', 'halfDim7'], mood: 'Chill, Nostalgic', songs: ['Lofi Beats'] },
+            cinematic: { patterns: [[0, 5, 3, 4], [0, 3, 0, 5]], qualities: ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'], mood: 'Epic, Emotional', songs: ['Time (Inception)'] }
         };
 
+        // Chord substitutions
+        const SUBSTITUTIONS = {
+            'I': ['iii', 'vi', 'Imaj7'], 'ii': ['IV', 'ii7'], 'iii': ['I', 'vi'],
+            'IV': ['ii', 'IVmaj7'], 'V': ['vii°', 'V7', 'iii'], 'vi': ['I', 'IV'], 'vii°': ['V', 'V7']
+        };
+
+        // ==================== STATE ====================
         let state = {
-            key: 'C', scale: 'major', genre: 'pop', tempo: 120, timeSignature: '4/4',
-            currentProgression: [], isPlaying: false, isLooping: false, history: [],
-            synth: null, currentChordIndex: -1, tabView: 'diagrams', tuning: 'standard'
+            key: 'C', scale: 'major', genre: 'pop', tempo: 120, capo: 0,
+            currentProgression: [], currentSection: 'verse',
+            isPlaying: false, isLooping: false, metronomeOn: false,
+            history: [], favorites: [], lyrics: ['', '', '', ''],
+            synth: null, metronomeSynth: null, currentChordIndex: -1,
+            instrument: 'synth', strumPattern: 'basic',
+            moodHappy: 70, moodEnergy: 50, moodComplex: 30
         };
 
+        // ==================== AUDIO ====================
         function initAudio() {
             if (!state.synth) {
                 state.synth = new Tone.PolySynth(Tone.Synth, {
@@ -302,6 +540,9 @@
                     envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 1 }
                 }).toDestination();
                 state.synth.volume.value = -6;
+                
+                state.metronomeSynth = new Tone.MembraneSynth().toDestination();
+                state.metronomeSynth.volume.value = -10;
             }
         }
 
@@ -311,6 +552,7 @@
             state.synth.triggerAttackRelease(notes, duration);
         }
 
+        // ==================== CHORD GENERATION ====================
         function getNote(rootIndex, interval) { return NOTES[(rootIndex + interval) % 12]; }
 
         function buildChord(root, quality) {
@@ -341,24 +583,252 @@
                 };
             });
 
-            updateDisplay(genre);
-            updateTablature();
+            updateAllDisplays(genre);
             saveToHistory();
+            showToast('✨ New progression generated!');
         }
 
-        function updateDisplay(genre) {
-            document.getElementById('chordDisplay').innerHTML = state.currentProgression.map((chord, i) => `
-                <div class="chord-card" data-index="${i}" onclick="playChordAtIndex(${i})">
-                    <div class="chord-name">${chord.symbol}</div>
-                    <div class="chord-numeral">${chord.numeral}</div>
-                    <div class="chord-function">${chord.function}</div>
-                </div>
-            `).join('');
-
+        // ==================== UI UPDATES ====================
+        function updateAllDisplays(genre) {
+            updateChordDisplay();
+            updateGuitarDiagrams();
+            updateUkeDiagrams();
+            updatePianoDiagrams();
+            updateStrumPattern();
+            updateTabNotation();
+            updateLyricChords();
+            updateSubstitutions();
+            updateTheory();
+            updatePianoRoll();
+            
             document.getElementById('patternName').textContent = state.currentProgression.map(c => c.numeral).join(' - ');
             document.getElementById('moodName').textContent = genre.mood;
             document.getElementById('famousSongs').innerHTML = genre.songs.map(s => `<span class="tag">${s}</span>`).join('');
-            updatePianoRoll();
+        }
+
+        function updateChordDisplay() {
+            const container = document.getElementById('chordDisplay');
+            container.innerHTML = state.currentProgression.map((chord, i) => `
+                <div class="chord-card" draggable="true" data-index="${i}" onclick="playChordAtIndex(${i})">
+                    <div class="drag-handle">⋮⋮</div>
+                    <div class="chord-name">${getCapoChord(chord.symbol)}</div>
+                    <div class="chord-numeral">${chord.numeral}</div>
+                    <div class="chord-function">${chord.function}</div>
+                    ${state.capo > 0 ? `<div class="capo-indicator">Capo ${state.capo}</div>` : ''}
+                </div>
+            `).join('');
+            
+            // Setup drag and drop
+            setupDragAndDrop();
+        }
+
+        function getCapoChord(symbol) {
+            if (state.capo === 0) return symbol;
+            const root = symbol.match(/^[A-G][#b]?/)?.[0];
+            const quality = symbol.replace(/^[A-G][#b]?/, '');
+            const rootIndex = NOTES.indexOf(root);
+            const newRoot = NOTES[(rootIndex - state.capo + 12) % 12];
+            return newRoot + quality;
+        }
+
+        function setupDragAndDrop() {
+            const cards = document.querySelectorAll('.chord-card');
+            cards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.index);
+                });
+                card.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
+                card.addEventListener('dragover', (e) => e.preventDefault());
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = parseInt(e.target.closest('.chord-card').dataset.index);
+                    if (fromIndex !== toIndex) {
+                        const item = state.currentProgression.splice(fromIndex, 1)[0];
+                        state.currentProgression.splice(toIndex, 0, item);
+                        updateAllDisplays(GENRE_PROGRESSIONS[state.genre]);
+                        showToast('🔀 Chords reordered!');
+                    }
+                });
+            });
+        }
+
+        // Guitar diagrams
+        function updateGuitarDiagrams() {
+            const container = document.getElementById('guitarDiagrams');
+            container.innerHTML = state.currentProgression.map((chord, i) => {
+                const chordName = getCapoChord(chord.symbol);
+                const frets = getGuitarShape(chordName);
+                return `
+                    <div class="instrument-chord" onclick="playChordAtIndex(${i})">
+                        <div class="instrument-chord-name">${chordName}</div>
+                        <div class="chord-diagram">${createGuitarSVG(frets)}</div>
+                        <div class="fret-info">${frets.map(f => f === -1 ? 'x' : f).join(' ')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getGuitarShape(symbol) {
+            if (GUITAR_CHORDS[symbol]) return GUITAR_CHORDS[symbol];
+            const root = symbol.match(/^[A-G][#b]?/)?.[0] || 'C';
+            const quality = symbol.replace(/^[A-G][#b]?/, '');
+            return GUITAR_CHORDS[root + (quality.includes('m') && !quality.includes('maj') ? 'm' : '')] || GUITAR_CHORDS['C'];
+        }
+
+        function createGuitarSVG(frets) {
+            const minFret = Math.min(...frets.filter(f => f > 0)) || 1;
+            const startFret = minFret > 3 ? minFret : 1;
+            const stringX = [8, 18, 28, 38, 48, 58];
+            
+            let svg = `<svg viewBox="0 0 70 90" xmlns="http://www.w3.org/2000/svg">
+                ${startFret === 1 ? `<rect x="8" y="12" width="50" height="2.5" fill="#f7c59f"/>` : `<text x="2" y="22" font-size="7" fill="#9ca3af">${startFret}</text>`}
+                <line x1="8" y1="14" x2="58" y2="14" stroke="#444"/><line x1="8" y1="28" x2="58" y2="28" stroke="#444"/>
+                <line x1="8" y1="42" x2="58" y2="42" stroke="#444"/><line x1="8" y1="56" x2="58" y2="56" stroke="#444"/>
+                <line x1="8" y1="70" x2="58" y2="70" stroke="#444"/>`;
+            
+            stringX.forEach(x => { svg += `<line x1="${x}" y1="14" x2="${x}" y2="70" stroke="#666"/>`; });
+            
+            frets.forEach((fret, i) => {
+                const x = stringX[i];
+                if (fret === -1) svg += `<text x="${x}" y="8" text-anchor="middle" font-size="8" fill="#ff6b35">×</text>`;
+                else if (fret === 0) svg += `<circle cx="${x}" cy="6" r="3" fill="none" stroke="#f7c59f" stroke-width="1.5"/>`;
+                else {
+                    const rel = fret - startFret + 1;
+                    if (rel >= 1 && rel <= 4) svg += `<circle cx="${x}" cy="${14 + (rel - 0.5) * 14}" r="4" fill="#ff6b35"/>`;
+                }
+            });
+            return svg + '</svg>';
+        }
+
+        // Ukulele diagrams
+        function updateUkeDiagrams() {
+            const container = document.getElementById('ukeDiagrams');
+            container.innerHTML = state.currentProgression.map((chord, i) => {
+                const chordName = getCapoChord(chord.symbol);
+                const frets = getUkeShape(chordName);
+                return `
+                    <div class="instrument-chord" onclick="playChordAtIndex(${i})">
+                        <div class="instrument-chord-name">${chordName}</div>
+                        <div class="uke-diagram">${createUkeSVG(frets)}</div>
+                        <div class="fret-info">${frets.join(' ')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getUkeShape(symbol) {
+            if (UKE_CHORDS[symbol]) return UKE_CHORDS[symbol];
+            const root = symbol.match(/^[A-G][#b]?/)?.[0] || 'C';
+            const quality = symbol.replace(/^[A-G][#b]?/, '');
+            return UKE_CHORDS[root + (quality.includes('m') && !quality.includes('maj') ? 'm' : '')] || UKE_CHORDS['C'];
+        }
+
+        function createUkeSVG(frets) {
+            const stringX = [12, 24, 36, 48];
+            let svg = `<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+                <rect x="12" y="10" width="36" height="2" fill="#f7c59f"/>
+                <line x1="12" y1="12" x2="48" y2="12" stroke="#444"/><line x1="12" y1="26" x2="48" y2="26" stroke="#444"/>
+                <line x1="12" y1="40" x2="48" y2="40" stroke="#444"/><line x1="12" y1="54" x2="48" y2="54" stroke="#444"/>
+                <line x1="12" y1="68" x2="48" y2="68" stroke="#444"/>`;
+            stringX.forEach(x => { svg += `<line x1="${x}" y1="12" x2="${x}" y2="68" stroke="#666"/>`; });
+            frets.forEach((fret, i) => {
+                const x = stringX[i];
+                if (fret === 0) svg += `<circle cx="${x}" cy="5" r="3" fill="none" stroke="#f7c59f" stroke-width="1.5"/>`;
+                else if (fret <= 4) svg += `<circle cx="${x}" cy="${12 + (fret - 0.5) * 14}" r="4" fill="#ff6b35"/>`;
+            });
+            return svg + '</svg>';
+        }
+
+        // Piano diagrams
+        function updatePianoDiagrams() {
+            const container = document.getElementById('pianoDiagrams');
+            container.innerHTML = state.currentProgression.map((chord, i) => `
+                <div class="instrument-chord" onclick="playChordAtIndex(${i})">
+                    <div class="instrument-chord-name">${chord.symbol}</div>
+                    <div class="piano-diagram">${createPianoDiagram(chord.notes)}</div>
+                </div>
+            `).join('');
+        }
+
+        function createPianoDiagram(notes) {
+            const keyLayout = [
+                { note: 'C', black: false }, { note: 'C#', black: true }, { note: 'D', black: false },
+                { note: 'D#', black: true }, { note: 'E', black: false }, { note: 'F', black: false },
+                { note: 'F#', black: true }, { note: 'G', black: false }, { note: 'G#', black: true },
+                { note: 'A', black: false }, { note: 'A#', black: true }, { note: 'B', black: false }
+            ];
+            const chordNotes = notes.map(n => n.replace(/\d/, ''));
+            return keyLayout.map(key => {
+                const isActive = chordNotes.includes(key.note);
+                return `<div class="piano-key-diagram ${key.black ? 'black' : ''} ${isActive ? 'active' : ''}"></div>`;
+            }).join('');
+        }
+
+        // Strumming pattern
+        function updateStrumPattern() {
+            const pattern = STRUM_PATTERNS[state.strumPattern] || STRUM_PATTERNS.basic;
+            const container = document.getElementById('strumPattern');
+            container.innerHTML = pattern.map((strum, i) => `
+                <div class="strum-beat">
+                    <div class="strum-arrow ${strum === 'D' ? 'down' : ''} ${strum === '-' ? 'muted' : ''}" data-beat="${i}">
+                        ${strum === '-' ? '•' : '↑'}
+                    </div>
+                    <div class="strum-count">${i + 1}</div>
+                </div>
+            `).join('');
+        }
+
+        // Tab notation
+        function updateTabNotation() {
+            const strings = ['e', 'B', 'G', 'D', 'A', 'E'];
+            let tabLines = strings.map(s => `${s}|`);
+            
+            state.currentProgression.forEach(chord => {
+                const frets = [...getGuitarShape(getCapoChord(chord.symbol))].reverse();
+                frets.forEach((fret, i) => {
+                    tabLines[i] += (fret === -1 ? '-' : fret.toString().padStart(2, '-').padEnd(3, '-')) + '-';
+                });
+                tabLines = tabLines.map(line => line + '|');
+            });
+            
+            document.getElementById('tabNotation').innerHTML = 
+                `<span style="color: var(--accent-secondary);">${state.currentProgression.map(c => getCapoChord(c.symbol).padEnd(5)).join('  ')}</span>\n${tabLines.join('\n')}`;
+        }
+
+        // Lyrics
+        function updateLyricChords() {
+            state.currentProgression.forEach((chord, i) => {
+                const el = document.getElementById(`lyricChord${i}`);
+                if (el) el.textContent = chord.symbol;
+            });
+        }
+
+        // Substitutions
+        function updateSubstitutions() {
+            const container = document.getElementById('substitutions');
+            container.innerHTML = state.currentProgression.slice(0, 4).map((chord, i) => {
+                const subs = SUBSTITUTIONS[chord.numeral.replace('°', '')] || [];
+                return subs.length ? `
+                    <div style="margin-bottom: 0.5rem;">
+                        <span style="color: var(--accent-primary); font-weight: 600;">${chord.symbol}</span>
+                        ${subs.map(sub => `<span class="substitution" onclick="substituteChord(${i}, '${sub}')">${chord.symbol} <span class="arrow">→</span> ${sub}</span>`).join('')}
+                    </div>
+                ` : '';
+            }).join('') || '<p style="color: var(--text-secondary); font-size: 0.85rem;">No substitutions available</p>';
+        }
+
+        // Theory
+        function updateTheory() {
+            const prog = state.currentProgression;
+            let explanation = `<p style="font-size: 0.85rem; margin-bottom: 0.5rem;">This <strong>${prog.map(c => c.numeral).join(' - ')}</strong> progression in <strong>${state.key} ${state.scale}</strong>:</p><ul style="font-size: 0.8rem; color: var(--text-secondary); padding-left: 1rem;">`;
+            
+            prog.forEach(chord => {
+                explanation += `<li><strong>${chord.symbol}</strong> (${chord.numeral}) - ${chord.function} function</li>`;
+            });
+            explanation += '</ul>';
+            document.getElementById('theoryExplanation').innerHTML = explanation;
         }
 
         function updatePianoRoll() {
@@ -377,115 +847,20 @@
             document.getElementById('pianoRoll').innerHTML = html;
         }
 
-        function getChordShape(chordSymbol) {
-            if (GUITAR_CHORDS[chordSymbol]) return GUITAR_CHORDS[chordSymbol];
-            const root = chordSymbol.match(/^[A-G][#b]?/)?.[0] || 'C';
-            const quality = chordSymbol.replace(/^[A-G][#b]?/, '');
-            const qualityMap = { '': '', 'm': 'm', '7': '7', 'maj7': 'maj7', 'm7': 'm7', 'dim': 'dim', 'm7b5': 'm7b5' };
-            const lookupKey = root + (qualityMap[quality] || '');
-            return GUITAR_CHORDS[lookupKey] || GUITAR_CHORDS['C'];
-        }
-
-        function createChordDiagram(chordSymbol, frets) {
-            const minFret = Math.min(...frets.filter(f => f > 0)) || 1;
-            const startFret = minFret > 3 ? minFret : 1;
-            const stringX = [10, 22, 34, 46, 58, 70];
-            
-            let svg = `<svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-                ${startFret === 1 ? `<rect x="10" y="15" width="60" height="3" fill="#f7c59f"/>` : `<text x="3" y="28" font-size="8" fill="#9ca3af">${startFret}fr</text>`}
-                <line x1="10" y1="18" x2="70" y2="18" stroke="#444"/><line x1="10" y1="34" x2="70" y2="34" stroke="#444"/>
-                <line x1="10" y1="50" x2="70" y2="50" stroke="#444"/><line x1="10" y1="66" x2="70" y2="66" stroke="#444"/>
-                <line x1="10" y1="82" x2="70" y2="82" stroke="#444"/>`;
-            
-            stringX.forEach(x => { svg += `<line x1="${x}" y1="18" x2="${x}" y2="82" stroke="#666"/>`; });
-            
-            frets.forEach((fret, i) => {
-                const x = stringX[i];
-                if (fret === -1) svg += `<text x="${x}" y="10" text-anchor="middle" font-size="10" fill="#ff6b35">×</text>`;
-                else if (fret === 0) svg += `<circle cx="${x}" cy="8" r="4" fill="none" stroke="#f7c59f" stroke-width="1.5"/>`;
-                else {
-                    const relativeFret = fret - startFret + 1;
-                    if (relativeFret >= 1 && relativeFret <= 4) {
-                        svg += `<circle cx="${x}" cy="${18 + (relativeFret - 0.5) * 16}" r="5" fill="#ff6b35"/>`;
-                    }
-                }
-            });
-            
-            return svg + '</svg>';
-        }
-
-        function updateTablature() {
-            // Chord diagrams
-            let diagramsHtml = '';
-            state.currentProgression.forEach((chord, index) => {
-                const frets = getChordShape(chord.symbol);
-                diagramsHtml += `
-                    <div class="tab-chord" onclick="playChordAtIndex(${index})">
-                        <div class="tab-chord-name">${chord.symbol}</div>
-                        <div class="chord-diagram">${createChordDiagram(chord.symbol, frets)}</div>
-                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem; font-family: 'JetBrains Mono';">
-                            ${frets.map(f => f === -1 ? 'x' : f).join(' ')}
-                        </div>
-                    </div>
-                `;
-            });
-            document.getElementById('tabDiagrams').innerHTML = diagramsHtml;
-            
-            // Tab notation
-            const strings = ['e', 'B', 'G', 'D', 'A', 'E'];
-            let tabLines = strings.map(s => `${s}|`);
-            
-            state.currentProgression.forEach(chord => {
-                const frets = [...getChordShape(chord.symbol)].reverse();
-                frets.forEach((fret, i) => {
-                    tabLines[i] += (fret === -1 ? '-' : fret.toString().padStart(2, '-').padEnd(3, '-')) + '-';
-                });
-                tabLines = tabLines.map(line => line + '|');
-            });
-            
-            document.getElementById('tabNotationContent').innerHTML = `
-                <div style="margin-bottom: 0.5rem; color: var(--accent-secondary);">${state.currentProgression.map(c => c.symbol.padEnd(5)).join('  ')}</div>
-                ${tabLines.map(line => `<div>${line}</div>`).join('')}
-            `;
-            updateTabView();
-        }
-
-        function updateTabView() {
-            const diagrams = document.getElementById('tabDiagrams');
-            const notation = document.getElementById('tabNotation');
-            diagrams.style.display = state.tabView === 'tab' ? 'none' : 'flex';
-            notation.style.display = state.tabView === 'diagrams' ? 'none' : 'block';
-        }
-
-        function highlightChord(index) {
-            document.querySelectorAll('.chord-card').forEach((card, i) => card.classList.toggle('active', i === index));
-            document.querySelectorAll('.tab-chord').forEach((card, i) => {
-                card.style.transform = i === index ? 'scale(1.1)' : 'scale(1)';
-                card.style.borderColor = i === index ? 'var(--accent-primary)' : 'transparent';
-            });
-            state.currentChordIndex = index;
-        }
-
-        function highlightPianoKeys(notes) {
-            document.querySelectorAll('.piano-key').forEach(key => {
-                key.classList.toggle('playing', notes.some(n => n.replace(/\d/, '') === key.dataset.note.replace(/\d/, '')));
-            });
-        }
-
+        // ==================== PLAYBACK ====================
         async function playProgression() {
             if (state.isPlaying) { stopPlayback(); return; }
             await Tone.start(); initAudio();
             state.isPlaying = true;
             document.getElementById('playBtn').textContent = '⏸';
 
-            const chordDuration = (60 / state.tempo) * parseInt(state.timeSignature.split('/')[0]) * 1000;
+            const chordDuration = (60 / state.tempo) * 4 * 1000;
             let chordIndex = 0;
 
             const playNext = async () => {
                 if (!state.isPlaying) return;
                 const chord = state.currentProgression[chordIndex];
                 highlightChord(chordIndex);
-                highlightPianoKeys(chord.notes);
                 animateVisualizer();
                 await playChord(chord.notes, '2n');
                 chordIndex++;
@@ -503,17 +878,15 @@
             clearTimeout(state.playbackTimeout);
             document.getElementById('playBtn').textContent = '▶';
             highlightChord(-1);
-            highlightPianoKeys([]);
         }
 
         async function playChordAtIndex(index) {
             await Tone.start(); initAudio();
             const chord = state.currentProgression[index];
             highlightChord(index);
-            highlightPianoKeys(chord.notes);
             animateVisualizer();
             await playChord(chord.notes, '2n');
-            setTimeout(() => { if (state.currentChordIndex === index) highlightPianoKeys([]); }, 1000);
+            setTimeout(() => { if (state.currentChordIndex === index) highlightChord(-1); }, 1000);
         }
 
         async function playNote(note) {
@@ -521,10 +894,16 @@
             state.synth.triggerAttackRelease(note, '8n');
         }
 
-        function animateVisualizer() {
-            document.querySelectorAll('.viz-bar').forEach(bar => { bar.style.height = Math.random() * 50 + 15 + 'px'; });
+        function highlightChord(index) {
+            document.querySelectorAll('.chord-card').forEach((card, i) => card.classList.toggle('active', i === index));
+            state.currentChordIndex = index;
         }
 
+        function animateVisualizer() {
+            document.querySelectorAll('.viz-bar').forEach(bar => { bar.style.height = Math.random() * 40 + 10 + 'px'; });
+        }
+
+        // ==================== HISTORY & FAVORITES ====================
         function saveToHistory() {
             const entry = { id: Date.now(), key: state.key, scale: state.scale, genre: state.genre,
                 progression: state.currentProgression.map(c => c.symbol).join(' - '), timestamp: new Date().toLocaleString() };
@@ -536,11 +915,11 @@
 
         function updateHistoryDisplay() {
             const container = document.getElementById('historyList');
-            if (!state.history.length) { container.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Generate progressions to see history</p>'; return; }
+            if (!state.history.length) { container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem;">Generate progressions to see history</p>'; return; }
             container.innerHTML = state.history.slice(0, 10).map(entry => `
                 <div class="history-item" onclick="loadFromHistory(${entry.id})">
-                    <div><strong>${entry.progression}</strong><div style="font-size: 0.8rem; color: var(--text-secondary);">${entry.key} ${entry.scale} • ${entry.genre}</div></div>
-                    <span style="color: var(--text-secondary); font-size: 0.75rem;">${entry.timestamp}</span>
+                    <div><strong>${entry.progression}</strong><div style="font-size: 0.75rem; color: var(--text-secondary);">${entry.key} ${entry.scale}</div></div>
+                    <span style="color: var(--text-secondary); font-size: 0.7rem;">${entry.timestamp}</span>
                 </div>
             `).join('');
         }
@@ -551,59 +930,151 @@
                 state.key = entry.key; state.scale = entry.scale; state.genre = entry.genre;
                 document.getElementById('keySelect').value = entry.key;
                 document.getElementById('scaleSelect').value = entry.scale;
-                document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.genre === entry.genre));
                 generateProgression();
             }
         }
 
-        function copyChords() { navigator.clipboard.writeText(state.currentProgression.map(c => c.symbol).join(' | ')); alert('Chords copied!'); }
+        function addToFavorites() {
+            const entry = { id: Date.now(), key: state.key, scale: state.scale, genre: state.genre,
+                progression: state.currentProgression.map(c => c.symbol).join(' - ') };
+            state.favorites.unshift(entry);
+            localStorage.setItem('chordflow-favorites', JSON.stringify(state.favorites));
+            showToast('⭐ Added to favorites!');
+        }
+
+        function showHistoryTab(tab) {
+            document.getElementById('historyList').style.display = tab === 'history' ? 'block' : 'none';
+            document.getElementById('favoritesList').style.display = tab === 'favorites' ? 'block' : 'none';
+        }
+
+        // ==================== EXPORT ====================
+        function copyChords() { 
+            navigator.clipboard.writeText(state.currentProgression.map(c => c.symbol).join(' | ')); 
+            showToast('📋 Copied to clipboard!'); 
+        }
 
         function exportText() {
-            const text = `ChordFlow Progression\nKey: ${state.key} ${state.scale}\nGenre: ${state.genre}\nTempo: ${state.tempo} BPM\n\nProgression: ${state.currentProgression.map(c => c.symbol).join(' | ')}\nNumerals: ${state.currentProgression.map(c => c.numeral).join(' - ')}`;
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-            a.download = `chordflow-${state.key}.txt`; a.click();
+            const text = `ChordFlow Pro Export\n${'='.repeat(30)}\nKey: ${state.key} ${state.scale}\nGenre: ${state.genre}\nTempo: ${state.tempo} BPM\n\nProgression: ${state.currentProgression.map(c => c.symbol).join(' | ')}\nNumerals: ${state.currentProgression.map(c => c.numeral).join(' - ')}\n\nLyrics:\n${state.lyrics.map((l, i) => `[${state.currentProgression[i]?.symbol || ''}] ${l}`).join('\n')}`;
+            downloadFile(text, `chordflow-${state.key}.txt`, 'text/plain');
+            showToast('📝 Text exported!');
         }
 
         function exportTab() {
             const strings = ['e', 'B', 'G', 'D', 'A', 'E'];
             let tabLines = strings.map(s => `${s}|`);
             state.currentProgression.forEach(chord => {
-                const frets = [...getChordShape(chord.symbol)].reverse();
+                const frets = [...getGuitarShape(getCapoChord(chord.symbol))].reverse();
                 frets.forEach((fret, i) => { tabLines[i] += (fret === -1 ? '-' : fret.toString().padStart(2, '-').padEnd(3, '-')) + '-'; });
                 tabLines = tabLines.map(line => line + '|');
             });
-            
-            const text = `ChordFlow Guitar Tablature\nKey: ${state.key} ${state.scale}\nTempo: ${state.tempo} BPM\n\nChords: ${state.currentProgression.map(c => c.symbol).join(' | ')}\n\nTAB:\n${state.currentProgression.map(c => c.symbol.padEnd(5)).join('  ')}\n${tabLines.join('\n')}\n\nChord Shapes:\n${state.currentProgression.map(chord => `${chord.symbol}: ${getChordShape(chord.symbol).map(f => f === -1 ? 'x' : f).join(' ')}`).join('\n')}`;
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-            a.download = `chordflow-tab-${state.key}.txt`; a.click();
+            const text = `ChordFlow Guitar Tab\n${'='.repeat(30)}\nKey: ${state.key} ${state.scale}${state.capo > 0 ? ` (Capo ${state.capo})` : ''}\n\n${state.currentProgression.map(c => getCapoChord(c.symbol).padEnd(5)).join('  ')}\n${tabLines.join('\n')}\n\nChord Shapes:\n${state.currentProgression.map(c => `${getCapoChord(c.symbol)}: ${getGuitarShape(getCapoChord(c.symbol)).map(f => f === -1 ? 'x' : f).join(' ')}`).join('\n')}`;
+            downloadFile(text, `chordflow-tab-${state.key}.txt`, 'text/plain');
+            showToast('📝 Tab exported!');
+        }
+
+        function exportMidi() {
+            showToast('🎵 MIDI export coming soon!');
+        }
+
+        function exportPdf() {
+            showToast('📄 PDF export coming soon!');
         }
 
         function shareLink() {
             const url = window.location.href.split('?')[0] + '?' + new URLSearchParams({ key: state.key, scale: state.scale, genre: state.genre, tempo: state.tempo });
-            navigator.clipboard.writeText(url); alert('Share link copied!');
+            navigator.clipboard.writeText(url);
+            showToast('🔗 Share link copied!');
         }
 
+        function downloadFile(content, filename, type) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([content], { type }));
+            a.download = filename;
+            a.click();
+        }
+
+        // ==================== LYRICS ====================
+        function addLyricLine() {
+            const editor = document.getElementById('lyricsEditor');
+            const lineIndex = editor.children.length;
+            const chordSymbol = state.currentProgression[lineIndex % state.currentProgression.length]?.symbol || 'C';
+            editor.innerHTML += `
+                <div class="lyrics-line">
+                    <span class="lyrics-chord" id="lyricChord${lineIndex}">${chordSymbol}</span>
+                    <input type="text" class="lyrics-text" placeholder="Add lyrics..." data-line="${lineIndex}">
+                </div>
+            `;
+        }
+
+        function clearLyrics() {
+            state.lyrics = ['', '', '', ''];
+            document.querySelectorAll('.lyrics-text').forEach(input => input.value = '');
+            showToast('🗑️ Lyrics cleared!');
+        }
+
+        function exportLyrics() {
+            const lyrics = Array.from(document.querySelectorAll('.lyrics-text')).map((input, i) => 
+                `[${state.currentProgression[i % state.currentProgression.length]?.symbol || ''}] ${input.value}`
+            ).join('\n');
+            downloadFile(`ChordFlow Lyrics\n${'='.repeat(30)}\n\n${lyrics}`, 'lyrics.txt', 'text/plain');
+            showToast('📄 Lyrics exported!');
+        }
+
+        // ==================== UTILITIES ====================
+        function setSection(section) {
+            state.currentSection = section;
+            document.querySelectorAll('.section-tag').forEach(tag => tag.classList.remove('active'));
+            document.querySelector(`.section-tag.${section}`).classList.add('active');
+            document.getElementById('sectionLabel').className = `section-tag ${section}`;
+            document.getElementById('sectionLabel').textContent = section.charAt(0).toUpperCase() + section.slice(1);
+        }
+
+        function substituteChord(index, numeral) {
+            showToast(`🔄 Try using ${numeral} instead!`);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // ==================== INITIALIZATION ====================
         function init() {
+            // Load saved data
             const savedHistory = localStorage.getItem('chordflow-history');
             if (savedHistory) { state.history = JSON.parse(savedHistory); updateHistoryDisplay(); }
+            const savedFavorites = localStorage.getItem('chordflow-favorites');
+            if (savedFavorites) { state.favorites = JSON.parse(savedFavorites); }
 
+            // Event listeners
             document.getElementById('generateBtn').addEventListener('click', generateProgression);
             document.getElementById('playBtn').addEventListener('click', playProgression);
             document.getElementById('stopBtn').addEventListener('click', stopPlayback);
             document.getElementById('loopBtn').addEventListener('click', () => {
                 state.isLooping = !state.isLooping;
-                document.getElementById('loopBtn').style.background = state.isLooping ? 'var(--accent-primary)' : 'var(--border-subtle)';
+                document.getElementById('loopBtn').style.background = state.isLooping ? 'var(--accent-primary)' : '';
+                showToast(state.isLooping ? '🔁 Loop on' : '🔁 Loop off');
+            });
+            document.getElementById('metronomeBtn').addEventListener('click', () => {
+                state.metronomeOn = !state.metronomeOn;
+                document.getElementById('metronomeDisplay').style.display = state.metronomeOn ? 'flex' : 'none';
+                document.getElementById('metronomeBtn').style.background = state.metronomeOn ? 'var(--accent-primary)' : '';
             });
 
             document.getElementById('keySelect').addEventListener('change', e => state.key = e.target.value);
             document.getElementById('scaleSelect').addEventListener('change', e => state.scale = e.target.value);
-            document.getElementById('timeSignature').addEventListener('change', e => state.timeSignature = e.target.value);
-            document.getElementById('tuningSelect').addEventListener('change', e => { state.tuning = e.target.value; updateTablature(); });
+            document.getElementById('capoSelect').addEventListener('change', e => { state.capo = parseInt(e.target.value); if (state.currentProgression.length) updateAllDisplays(GENRE_PROGRESSIONS[state.genre]); });
+            document.getElementById('instrumentSelect').addEventListener('change', e => state.instrument = e.target.value);
+            document.getElementById('strumPatternSelect').addEventListener('change', e => { state.strumPattern = e.target.value; updateStrumPattern(); });
+            
             document.getElementById('tempoSlider').addEventListener('input', e => {
                 state.tempo = parseInt(e.target.value);
                 document.getElementById('tempoValue').textContent = state.tempo;
             });
 
+            // Genre buttons
             document.querySelectorAll('.genre-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
@@ -612,20 +1083,38 @@
                 });
             });
 
-            document.querySelectorAll('.view-btn').forEach(btn => {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    const tab = btn.dataset.tab;
+                    btn.closest('.card').querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    state.tabView = btn.dataset.view;
-                    updateTabView();
+                    btn.closest('.card').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(`tab-${tab}`).classList.add('active');
                 });
             });
 
+            // Export buttons
             document.getElementById('copyChords').addEventListener('click', copyChords);
             document.getElementById('exportText').addEventListener('click', exportText);
             document.getElementById('exportTab').addEventListener('click', exportTab);
+            document.getElementById('exportMidi').addEventListener('click', exportMidi);
+            document.getElementById('exportPdf').addEventListener('click', exportPdf);
             document.getElementById('shareLink').addEventListener('click', shareLink);
+            document.getElementById('addFavorite').addEventListener('click', addToFavorites);
+            document.getElementById('saveHistory').addEventListener('click', () => { saveToHistory(); showToast('💾 Saved!'); });
 
+            // Mood sliders
+            ['moodHappy', 'moodEnergy', 'moodComplex'].forEach(id => {
+                document.getElementById(id).addEventListener('input', e => state[id] = parseInt(e.target.value));
+            });
+
+            // Lyrics input
+            document.querySelectorAll('.lyrics-text').forEach(input => {
+                input.addEventListener('input', e => { state.lyrics[parseInt(e.target.dataset.line)] = e.target.value; });
+            });
+
+            // Load URL params
             const params = new URLSearchParams(window.location.search);
             if (params.has('key')) { state.key = params.get('key'); document.getElementById('keySelect').value = state.key; }
             if (params.has('scale')) { state.scale = params.get('scale'); document.getElementById('scaleSelect').value = state.scale; }
