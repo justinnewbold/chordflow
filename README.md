@@ -1,99 +1,107 @@
 # 🎵 ChordFlow Pro v3.0
 
-AI-Powered Chord Progression Generator with Full Export Suite
+AI-Powered Chord Progression Generator with Export to MIDI, PDF & Audio
 
-![ChordFlow](https://img.shields.io/badge/Version-3.0-orange)
-![License](https://img.shields.io/badge/License-MIT-blue)
-![Status](https://img.shields.io/badge/Status-Live-green)
+![Version](https://img.shields.io/badge/Version-3.0-orange)
+![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
 ## 🌐 Live Demo
-**https://chordflow-newbold-cloud.vercel.app**
+### **https://chordflow-newbold-cloud.vercel.app**
 
 ---
 
 ## ✅ Features
 
-### 🎹 Core Music
-- [x] Chord progression generator (15+ genres)
-- [x] Real-time audio playback with Tone.js
-- [x] Loop mode with metronome
-- [x] Multiple instrument sounds (Synth, Acoustic, Electric, Piano, Strings)
-- [x] Adjustable tempo (40-200 BPM)
-- [x] Progression length selector (4/8/16 chords)
+### 🎵 Audio & Playback
+- [x] Real-time audio playback (Tone.js)
+- [x] Multiple instruments (Synth, Piano, Acoustic)
+- [x] Loop mode
+- [x] Tempo control (40-200 BPM)
+- [x] **Audio recording & export (WebM)**
 
-### 🎸 Instrument Support
-- [x] Guitar chord diagrams (SVG)
-- [x] Guitar tablature notation
+### 🎸 Instruments
+- [x] Guitar chord diagrams (70+ chords)
 - [x] Ukulele chord diagrams
 - [x] Piano keyboard diagrams
-- [x] Strumming patterns (6 styles)
-- [x] Capo support (0-7)
+- [x] Interactive piano roll
+- [x] Strumming patterns (4 styles)
+- [x] Tab notation view
+- [x] Capo support (1-5)
 
 ### 🤖 AI Features
-- [x] AI Continue - suggests next chords
-- [x] Chord substitution recommendations
-- [x] Theory explanations
-- [x] Mood-based generation sliders
+- [x] **AI Continue** - Suggests next chords based on music theory
+- [x] Smart chord recommendations
+- [x] Chord substitution suggestions
+
+### 💾 Export Options
+- [x] **MIDI file export (.mid)** - For DAWs
+- [x] **PDF lead sheet generator** - Printable sheets
+- [x] **Audio export (WebM)** - Record & download
+- [x] Tab file export (.txt)
+- [x] Text export
+- [x] Copy to clipboard
+- [x] Shareable URLs
 
 ### ✍️ Songwriting
 - [x] Lyrics editor with chord sync
 - [x] Song section builder (Intro/Verse/Chorus/Bridge/Outro)
-- [x] Mood controls (Happy↔Sad, Calm↔Energetic, Simple↔Complex)
-- [x] Drag & drop chord reordering
-
-### 💾 Export Suite
-- [x] **MIDI** - Download .mid files for DAWs
-- [x] **PDF** - Professional lead sheets with jsPDF
-- [x] **WAV** - Audio export with real synthesis
-- [x] **Tab** - Guitar tablature text files
-- [x] **Text** - Plain text export
-- [x] **Share** - Shareable URL links
-- [x] **Copy** - Quick clipboard copy
+- [x] History with local storage
+- [x] Favorites system
 
 ### 🎨 UI/UX
-- [x] Dark/Light theme toggle
-- [x] Keyboard shortcuts
-- [x] History & Favorites system
+- [x] **Dark/Light theme toggle**
+- [x] Drag & drop chord reordering
+- [x] 15 genre presets
+- [x] Recording indicator
 - [x] Responsive design
-- [x] Interactive piano roll
-- [x] Visual audio visualizer
-
-### ⌨️ Keyboard Shortcuts
-| Key | Action |
-|-----|--------|
-| `Space` | Generate new progression |
-| `P` | Play/Pause |
-| `Esc` | Stop playback |
-| `L` | Toggle loop |
-| `M` | Toggle metronome |
-| `T` | Toggle theme |
-| `C` | Copy to clipboard |
-| `1-4` | Play individual chord |
 
 ---
 
-## 📋 Roadmap
+## 🎸 Supported Genres
 
-### 🔜 Coming Soon
-- [ ] Spotify song analysis
-- [ ] Ear training quiz mode
-- [ ] Practice mode (slow playback)
-- [ ] Scale visualization overlay
-- [ ] More AI style suggestions
-- [ ] Mobile app (React Native)
+Pop • Rock • Jazz • Blues • R&B • EDM • Country • Folk • Hip-Hop • Latin • Gospel • Metal • Lo-Fi • Cinematic
 
 ---
 
 ## 🛠️ Tech Stack
-- **Frontend:** Vanilla JS, Tailwind CSS
-- **Audio:** Tone.js
-- **PDF:** jsPDF
-- **Hosting:** Vercel
-- **Repository:** GitHub
+
+| Technology | Purpose |
+|------------|---------|
+| Vanilla JS | Core application |
+| Tailwind CSS | Styling |
+| Tone.js | Audio synthesis |
+| jsPDF | PDF generation |
+| Vercel | Hosting & CI/CD |
+| GitHub | Version control |
+
+---
+
+## 📋 Recent Updates
+
+### v3.0 (Latest)
+- ✨ MIDI file export for DAWs
+- ✨ PDF lead sheet generator
+- ✨ Audio recording & export
+- ✨ AI Continue feature
+- ✨ Dark/Light theme toggle
+
+### v2.0
+- 🪕 Ukulele diagrams
+- 🎹 Piano diagrams
+- 👋 Strumming patterns
+- 🎸 Capo support
+- ✍️ Lyrics editor
+
+### v1.0
+- 🎸 Guitar tablature
+- 🎵 15 genre presets
+- 🔊 Audio playback
+
+---
 
 ## 📄 License
 MIT License - Feel free to use and modify!
 
 ---
 
-Made with ❤️ by ChordFlow Pro
+Made with ❤️ by ChordFlow
