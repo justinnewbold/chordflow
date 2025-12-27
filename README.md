@@ -1,108 +1,85 @@
-# 🎵 ChordFlow Pro v8.0
+# 🎵 ChordFlow v10.0 - Full Band Mode
 
-> AI-Powered Chord Progression Generator & Complete Songwriting Suite
+> AI-powered chord progression generator with 40+ instruments, drums, bass, and full band arrangements
 
-**Live App:** [chords.newbold.cloud](https://chords.newbold.cloud)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-chords.newbold.cloud-blue)](https://chords.newbold.cloud)
+[![Version](https://img.shields.io/badge/version-10.0-green)](https://github.com/justinnewbold/chordflow)
 
-## ✨ What's New in v8.0
+## 🎸 What's New in v10.0
 
-### 🎹 MIDI Integration
-- **Web MIDI API** - Connect your MIDI keyboard directly
-- **MIDI Export** - Download progressions as standard MIDI files
-- **MIDI Input** - Play and record from external controllers
-- **Visual MIDI Keyboard** - On-screen keyboard with note highlighting
+### 🎹 40+ Instruments
+| Category | Instruments |
+|----------|-------------|
+| **Keys** | Grand Piano, Electric Piano, Organ, Synth Pad, Clavinet, Harpsichord, Music Box |
+| **Guitars** | Acoustic, Electric Clean, Overdrive, Distorted, Nylon, 12-String |
+| **Bass** | Electric Bass, Synth Bass, Upright, Slap Bass, Sub Bass |
+| **Drums** | Acoustic Kit, Electronic, Lo-Fi, 808 Trap, Jazz Brushes |
+| **Strings** | Violin, Cello, Full Orchestra, Pizzicato |
+| **Brass** | Trumpet, Saxophone, Trombone, Full Brass |
+| **World** | Ukulele, Steel Drums, Kalimba, Sitar |
+| **Synth** | Lead Synth, Wobble Bass, Chiptune, Arpeggiator |
 
-### 🔄 Real-time Collaboration
-- **Room System** - Create/join sessions with 4-character codes
-- **Live Sync** - See collaborators' changes in real-time
-- **Activity Feed** - Track who's doing what
-- **Built-in Chat** - Communicate with your bandmates
+### 🥁 Drum Patterns
+- **Rock** - Classic 4/4 kick-snare pattern
+- **Pop** - Modern pop beat with hi-hats
+- **Jazz Swing** - Swung ride cymbal pattern
+- **Hip-Hop** - Boom-bap with 808s
+- **EDM** - Four-on-the-floor electronic
 
-### 🎯 Advanced Chord Voicings
-- **Root Position** - Standard voicing
-- **1st & 2nd Inversions** - Smoother voice leading
-- **Drop 2 & Drop 3** - Jazz voicings for guitar/piano
-- **Open Voicings** - Wide, cinematic sounds
+### 🎸 Bass Lines
+- **Root Notes** - Simple root note bass
+- **Octave Jump** - Root + octave pattern
+- **Walking Bass** - Jazz walking line
+- **Arpeggiate** - Arpeggiated bass
+- **Syncopated** - Funky syncopated groove
 
-### 📊 Analytics Dashboard
-- Track songs created & chord usage
-- Discover your favorite keys & genres
-- Visual chord usage charts
-- Session history
+### 🎚️ Mixer
+- Multi-track mixing with volume faders
+- Mute/Solo for each instrument
+- Visual level meters
+- Pan control
 
-### 🎨 Theme System
-- **5 Built-in Themes:** Dark, Light, Sunset, Ocean, Forest
-- Custom accent color picker
-- Instant theme switching
+### 🎼 Band Modes
+- **Solo** - Single instrument
+- **Duo** - Piano + Bass
+- **Full Band** - Keys, Bass, Drums
+- **Orchestra** - Full orchestral arrangement
 
-### 📱 Native Sharing
-- Share via Web Share API
-- Direct links to Twitter, Facebook, WhatsApp
-- Copyable share links with encoded progressions
+## 🚀 Features
 
-## 🎸 Core Features
+- ✅ 40+ Synthesized Instruments
+- ✅ Real-time Drum Machine
+- ✅ Auto Bass Line Generation
+- ✅ Multi-track Mixer
+- ✅ 10+ Genre Presets
+- ✅ AI Chord Continuation
+- ✅ Learning Mode & Theory Lessons
+- ✅ Achievements & XP System
+- ✅ PWA with Offline Support
+- ✅ Mobile-First Touch UI
 
-### Chord Generation
-- 12 keys × 7 scales (Major, Minor, Dorian, Mixolydian, Lydian, Phrygian, Locrian)
-- 15+ genre presets with authentic progressions
-- Roman numeral analysis with functional harmony
-- One-click full song structure generation
+## 📱 Try It Now
 
-### Instruments & Visualization
-- Interactive guitar chord diagrams
-- Piano roll visualization
-- Real-time audio visualizer
-- Multiple waveforms (Sine, Triangle, Sawtooth, Square)
-
-### AI-Powered Features
-- **Sound Like** - Generate progressions in any artist's style
-- **AI Continue** - Intelligent chord suggestions
-- **Melody Generator** - Create melodies that fit your chords
-- **Lyrics Generator** - AI-written lyrics synced to chords
-
-### Audio Engine
-- Tone.js synthesis with multiple instruments
-- Reverb & delay effects
-- Backing tracks (bass, strings)
-- Loop playback with tempo control
-
-### Export Options
-- PDF lead sheets
-- MIDI files (new!)
-- JSON project files
-- Shareable links
+**Live App:** [https://chords.newbold.cloud](https://chords.newbold.cloud)
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Vanilla JavaScript, CSS3
-- **Audio:** Tone.js
+- **Audio:** Tone.js (Web Audio API)
+- **Hosting:** Vercel
 - **AI:** Gemini API (serverless)
-- **Backend:** Vercel Serverless Functions
-- **Database:** Supabase
-- **Deployment:** Vercel + GitHub CI/CD
+- **PWA:** Service Worker + Manifest
 
-## 📱 PWA Support
+## 📄 Version History
 
-Install ChordFlow on any device:
-- iOS: Safari → Share → Add to Home Screen
-- Android: Chrome → Menu → Install App
-- Desktop: Chrome → Install icon in address bar
-
-## 🚀 Version History
-
-| Version | Highlights |
-|---------|------------|
-| v8.0 | MIDI integration, collaboration, voicings, analytics |
-| v7.0 | Sound design studio, 30+ instruments, 808 drums |
-| v6.0 | Mobile-first UI, haptic feedback, gestures |
-| v5.0 | PWA, song structure, cloud sync |
-| v4.0 | Gemini AI, Supabase integration |
-| v3.0 | Guitar diagrams, piano roll, genres |
-
-## 📄 License
-
-MIT License - Build something amazing! 🎶
+| Version | Features |
+|---------|----------|
+| **v10.0** | Full Band Mode, 40+ Instruments, Drums, Bass, Mixer |
+| v9.0 | Learning Mode, Achievements, Mic Detection |
+| v8.0 | MIDI, Collaboration, Voicings |
+| v7.0 | Sound Design Studio, AI Deep Features |
+| v6.0 | Mobile-First UI, Touch Targets |
+| v5.0 | PWA Support, Song Structure |
 
 ---
 
-Made with ❤️ by [Justin Newbold](https://newbold.cloud)
+Made with 🎵 by Justin Newbold
