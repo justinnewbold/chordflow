@@ -1,165 +1,108 @@
-# 🎵 ChordFlow Pro v4.0
+# 🎵 ChordFlow Pro v8.0
 
-AI-Powered Chord Progression Generator with Gemini AI, Cloud Sync & Advanced Music Theory
+> AI-Powered Chord Progression Generator & Complete Songwriting Suite
 
-![Version](https://img.shields.io/badge/Version-4.0-purple)
-![Status](https://img.shields.io/badge/Status-Live-brightgreen)
-![AI](https://img.shields.io/badge/AI-Gemini-blue)
+**Live App:** [chords.newbold.cloud](https://chords.newbold.cloud)
 
-## 🌐 Live Demo
-### **https://chordflow-newbold-cloud.vercel.app**
+## ✨ What's New in v8.0
 
----
+### 🎹 MIDI Integration
+- **Web MIDI API** - Connect your MIDI keyboard directly
+- **MIDI Export** - Download progressions as standard MIDI files
+- **MIDI Input** - Play and record from external controllers
+- **Visual MIDI Keyboard** - On-screen keyboard with note highlighting
 
-## ✨ What's New in v4.0
+### 🔄 Real-time Collaboration
+- **Room System** - Create/join sessions with 4-character codes
+- **Live Sync** - See collaborators' changes in real-time
+- **Activity Feed** - Track who's doing what
+- **Built-in Chat** - Communicate with your bandmates
 
-### 🤖 Gemini AI Integration
-- **AI Continue** - Intelligent chord suggestions powered by Google Gemini
-- **AI Analyze** - Deep musical analysis of your progressions
-- Get similar song references and emotional context
+### 🎯 Advanced Chord Voicings
+- **Root Position** - Standard voicing
+- **1st & 2nd Inversions** - Smoother voice leading
+- **Drop 2 & Drop 3** - Jazz voicings for guitar/piano
+- **Open Voicings** - Wide, cinematic sounds
 
-### ☁️ Supabase Cloud Sync
-- Save progressions to the cloud
-- Access your library from anywhere
-- Sync across devices
+### 📊 Analytics Dashboard
+- Track songs created & chord usage
+- Discover your favorite keys & genres
+- Visual chord usage charts
+- Session history
 
-### 🎼 Advanced Scales & Modes
-- **12 Scales/Modes**: Major, Minor, Dorian, Phrygian, Lydian, Mixolydian, Locrian, Harmonic Minor, Melodic Minor, Pentatonic Major, Pentatonic Minor, Blues
-- Mode-specific chord qualities and Roman numerals
+### 🎨 Theme System
+- **5 Built-in Themes:** Dark, Light, Sunset, Ocean, Forest
+- Custom accent color picker
+- Instant theme switching
 
-### 🎸 Bass Line Generator
-- Auto-generated bass patterns for each progression
-- Tab notation display
-- One-click regeneration
+### 📱 Native Sharing
+- Share via Web Share API
+- Direct links to Twitter, Facebook, WhatsApp
+- Copyable share links with encoded progressions
 
-### 📊 Enhanced Theory Analysis
-- Functional harmony breakdown (Tonic, Dominant, Pre-Dominant)
-- Tension profile visualization
-- Cadence detection (Authentic, Plagal, Half, Deceptive)
+## 🎸 Core Features
 
----
+### Chord Generation
+- 12 keys × 7 scales (Major, Minor, Dorian, Mixolydian, Lydian, Phrygian, Locrian)
+- 15+ genre presets with authentic progressions
+- Roman numeral analysis with functional harmony
+- One-click full song structure generation
 
-## ✅ All Features
+### Instruments & Visualization
+- Interactive guitar chord diagrams
+- Piano roll visualization
+- Real-time audio visualizer
+- Multiple waveforms (Sine, Triangle, Sawtooth, Square)
 
-### 🎵 Audio & Playback
-- [x] Real-time audio playback (Tone.js)
-- [x] Multiple instruments (Synth, Piano, Acoustic, Organ, Strings)
-- [x] Loop mode
-- [x] Tempo control (40-200 BPM)
-- [x] Audio recording & export (WebM)
-- [x] Bass line synthesis
+### AI-Powered Features
+- **Sound Like** - Generate progressions in any artist's style
+- **AI Continue** - Intelligent chord suggestions
+- **Melody Generator** - Create melodies that fit your chords
+- **Lyrics Generator** - AI-written lyrics synced to chords
 
-### 🎸 Instruments
-- [x] Guitar chord diagrams (70+ chords)
-- [x] Ukulele chord diagrams
-- [x] Piano keyboard diagrams
-- [x] Interactive piano roll
-- [x] Tab notation view
-- [x] Capo support (0-5)
-- [x] Bass line tab
+### Audio Engine
+- Tone.js synthesis with multiple instruments
+- Reverb & delay effects
+- Backing tracks (bass, strings)
+- Loop playback with tempo control
 
-### 🤖 AI Features (NEW!)
-- [x] **Gemini AI Continue** - Smart chord suggestions
-- [x] **AI Analysis** - Musical context & similar songs
-- [x] Theory-based recommendations
-
-### ☁️ Cloud Features (NEW!)
-- [x] **Supabase Cloud Sync**
-- [x] Save/Load progressions
-- [x] Cloud library management
-- [x] Cross-device access
-
-### 💾 Export Options
-- [x] MIDI file export (.mid)
-- [x] PDF lead sheet generator
-- [x] Audio export (WebM)
-- [x] Tab file export (.txt)
-- [x] Copy to clipboard
-- [x] Shareable URLs
-
-### ✍️ Songwriting
-- [x] Lyrics editor
-- [x] Song section builder (Intro/Verse/Chorus/Pre-Chorus/Bridge/Outro)
-- [x] History with local storage
-
-### 🎨 UI/UX
-- [x] Dark/Light theme toggle
-- [x] Drag & drop chord reordering
-- [x] 16 genre presets
-- [x] Responsive design
-
----
-
-## 🎸 Supported Genres (16)
-
-Pop • Rock • Jazz • Blues • R&B • EDM • Country • Folk • Classical • Hip-Hop • Latin • Gospel • Metal • Lo-Fi • Cinematic • **Neo-Soul**
-
----
-
-## 🎼 Supported Scales & Modes (12)
-
-| Scale/Mode | Character |
-|------------|-----------|
-| Major (Ionian) | Bright, happy |
-| Minor (Aeolian) | Sad, introspective |
-| Dorian | Jazzy minor |
-| Phrygian | Spanish, exotic |
-| Lydian | Dreamy, ethereal |
-| Mixolydian | Bluesy major |
-| Locrian | Dark, unstable |
-| Harmonic Minor | Classical, dramatic |
-| Melodic Minor | Jazz, sophisticated |
-| Pentatonic Major | Simple, folk |
-| Pentatonic Minor | Rock, blues |
-| Blues | Soulful, expressive |
-
----
+### Export Options
+- PDF lead sheets
+- MIDI files (new!)
+- JSON project files
+- Shareable links
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| Vanilla JS | Core application |
-| Tailwind CSS | Styling |
-| Tone.js | Audio synthesis |
-| jsPDF | PDF generation |
-| **Gemini AI** | AI features |
-| **Supabase** | Cloud database |
-| Vercel | Hosting & CI/CD |
-| GitHub | Version control |
+- **Frontend:** Vanilla JavaScript, CSS3
+- **Audio:** Tone.js
+- **AI:** Gemini API (serverless)
+- **Backend:** Vercel Serverless Functions
+- **Database:** Supabase
+- **Deployment:** Vercel + GitHub CI/CD
 
----
+## 📱 PWA Support
 
-## 📋 Version History
+Install ChordFlow on any device:
+- iOS: Safari → Share → Add to Home Screen
+- Android: Chrome → Menu → Install App
+- Desktop: Chrome → Install icon in address bar
 
-### v4.0 (Latest) 🎉
-- ✨ Gemini AI integration
-- ✨ Supabase cloud sync
-- ✨ 12 scales/modes support
-- ✨ Bass line generator
-- ✨ Enhanced theory analysis
-- ✨ Neo-Soul genre preset
+## 🚀 Version History
 
-### v3.0
-- MIDI/PDF/Audio export
-- AI Continue (local)
-- Dark/Light themes
-
-### v2.0
-- Guitar/Ukulele/Piano diagrams
-- Strumming patterns
-- Lyrics editor
-
-### v1.0
-- Basic chord generation
-- 15 genre presets
-- Audio playback
-
----
+| Version | Highlights |
+|---------|------------|
+| v8.0 | MIDI integration, collaboration, voicings, analytics |
+| v7.0 | Sound design studio, 30+ instruments, 808 drums |
+| v6.0 | Mobile-first UI, haptic feedback, gestures |
+| v5.0 | PWA, song structure, cloud sync |
+| v4.0 | Gemini AI, Supabase integration |
+| v3.0 | Guitar diagrams, piano roll, genres |
 
 ## 📄 License
-MIT License - Feel free to use and modify!
+
+MIT License - Build something amazing! 🎶
 
 ---
 
-Made with ❤️ by ChordFlow | Powered by Gemini AI
+Made with ❤️ by [Justin Newbold](https://newbold.cloud)
