@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="AI-Powered Chord Progression Generator & Songwriting Suite">
     <meta name="theme-color" content="#ff6b35">
+    <meta name="build-version" content="6.1.0">
+    <meta name="build-date" content="2025-12-27">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ChordFlow">
@@ -1168,7 +1170,7 @@
     <header class="header">
         <div class="header-left">
             <button class="menu-btn" id="menuBtn">☰</button>
-            <h1 class="logo">CHORDFLOW<span class="version-badge">v6</span></h1>
+            <h1 class="logo">CHORDFLOW<span class="version-badge" id="versionBadge" onclick="showVersionInfo()">v6.1</span></h1>
         </div>
         <div class="header-controls">
             <button class="icon-btn" id="themeToggle" title="Theme">🌙</button>
@@ -1408,6 +1410,31 @@
         </div>
     </div>
 
+    
+    <!-- Version Info Modal -->
+    <div class="modal" id="versionModal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="modal-title">About ChordFlow</h2>
+                <button class="close-btn" onclick="document.getElementById('versionModal').classList.remove('show')">×</button>
+            </div>
+            <div style="text-align: center; padding: 1rem;">
+                <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CHORDFLOW</h2>
+                <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent-primary); margin: 0.5rem 0;">Version 6.1.0</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">Build: Dec 27, 2025</div>
+                <div style="text-align: left; background: var(--bg-dark); padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;">What's New in v6.1</h4>
+                    <ul style="list-style: none; padding: 0; color: var(--text-secondary); font-size: 0.85rem;">
+                        <li style="padding: 0.25rem 0;">✓ Version tracking & build info</li>
+                        <li style="padding: 0.25rem 0;">✓ Clickable version badge</li>
+                        <li style="padding: 0.25rem 0;">✓ Enhanced meta tags</li>
+                        <li style="padding: 0.25rem 0;">✓ Automated deployment tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Overlay -->
     <div class="overlay" id="overlay"></div>
 
@@ -1463,6 +1490,12 @@
             if ('vibrate' in navigator) {
                 navigator.vibrate(type === 'light' ? 10 : type === 'medium' ? 20 : 30);
             }
+        }
+
+        // ===== VERSION INFO =====
+        function showVersionInfo() {
+            haptic('light');
+            document.getElementById('versionModal').classList.add('show');
         }
 
         // ===== AUDIO INITIALIZATION =====
@@ -2180,3 +2213,4 @@
     </script>
 </body>
 </html>
+
