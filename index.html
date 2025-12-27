@@ -6,11 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v9.0 - AI Chord Progression Generator</title>
+    <title>ChordFlow v10.0 - Full Band Mode</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-primary: #0a0a0f;
@@ -25,6 +24,13 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --gold: #fbbf24;
+            --keys: #667eea;
+            --guitar: #f59e0b;
+            --bass: #ef4444;
+            --drums: #10b981;
+            --strings: #8b5cf6;
+            --brass: #f97316;
+            --synth: #06b6d4;
             --safe-top: env(safe-area-inset-top, 20px);
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
@@ -36,8 +42,10 @@
             min-height: 100vh;
             overflow-x: hidden;
             padding-top: var(--safe-top);
-            padding-bottom: calc(var(--safe-bottom) + 80px);
+            padding-bottom: calc(var(--safe-bottom) + 160px);
         }
+        
+        /* Header */
         .header {
             background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
             padding: 16px 20px;
@@ -50,134 +58,261 @@
             z-index: 100;
         }
         .logo { display: flex; align-items: center; gap: 10px; }
-        .logo-icon { font-size: 28px; }
         .logo h1 { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .version-badge { font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 6px; }
+        .version-badge { font-size: 10px; background: var(--success); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 6px; }
         .header-actions { display: flex; gap: 8px; }
-        .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-secondary); border: none; color: var(--text-primary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-secondary); border: none; color: var(--text-primary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { transform: scale(0.95); background: var(--accent); }
         
-        /* Stats Bar */
-        .stats-bar {
+        /* Band Mode Toggle */
+        .band-toggle {
             display: flex;
-            gap: 12px;
-            padding: 12px 20px;
             background: var(--bg-secondary);
-            overflow-x: auto;
-            scrollbar-width: none;
+            border-radius: 12px;
+            padding: 4px;
+            margin: 16px 20px;
+            gap: 4px;
         }
-        .stats-bar::-webkit-scrollbar { display: none; }
-        .stat-chip {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background: var(--bg-card);
-            border-radius: 20px;
-            white-space: nowrap;
+        .band-toggle button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-secondary);
             font-size: 13px;
-        }
-        .stat-chip .icon { font-size: 16px; }
-        .stat-chip .value { font-weight: 600; color: var(--accent-light); }
-        
-        /* Quick Actions */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            padding: 16px 20px;
-        }
-        .quick-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 16px 8px;
-            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            color: var(--text-primary);
-            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .quick-btn:active { transform: scale(0.95); border-color: var(--accent); }
-        .quick-btn .icon { font-size: 24px; }
-        .quick-btn.primary { background: linear-gradient(135deg, var(--accent), #764ba2); border-color: var(--accent); }
+        .band-toggle button.active {
+            background: var(--accent);
+            color: white;
+        }
         
-        /* Main Content */
-        .main-content { padding: 16px 20px; }
-        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        /* Instrument Categories */
+        .instrument-section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
         
-        /* Sound Preset Selector */
-        .sound-presets {
+        /* Instrument Grid */
+        .instrument-scroll {
             display: flex;
             gap: 10px;
             overflow-x: auto;
             padding: 4px;
-            margin-bottom: 20px;
             scrollbar-width: none;
         }
-        .sound-presets::-webkit-scrollbar { display: none; }
-        .preset-chip {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding: 12px 16px;
+        .instrument-scroll::-webkit-scrollbar { display: none; }
+        .instrument-card {
+            min-width: 100px;
+            padding: 14px 12px;
             background: var(--bg-card);
             border: 2px solid transparent;
             border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 80px;
-        }
-        .preset-chip.active { border-color: var(--accent); background: rgba(102, 126, 234, 0.2); }
-        .preset-chip .icon { font-size: 24px; }
-        .preset-chip .name { font-size: 10px; color: var(--text-secondary); white-space: nowrap; }
-        
-        /* Chord Cards */
-        .chord-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .chord-card {
-            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 16px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
+        }
+        .instrument-card.active {
+            border-color: var(--accent);
+            background: rgba(102, 126, 234, 0.15);
+        }
+        .instrument-card .icon { font-size: 28px; margin-bottom: 6px; }
+        .instrument-card .name { font-size: 11px; color: var(--text-secondary); }
+        .instrument-card.active .name { color: var(--text-primary); }
+        
+        /* Mixer Panel */
+        .mixer-panel {
+            background: var(--bg-secondary);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            margin: 0 12px;
+        }
+        .mixer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .mixer-title { font-size: 16px; font-weight: 600; }
+        .mixer-tracks {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .mixer-track {
+            min-width: 70px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        .track-icon { font-size: 20px; margin-bottom: 8px; }
+        .track-name { font-size: 10px; color: var(--text-secondary); margin-bottom: 10px; }
+        .track-fader {
+            width: 6px;
+            height: 80px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            margin: 0 auto 10px;
             position: relative;
         }
-        .chord-card:active { transform: scale(0.98); border-color: var(--accent); }
-        .chord-card.playing { border-color: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
-        .chord-name { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-        .chord-numeral { font-size: 12px; color: var(--accent-light); margin-bottom: 8px; }
-        .chord-function { font-size: 10px; color: var(--text-secondary); padding: 4px 8px; background: var(--bg-primary); border-radius: 8px; display: inline-block; }
-        .chord-badge { position: absolute; top: 8px; right: 8px; font-size: 14px; }
+        .fader-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: height 0.2s;
+        }
+        .track-controls {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+        .track-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .track-btn.mute { background: var(--bg-primary); color: var(--text-secondary); }
+        .track-btn.mute.active { background: var(--danger); color: white; }
+        .track-btn.solo { background: var(--bg-primary); color: var(--text-secondary); }
+        .track-btn.solo.active { background: var(--warning); color: black; }
         
-        /* Controls */
+        /* Chord Display */
+        .chord-section {
+            padding: 16px 20px;
+        }
+        .chord-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .chord-card {
+            background: linear-gradient(145deg, var(--bg-card), var(--bg-secondary));
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chord-card:active { transform: scale(0.96); }
+        .chord-card.playing { border-color: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .chord-name { font-size: 22px; font-weight: 700; }
+        .chord-numeral { font-size: 11px; color: var(--accent-light); margin-top: 4px; }
+        
+        /* Drum Pattern Selector */
+        .pattern-section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .pattern-card {
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pattern-card.active { border-color: var(--drums); }
+        .pattern-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .pattern-icon { font-size: 20px; }
+        .pattern-name { font-size: 13px; font-weight: 600; }
+        .pattern-viz {
+            display: flex;
+            gap: 3px;
+        }
+        .beat {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 2px;
+        }
+        .beat-line {
+            flex: 1;
+            border-radius: 2px;
+            background: var(--bg-secondary);
+        }
+        .beat-line.active { background: var(--drums); }
+        .beat-line.accent { background: var(--warning); }
+        
+        /* Bass Pattern */
+        .bass-section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .bass-options {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        .bass-option {
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .bass-option.active { border-color: var(--bass); background: rgba(239, 68, 68, 0.15); }
+        
+        /* Controls Row */
         .controls-row {
             display: flex;
             gap: 12px;
+            padding: 0 20px;
             margin-bottom: 16px;
-            flex-wrap: wrap;
         }
-        .control-group { flex: 1; min-width: 140px; }
-        .control-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .control-group { flex: 1; }
+        .control-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
         .control-select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 12px;
             background: var(--bg-card);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             color: var(--text-primary);
             font-size: 14px;
-            cursor: pointer;
         }
         
         /* Playback Bar */
@@ -189,10 +324,13 @@
             background: linear-gradient(to top, var(--bg-primary), var(--bg-secondary));
             border-top: 1px solid rgba(255,255,255,0.1);
             padding: 12px 20px;
+            z-index: 200;
+        }
+        .playback-main {
             display: flex;
             align-items: center;
             gap: 12px;
-            z-index: 200;
+            margin-bottom: 12px;
         }
         .play-btn {
             width: 56px;
@@ -207,17 +345,58 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 20px var(--accent-glow);
-            transition: all 0.2s;
         }
         .play-btn:active { transform: scale(0.95); }
         .playback-info { flex: 1; }
         .now-playing { font-size: 14px; font-weight: 600; }
-        .playback-progress { font-size: 12px; color: var(--text-secondary); }
-        .tempo-control { display: flex; align-items: center; gap: 8px; }
-        .tempo-display { font-size: 14px; font-weight: 600; min-width: 60px; text-align: center; }
-        .tempo-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: none; color: var(--text-primary); font-size: 16px; cursor: pointer; }
+        .playback-sub { font-size: 12px; color: var(--text-secondary); }
+        .tempo-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tempo-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .tempo-display { font-size: 14px; font-weight: 600; min-width: 55px; text-align: center; }
         
-        /* Modal Base */
+        /* Active Instruments Bar */
+        .active-instruments {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .active-inst {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .active-inst .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Modal */
         .modal {
             position: fixed;
             top: 0;
@@ -238,122 +417,58 @@
             border-radius: 24px;
             width: 100%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             padding: 24px;
         }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-title { font-size: 20px; font-weight: 700; }
-        .close-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: none; color: var(--text-primary); font-size: 18px; cursor: pointer; }
-        
-        /* Learning Mode */
-        .lesson-card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .modal-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 14px;
-        }
-        .lesson-card:active { transform: scale(0.98); }
-        .lesson-icon { width: 50px; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), #764ba2); display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .lesson-info { flex: 1; }
-        .lesson-title { font-weight: 600; margin-bottom: 4px; }
-        .lesson-desc { font-size: 12px; color: var(--text-secondary); }
-        .lesson-progress { width: 60px; text-align: right; }
-        .lesson-xp { font-size: 12px; color: var(--gold); font-weight: 600; }
-        
-        /* Achievements */
-        .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .achievement {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            opacity: 0.5;
-            transition: all 0.2s;
-        }
-        .achievement.unlocked { opacity: 1; border: 2px solid var(--gold); }
-        .achievement .icon { font-size: 32px; margin-bottom: 8px; }
-        .achievement .name { font-size: 11px; font-weight: 600; }
-        .achievement .xp { font-size: 10px; color: var(--gold); }
-        
-        /* Mic Detection */
-        .mic-visualizer {
-            height: 120px;
-            background: var(--bg-card);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-        .mic-wave {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: pulse 1.5s ease-in-out infinite;
-            opacity: 0.3;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.3; }
-            50% { transform: scale(1.3); opacity: 0.6; }
-        }
-        .detected-chord {
-            position: absolute;
-            font-size: 36px;
-            font-weight: 700;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-        .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-        .empty-state p { font-size: 14px; }
-        
-        /* Daily Goal */
-        .daily-goal {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-            border: 1px solid var(--accent);
-            border-radius: 16px;
-            padding: 16px;
             margin-bottom: 20px;
         }
-        .goal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .goal-title { font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .streak-badge { background: var(--gold); color: #000; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
-        .goal-progress { background: var(--bg-primary); border-radius: 8px; height: 8px; overflow: hidden; }
-        .goal-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); border-radius: 8px; transition: width 0.3s; }
-        .goal-stats { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--text-secondary); }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+        }
         
-        /* Sheet Music Preview */
-        .sheet-music {
-            background: #fff;
+        /* All Instruments Grid in Modal */
+        .all-instruments-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .inst-item {
+            background: var(--bg-card);
+            border: 2px solid transparent;
             border-radius: 12px;
-            padding: 20px;
-            min-height: 150px;
-            position: relative;
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .staff-line {
-            height: 1px;
-            background: #333;
-            margin: 10px 0;
+        .inst-item.active { border-color: var(--accent); }
+        .inst-item .icon { font-size: 24px; margin-bottom: 6px; }
+        .inst-item .name { font-size: 11px; }
+        .inst-category {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 16px 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .clef { position: absolute; left: 10px; top: 30px; font-size: 48px; color: #333; }
         
         /* Toast */
         .toast {
             position: fixed;
-            bottom: 100px;
+            bottom: 180px;
             left: 50%;
             transform: translateX(-50%) translateY(100px);
             background: var(--bg-card);
@@ -372,376 +487,420 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <span class="logo-icon">🎵</span>
-            <h1>ChordFlow<span class="version-badge">v9.0</span></h1>
+            <span>🎵</span>
+            <h1>ChordFlow<span class="version-badge">v10</span></h1>
         </div>
         <div class="header-actions">
-            <button class="icon-btn" onclick="openModal('learningModal')" title="Learn">📚</button>
-            <button class="icon-btn" onclick="openModal('achievementsModal')" title="Achievements">🏆</button>
-            <button class="icon-btn" onclick="openModal('settingsModal')" title="Settings">⚙️</button>
+            <button class="icon-btn" onclick="openModal('instrumentsModal')">🎹</button>
+            <button class="icon-btn" onclick="openModal('mixerModal')">🎚️</button>
+            <button class="icon-btn" onclick="openModal('settingsModal')">⚙️</button>
         </div>
     </header>
 
-    <!-- Stats Bar -->
-    <div class="stats-bar">
-        <div class="stat-chip">
-            <span class="icon">🔥</span>
-            <span class="value" id="streakCount">3</span>
-            <span>day streak</span>
+    <!-- Band Mode Toggle -->
+    <div class="band-toggle">
+        <button class="active" onclick="setMode('solo')">Solo</button>
+        <button onclick="setMode('duo')">Duo</button>
+        <button onclick="setMode('band')">Full Band</button>
+        <button onclick="setMode('orchestra')">Orchestra</button>
+    </div>
+
+    <!-- Keys Section -->
+    <div class="instrument-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="dot" style="background: var(--keys)"></span>
+                🎹 Keys
+            </div>
         </div>
-        <div class="stat-chip">
-            <span class="icon">⭐</span>
-            <span class="value" id="xpCount">1,250</span>
-            <span>XP</span>
-        </div>
-        <div class="stat-chip">
-            <span class="icon">🎯</span>
-            <span class="value" id="levelDisplay">Level 5</span>
-        </div>
-        <div class="stat-chip">
-            <span class="icon">🎹</span>
-            <span class="value" id="chordsLearned">42</span>
-            <span>chords</span>
+        <div class="instrument-scroll">
+            <div class="instrument-card active" data-inst="grand-piano" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎹</div>
+                <div class="name">Grand Piano</div>
+            </div>
+            <div class="instrument-card" data-inst="electric-piano" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎹</div>
+                <div class="name">Electric Piano</div>
+            </div>
+            <div class="instrument-card" data-inst="organ" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎚️</div>
+                <div class="name">Organ</div>
+            </div>
+            <div class="instrument-card" data-inst="synth-pad" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎛️</div>
+                <div class="name">Synth Pad</div>
+            </div>
+            <div class="instrument-card" data-inst="clavinet" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎹</div>
+                <div class="name">Clavinet</div>
+            </div>
+            <div class="instrument-card" data-inst="harpsichord" onclick="selectInstrument(this, 'keys')">
+                <div class="icon">🎼</div>
+                <div class="name">Harpsichord</div>
+            </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-        <button class="quick-btn primary" onclick="generateProgression()">
-            <span class="icon">✨</span>
-            <span>Generate</span>
-        </button>
-        <button class="quick-btn" onclick="aiContinue()">
-            <span class="icon">🤖</span>
-            <span>AI Continue</span>
-        </button>
-        <button class="quick-btn" onclick="openModal('micModal')">
-            <span class="icon">🎙️</span>
-            <span>Detect</span>
-        </button>
-        <button class="quick-btn" onclick="openModal('sheetModal')">
-            <span class="icon">🎼</span>
-            <span>Sheet</span>
-        </button>
+    <!-- Guitar Section -->
+    <div class="instrument-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="dot" style="background: var(--guitar)"></span>
+                🎸 Guitars
+            </div>
+        </div>
+        <div class="instrument-scroll">
+            <div class="instrument-card" data-inst="acoustic-guitar" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">🎸</div>
+                <div class="name">Acoustic</div>
+            </div>
+            <div class="instrument-card" data-inst="electric-clean" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">🎸</div>
+                <div class="name">Electric Clean</div>
+            </div>
+            <div class="instrument-card" data-inst="electric-overdrive" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">🎸</div>
+                <div class="name">Overdrive</div>
+            </div>
+            <div class="instrument-card" data-inst="electric-distorted" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">🔥</div>
+                <div class="name">Distorted</div>
+            </div>
+            <div class="instrument-card" data-inst="nylon-guitar" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">🎸</div>
+                <div class="name">Nylon</div>
+            </div>
+            <div class="instrument-card" data-inst="12-string" onclick="selectInstrument(this, 'guitar')">
+                <div class="icon">✨</div>
+                <div class="name">12-String</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Daily Goal -->
-        <div class="daily-goal">
-            <div class="goal-header">
-                <div class="goal-title">
-                    <span>🎯</span> Daily Goal
+    <!-- Bass Section -->
+    <div class="instrument-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="dot" style="background: var(--bass)"></span>
+                🎸 Bass
+            </div>
+        </div>
+        <div class="instrument-scroll">
+            <div class="instrument-card" data-inst="electric-bass" onclick="selectInstrument(this, 'bass')">
+                <div class="icon">🎸</div>
+                <div class="name">Electric Bass</div>
+            </div>
+            <div class="instrument-card" data-inst="synth-bass" onclick="selectInstrument(this, 'bass')">
+                <div class="icon">🎛️</div>
+                <div class="name">Synth Bass</div>
+            </div>
+            <div class="instrument-card" data-inst="upright-bass" onclick="selectInstrument(this, 'bass')">
+                <div class="icon">🎻</div>
+                <div class="name">Upright</div>
+            </div>
+            <div class="instrument-card" data-inst="slap-bass" onclick="selectInstrument(this, 'bass')">
+                <div class="icon">👋</div>
+                <div class="name">Slap Bass</div>
+            </div>
+            <div class="instrument-card" data-inst="sub-bass" onclick="selectInstrument(this, 'bass')">
+                <div class="icon">📢</div>
+                <div class="name">Sub Bass</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drums Section -->
+    <div class="instrument-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="dot" style="background: var(--drums)"></span>
+                🥁 Drums
+            </div>
+        </div>
+        <div class="instrument-scroll">
+            <div class="instrument-card" data-inst="acoustic-kit" onclick="selectInstrument(this, 'drums')">
+                <div class="icon">🥁</div>
+                <div class="name">Acoustic Kit</div>
+            </div>
+            <div class="instrument-card" data-inst="electronic-kit" onclick="selectInstrument(this, 'drums')">
+                <div class="icon">🎛️</div>
+                <div class="name">Electronic</div>
+            </div>
+            <div class="instrument-card" data-inst="lofi-kit" onclick="selectInstrument(this, 'drums')">
+                <div class="icon">📻</div>
+                <div class="name">Lo-Fi</div>
+            </div>
+            <div class="instrument-card" data-inst="808-kit" onclick="selectInstrument(this, 'drums')">
+                <div class="icon">💥</div>
+                <div class="name">808 Trap</div>
+            </div>
+            <div class="instrument-card" data-inst="brushes-kit" onclick="selectInstrument(this, 'drums')">
+                <div class="icon">🖌️</div>
+                <div class="name">Jazz Brushes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Instruments (Strings, Brass, Synth) -->
+    <div class="instrument-section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="dot" style="background: var(--strings)"></span>
+                🎻 Strings & Brass
+            </div>
+        </div>
+        <div class="instrument-scroll">
+            <div class="instrument-card" data-inst="strings" onclick="selectInstrument(this, 'strings')">
+                <div class="icon">🎻</div>
+                <div class="name">Strings</div>
+            </div>
+            <div class="instrument-card" data-inst="cello" onclick="selectInstrument(this, 'strings')">
+                <div class="icon">🎻</div>
+                <div class="name">Cello</div>
+            </div>
+            <div class="instrument-card" data-inst="trumpet" onclick="selectInstrument(this, 'brass')">
+                <div class="icon">🎺</div>
+                <div class="name">Trumpet</div>
+            </div>
+            <div class="instrument-card" data-inst="saxophone" onclick="selectInstrument(this, 'brass')">
+                <div class="icon">🎷</div>
+                <div class="name">Saxophone</div>
+            </div>
+            <div class="instrument-card" data-inst="choir" onclick="selectInstrument(this, 'strings')">
+                <div class="icon">🎤</div>
+                <div class="name">Choir</div>
+            </div>
+            <div class="instrument-card" data-inst="ukulele" onclick="selectInstrument(this, 'world')">
+                <div class="icon">🪕</div>
+                <div class="name">Ukulele</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drum Pattern Selection -->
+    <div class="pattern-section">
+        <div class="section-header">
+            <div class="section-title">🥁 Drum Pattern</div>
+        </div>
+        <div class="pattern-grid">
+            <div class="pattern-card active" onclick="selectPattern(this, 'rock')">
+                <div class="pattern-header">
+                    <span class="pattern-icon">🎸</span>
+                    <span class="pattern-name">Rock</span>
                 </div>
-                <div class="streak-badge">🔥 3 days</div>
+                <div class="pattern-viz">
+                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                </div>
             </div>
-            <div class="goal-progress">
-                <div class="goal-fill" style="width: 65%"></div>
+            <div class="pattern-card" onclick="selectPattern(this, 'pop')">
+                <div class="pattern-header">
+                    <span class="pattern-icon">🎵</span>
+                    <span class="pattern-name">Pop</span>
+                </div>
+                <div class="pattern-viz">
+                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line active"></div></div>
+                </div>
             </div>
-            <div class="goal-stats">
-                <span>13/20 chords practiced</span>
-                <span>+50 XP today</span>
+            <div class="pattern-card" onclick="selectPattern(this, 'jazz')">
+                <div class="pattern-header">
+                    <span class="pattern-icon">🎷</span>
+                    <span class="pattern-name">Jazz Swing</span>
+                </div>
+                <div class="pattern-viz">
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                </div>
             </div>
-        </div>
-
-        <!-- Sound Presets -->
-        <div class="section-title">🔊 Sound</div>
-        <div class="sound-presets">
-            <div class="preset-chip active" data-preset="grand-piano" onclick="selectPreset(this)">
-                <span class="icon">🎹</span>
-                <span class="name">Grand Piano</span>
-            </div>
-            <div class="preset-chip" data-preset="electric-piano" onclick="selectPreset(this)">
-                <span class="icon">🎹</span>
-                <span class="name">Electric</span>
-            </div>
-            <div class="preset-chip" data-preset="synth-pad" onclick="selectPreset(this)">
-                <span class="icon">🎛️</span>
-                <span class="name">Synth Pad</span>
-            </div>
-            <div class="preset-chip" data-preset="organ" onclick="selectPreset(this)">
-                <span class="icon">🎚️</span>
-                <span class="name">Organ</span>
-            </div>
-            <div class="preset-chip" data-preset="strings" onclick="selectPreset(this)">
-                <span class="icon">🎻</span>
-                <span class="name">Strings</span>
-            </div>
-            <div class="preset-chip" data-preset="acoustic" onclick="selectPreset(this)">
-                <span class="icon">🎸</span>
-                <span class="name">Acoustic</span>
-            </div>
-            <div class="preset-chip" data-preset="lofi" onclick="selectPreset(this)">
-                <span class="icon">📻</span>
-                <span class="name">Lo-Fi</span>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls-row">
-            <div class="control-group">
-                <div class="control-label">Key</div>
-                <select class="control-select" id="keySelect" onchange="updateProgression()">
-                    <option value="C">C Major</option>
-                    <option value="G">G Major</option>
-                    <option value="D">D Major</option>
-                    <option value="A">A Major</option>
-                    <option value="E">E Major</option>
-                    <option value="F">F Major</option>
-                    <option value="Bb">Bb Major</option>
-                    <option value="Am">A Minor</option>
-                    <option value="Em">E Minor</option>
-                    <option value="Dm">D Minor</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <div class="control-label">Genre</div>
-                <select class="control-select" id="genreSelect" onchange="updateProgression()">
-                    <option value="pop">Pop</option>
-                    <option value="rock">Rock</option>
-                    <option value="jazz">Jazz</option>
-                    <option value="blues">Blues</option>
-                    <option value="rnb">R&B / Soul</option>
-                    <option value="country">Country</option>
-                    <option value="folk">Folk</option>
-                    <option value="edm">EDM</option>
-                    <option value="lofi">Lo-Fi</option>
-                    <option value="gospel">Gospel</option>
-                </select>
+            <div class="pattern-card" onclick="selectPattern(this, 'hiphop')">
+                <div class="pattern-header">
+                    <span class="pattern-icon">🎤</span>
+                    <span class="pattern-name">Hip-Hop</span>
+                </div>
+                <div class="pattern-viz">
+                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                    <div class="beat"><div class="beat-line"></div><div class="beat-line accent"></div><div class="beat-line"></div></div>
+                    <div class="beat"><div class="beat-line active"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Chord Display -->
-        <div class="section-title">🎶 Progression</div>
+    <!-- Bass Line Pattern -->
+    <div class="bass-section">
+        <div class="section-header">
+            <div class="section-title">🎸 Bass Line</div>
+        </div>
+        <div class="bass-options">
+            <div class="bass-option active" onclick="selectBassPattern(this, 'root')">Root Notes</div>
+            <div class="bass-option" onclick="selectBassPattern(this, 'octave')">Octave Jump</div>
+            <div class="bass-option" onclick="selectBassPattern(this, 'walking')">Walking Bass</div>
+            <div class="bass-option" onclick="selectBassPattern(this, 'arpeggiate')">Arpeggiate</div>
+            <div class="bass-option" onclick="selectBassPattern(this, 'syncopated')">Syncopated</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-row">
+        <div class="control-group">
+            <div class="control-label">Key</div>
+            <select class="control-select" id="keySelect">
+                <option value="C">C Major</option>
+                <option value="G">G Major</option>
+                <option value="D">D Major</option>
+                <option value="A">A Major</option>
+                <option value="E">E Major</option>
+                <option value="F">F Major</option>
+                <option value="Am">A Minor</option>
+                <option value="Em">E Minor</option>
+                <option value="Dm">D Minor</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <div class="control-label">Genre</div>
+            <select class="control-select" id="genreSelect">
+                <option value="pop">Pop</option>
+                <option value="rock">Rock</option>
+                <option value="jazz">Jazz</option>
+                <option value="blues">Blues</option>
+                <option value="rnb">R&B</option>
+                <option value="country">Country</option>
+                <option value="edm">EDM</option>
+                <option value="lofi">Lo-Fi</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Chord Display -->
+    <div class="chord-section">
+        <div class="section-header">
+            <div class="section-title">🎶 Progression</div>
+            <button class="icon-btn" style="width:36px;height:36px;font-size:16px;" onclick="generateProgression()">✨</button>
+        </div>
         <div class="chord-grid" id="chordGrid">
             <div class="chord-card" onclick="playChord('C')">
-                <div class="chord-badge">I</div>
                 <div class="chord-name">C</div>
                 <div class="chord-numeral">I</div>
-                <div class="chord-function">Tonic</div>
             </div>
             <div class="chord-card" onclick="playChord('G')">
-                <div class="chord-badge">V</div>
                 <div class="chord-name">G</div>
                 <div class="chord-numeral">V</div>
-                <div class="chord-function">Dominant</div>
             </div>
             <div class="chord-card" onclick="playChord('Am')">
-                <div class="chord-badge">vi</div>
                 <div class="chord-name">Am</div>
                 <div class="chord-numeral">vi</div>
-                <div class="chord-function">Submediant</div>
             </div>
             <div class="chord-card" onclick="playChord('F')">
-                <div class="chord-badge">IV</div>
                 <div class="chord-name">F</div>
                 <div class="chord-numeral">IV</div>
-                <div class="chord-function">Subdominant</div>
             </div>
         </div>
     </div>
 
     <!-- Playback Bar -->
     <div class="playback-bar">
-        <button class="play-btn" id="playBtn" onclick="togglePlayback()">▶️</button>
-        <div class="playback-info">
-            <div class="now-playing" id="nowPlaying">Ready to play</div>
-            <div class="playback-progress" id="progressText">4 chords • C Major</div>
-        </div>
-        <div class="tempo-control">
-            <button class="tempo-btn" onclick="adjustTempo(-5)">−</button>
-            <div class="tempo-display" id="tempoDisplay">120 BPM</div>
-            <button class="tempo-btn" onclick="adjustTempo(5)">+</button>
-        </div>
-    </div>
-
-    <!-- Mic Detection Modal -->
-    <div class="modal" id="micModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🎙️ Chord Detection</div>
-                <button class="close-btn" onclick="closeModal('micModal')">✕</button>
+        <div class="playback-main">
+            <button class="play-btn" id="playBtn" onclick="togglePlayback()">▶️</button>
+            <div class="playback-info">
+                <div class="now-playing" id="nowPlaying">Ready to jam</div>
+                <div class="playback-sub">4 chords • C Major • Full Band</div>
             </div>
-            <div class="mic-visualizer">
-                <div class="mic-wave"></div>
-                <div class="detected-chord" id="detectedChord">--</div>
+            <div class="tempo-control">
+                <button class="tempo-btn" onclick="adjustTempo(-5)">−</button>
+                <div class="tempo-display" id="tempoDisplay">120</div>
+                <button class="tempo-btn" onclick="adjustTempo(5)">+</button>
             </div>
-            <p style="text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
-                Play a chord on your instrument and ChordFlow will detect it!
-            </p>
-            <button class="quick-btn primary" style="width: 100%; flex-direction: row; justify-content: center;" onclick="startMicDetection()">
-                <span class="icon">🎤</span>
-                <span>Start Listening</span>
-            </button>
+        </div>
+        <div class="active-instruments" id="activeInstruments">
+            <div class="active-inst"><span class="dot" style="background: var(--keys)"></span> Grand Piano</div>
         </div>
     </div>
 
-    <!-- Learning Modal -->
-    <div class="modal" id="learningModal">
+    <!-- Mixer Modal -->
+    <div class="modal" id="mixerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📚 Learn Music Theory</div>
-                <button class="close-btn" onclick="closeModal('learningModal')">✕</button>
+                <div class="modal-title">🎚️ Mixer</div>
+                <button class="close-btn" onclick="closeModal('mixerModal')">✕</button>
             </div>
-            <div class="lesson-card" onclick="startLesson('major-scale')">
-                <div class="lesson-icon">🎹</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Major Scale Basics</div>
-                    <div class="lesson-desc">Learn the foundation of Western music</div>
-                </div>
-                <div class="lesson-progress">
-                    <div class="lesson-xp">+100 XP</div>
-                </div>
-            </div>
-            <div class="lesson-card" onclick="startLesson('chord-construction')">
-                <div class="lesson-icon">🎵</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Chord Construction</div>
-                    <div class="lesson-desc">Build major, minor, and 7th chords</div>
-                </div>
-                <div class="lesson-progress">
-                    <div class="lesson-xp">+150 XP</div>
-                </div>
-            </div>
-            <div class="lesson-card" onclick="startLesson('progressions')">
-                <div class="lesson-icon">🎶</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Common Progressions</div>
-                    <div class="lesson-desc">Master I-V-vi-IV and more</div>
-                </div>
-                <div class="lesson-progress">
-                    <div class="lesson-xp">+200 XP</div>
-                </div>
-            </div>
-            <div class="lesson-card" onclick="startLesson('modes')">
-                <div class="lesson-icon">🌈</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Modes & Scales</div>
-                    <div class="lesson-desc">Explore Dorian, Mixolydian, and more</div>
-                </div>
-                <div class="lesson-progress">
-                    <div class="lesson-xp">+250 XP</div>
-                </div>
+            <div class="mixer-tracks" id="mixerTracks">
+                <!-- Dynamically populated -->
             </div>
         </div>
     </div>
 
-    <!-- Achievements Modal -->
-    <div class="modal" id="achievementsModal">
+    <!-- All Instruments Modal -->
+    <div class="modal" id="instrumentsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🏆 Achievements</div>
-                <button class="close-btn" onclick="closeModal('achievementsModal')">✕</button>
+                <div class="modal-title">🎹 All Instruments</div>
+                <button class="close-btn" onclick="closeModal('instrumentsModal')">✕</button>
             </div>
-            <div class="achievements-grid">
-                <div class="achievement unlocked">
-                    <div class="icon">🎵</div>
-                    <div class="name">First Chord</div>
-                    <div class="xp">+50 XP</div>
-                </div>
-                <div class="achievement unlocked">
-                    <div class="icon">🔥</div>
-                    <div class="name">3 Day Streak</div>
-                    <div class="xp">+100 XP</div>
-                </div>
-                <div class="achievement unlocked">
-                    <div class="icon">🎹</div>
-                    <div class="name">10 Chords</div>
-                    <div class="xp">+150 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">⭐</div>
-                    <div class="name">50 Chords</div>
-                    <div class="xp">+300 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">🏅</div>
-                    <div class="name">7 Day Streak</div>
-                    <div class="xp">+500 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">🎸</div>
-                    <div class="name">Jazz Master</div>
-                    <div class="xp">+750 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">👑</div>
-                    <div class="name">100 Chords</div>
-                    <div class="xp">+1000 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">🚀</div>
-                    <div class="name">30 Day Streak</div>
-                    <div class="xp">+2000 XP</div>
-                </div>
-                <div class="achievement">
-                    <div class="icon">💎</div>
-                    <div class="name">Theory Expert</div>
-                    <div class="xp">+5000 XP</div>
-                </div>
+            
+            <div class="inst-category">🎹 Keys</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item active" onclick="toggleInst(this)"><div class="icon">🎹</div><div class="name">Grand Piano</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎹</div><div class="name">Electric Piano</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎚️</div><div class="name">Organ</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Synth Pad</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎼</div><div class="name">Harpsichord</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎵</div><div class="name">Music Box</div></div>
             </div>
-        </div>
-    </div>
-
-    <!-- Sheet Music Modal -->
-    <div class="modal" id="sheetModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🎼 Sheet Music</div>
-                <button class="close-btn" onclick="closeModal('sheetModal')">✕</button>
+            
+            <div class="inst-category">🎸 Guitars</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Acoustic</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Electric Clean</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🔥</div><div class="name">Distorted</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Nylon</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">✨</div><div class="name">12-String</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪕</div><div class="name">Ukulele</div></div>
             </div>
-            <div class="sheet-music">
-                <div class="clef">𝄞</div>
-                <div class="staff-line" style="margin-top: 50px;"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
+            
+            <div class="inst-category">🎸 Bass</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Electric Bass</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Synth Bass</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Upright</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">👋</div><div class="name">Slap Bass</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📢</div><div class="name">Sub Bass</div></div>
             </div>
-            <p style="text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 16px;">
-                Sheet music notation for your progression
-            </p>
-            <button class="quick-btn primary" style="width: 100%; margin-top: 16px; flex-direction: row; justify-content: center;" onclick="exportPDF()">
-                <span class="icon">📄</span>
-                <span>Export PDF</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">⚙️ Settings</div>
-                <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
+            
+            <div class="inst-category">🥁 Drums</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🥁</div><div class="name">Acoustic Kit</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Electronic</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📻</div><div class="name">Lo-Fi</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">💥</div><div class="name">808</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🖌️</div><div class="name">Brushes</div></div>
             </div>
-            <div class="lesson-card">
-                <div class="lesson-icon">🔊</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Sound Volume</div>
-                    <div class="lesson-desc">Adjust playback volume</div>
-                </div>
+            
+            <div class="inst-category">🎻 Strings & Brass</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Strings</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Cello</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎺</div><div class="name">Trumpet</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎷</div><div class="name">Saxophone</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📯</div><div class="name">Trombone</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎤</div><div class="name">Choir</div></div>
             </div>
-            <div class="lesson-card">
-                <div class="lesson-icon">📱</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Haptic Feedback</div>
-                    <div class="lesson-desc">Vibration on interactions</div>
-                </div>
-            </div>
-            <div class="lesson-card">
-                <div class="lesson-icon">🌙</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Dark Mode</div>
-                    <div class="lesson-desc">Always on</div>
-                </div>
-            </div>
-            <div class="lesson-card">
-                <div class="lesson-icon">☁️</div>
-                <div class="lesson-info">
-                    <div class="lesson-title">Cloud Sync</div>
-                    <div class="lesson-desc">Sync progress across devices</div>
-                </div>
+            
+            <div class="inst-category">🌍 World & Synth</div>
+            <div class="all-instruments-grid">
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪘</div><div class="name">Steel Drums</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎶</div><div class="name">Kalimba</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪕</div><div class="name">Sitar</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Lead Synth</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🔊</div><div class="name">Wobble</div></div>
+                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">👾</div><div class="name">Chiptune</div></div>
             </div>
         </div>
     </div>
@@ -750,110 +909,192 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // App State
+        // State
         const state = {
-            currentKey: 'C',
-            currentGenre: 'pop',
+            mode: 'solo',
             tempo: 120,
             isPlaying: false,
-            currentPreset: 'grand-piano',
             progression: ['C', 'G', 'Am', 'F'],
-            xp: 1250,
-            streak: 3,
-            level: 5,
-            chordsLearned: 42
+            activeInstruments: [
+                { name: 'Grand Piano', category: 'keys', color: '#667eea', volume: 80, muted: false, solo: false }
+            ],
+            drumPattern: 'rock',
+            bassPattern: 'root'
         };
 
-        // Initialize Tone.js
-        let synth;
+        // Synths
+        let mainSynth, bassSynth, drumSynth;
+        
         async function initAudio() {
             await Tone.start();
-            synth = new Tone.PolySynth(Tone.Synth).toDestination();
-            synth.set({
+            
+            // Main synth for chords
+            mainSynth = new Tone.PolySynth(Tone.Synth).toDestination();
+            mainSynth.set({
                 oscillator: { type: 'triangle' },
                 envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }
             });
+            
+            // Bass synth
+            bassSynth = new Tone.MonoSynth().toDestination();
+            bassSynth.set({
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.3 },
+                filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 }
+            });
+            bassSynth.volume.value = -6;
+            
+            // Drum synth (noise for hi-hat, membrane for kick/snare)
+            drumSynth = {
+                kick: new Tone.MembraneSynth().toDestination(),
+                snare: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 }}).toDestination(),
+                hihat: new Tone.MetalSynth({ frequency: 200, envelope: { attack: 0.001, decay: 0.1, release: 0.01 }}).toDestination()
+            };
+            drumSynth.kick.volume.value = -4;
+            drumSynth.snare.volume.value = -10;
+            drumSynth.hihat.volume.value = -20;
         }
 
-        // Chord data
+        // Chord notes
         const chordNotes = {
-            'C': ['C4', 'E4', 'G4'],
-            'Cm': ['C4', 'Eb4', 'G4'],
-            'D': ['D4', 'F#4', 'A4'],
-            'Dm': ['D4', 'F4', 'A4'],
-            'E': ['E4', 'G#4', 'B4'],
-            'Em': ['E4', 'G4', 'B4'],
-            'F': ['F4', 'A4', 'C5'],
-            'Fm': ['F4', 'Ab4', 'C5'],
-            'G': ['G4', 'B4', 'D5'],
-            'Gm': ['G4', 'Bb4', 'D5'],
-            'A': ['A4', 'C#5', 'E5'],
-            'Am': ['A4', 'C5', 'E5'],
-            'B': ['B4', 'D#5', 'F#5'],
-            'Bm': ['B4', 'D5', 'F#5'],
-            'Bb': ['Bb4', 'D5', 'F5']
+            'C': ['C3', 'E3', 'G3'], 'Cm': ['C3', 'Eb3', 'G3'],
+            'D': ['D3', 'F#3', 'A3'], 'Dm': ['D3', 'F3', 'A3'],
+            'E': ['E3', 'G#3', 'B3'], 'Em': ['E3', 'G3', 'B3'],
+            'F': ['F3', 'A3', 'C4'], 'Fm': ['F3', 'Ab3', 'C4'],
+            'G': ['G3', 'B3', 'D4'], 'Gm': ['G3', 'Bb3', 'D4'],
+            'A': ['A3', 'C#4', 'E4'], 'Am': ['A3', 'C4', 'E4'],
+            'B': ['B3', 'D#4', 'F#4'], 'Bm': ['B3', 'D4', 'F#4'],
+            'Bb': ['Bb3', 'D4', 'F4']
         };
 
-        // Play single chord
+        // Play chord with all active instruments
         async function playChord(chord) {
-            if (!synth) await initAudio();
+            if (!mainSynth) await initAudio();
+            
             const notes = chordNotes[chord] || chordNotes['C'];
-            synth.triggerAttackRelease(notes, '2n');
-            haptic();
-            showToast(`Playing ${chord}`);
+            const bassNote = notes[0].replace('3', '2');
             
-            // Update XP
-            state.xp += 5;
-            document.getElementById('xpCount').textContent = state.xp.toLocaleString();
+            // Play chord
+            mainSynth.triggerAttackRelease(notes, '2n');
+            
+            // Play bass if in band mode
+            if (state.mode === 'band' || state.mode === 'duo') {
+                bassSynth.triggerAttackRelease(bassNote, '4n');
+            }
+            
+            haptic();
+            showToast(`🎵 ${chord}`);
         }
 
-        // Generate progression
-        function generateProgression() {
-            const progressions = {
-                'pop': [['C', 'G', 'Am', 'F'], ['G', 'D', 'Em', 'C'], ['Am', 'F', 'C', 'G']],
-                'rock': [['E', 'A', 'D', 'A'], ['G', 'C', 'D', 'G'], ['Am', 'G', 'F', 'E']],
-                'jazz': [['Dm', 'G', 'C', 'Am'], ['Cm', 'F', 'Bb', 'Eb'], ['Am', 'D', 'G', 'C']],
-                'blues': [['E', 'A', 'E', 'B'], ['G', 'C', 'G', 'D'], ['A', 'D', 'A', 'E']],
-                'rnb': [['Fm', 'Bb', 'Eb', 'Cm'], ['Am', 'Dm', 'G', 'C'], ['Em', 'Am', 'D', 'G']],
-                'country': [['G', 'C', 'D', 'G'], ['D', 'G', 'A', 'D'], ['C', 'Am', 'F', 'G']],
-                'folk': [['G', 'Em', 'C', 'D'], ['Am', 'G', 'C', 'F'], ['D', 'Bm', 'G', 'A']],
-                'edm': [['Am', 'F', 'C', 'G'], ['Em', 'C', 'G', 'D'], ['Dm', 'Am', 'F', 'C']],
-                'lofi': [['Dm', 'Am', 'F', 'C'], ['Em', 'Am', 'D', 'G'], ['Am', 'Em', 'F', 'G']],
-                'gospel': [['C', 'Am', 'F', 'G'], ['G', 'Em', 'C', 'D'], ['F', 'Dm', 'Bb', 'C']]
-            };
-            
-            const genre = state.currentGenre;
-            const options = progressions[genre] || progressions['pop'];
-            state.progression = options[Math.floor(Math.random() * options.length)];
-            
-            renderChords();
-            haptic();
-            showToast('✨ New progression generated!');
-            
-            state.xp += 20;
-            document.getElementById('xpCount').textContent = state.xp.toLocaleString();
+        // Play drum hit
+        function playDrumHit(type) {
+            if (!drumSynth) return;
+            if (type === 'kick') drumSynth.kick.triggerAttackRelease('C1', '8n');
+            if (type === 'snare') drumSynth.snare.triggerAttackRelease('8n');
+            if (type === 'hihat') drumSynth.hihat.triggerAttackRelease('16n');
         }
 
-        // Render chord grid
-        function renderChords() {
-            const grid = document.getElementById('chordGrid');
-            const numerals = ['I', 'V', 'vi', 'IV'];
-            const functions = ['Tonic', 'Dominant', 'Submediant', 'Subdominant'];
+        // Select instrument
+        function selectInstrument(el, category) {
+            const section = el.closest('.instrument-section');
+            section.querySelectorAll('.instrument-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
             
-            grid.innerHTML = state.progression.map((chord, i) => `
-                <div class="chord-card" onclick="playChord('${chord}')">
-                    <div class="chord-badge">${numerals[i] || (i+1)}</div>
-                    <div class="chord-name">${chord}</div>
-                    <div class="chord-numeral">${numerals[i] || ''}</div>
-                    <div class="chord-function">${functions[i] || ''}</div>
+            const name = el.querySelector('.name').textContent;
+            updateActiveInstruments(name, category);
+            haptic();
+            showToast(`${el.querySelector('.icon').textContent} ${name}`);
+        }
+
+        // Update active instruments display
+        function updateActiveInstruments(name, category) {
+            const colors = { keys: '#667eea', guitar: '#f59e0b', bass: '#ef4444', drums: '#10b981', strings: '#8b5cf6', brass: '#f97316' };
+            
+            // Check if category already exists
+            const existing = state.activeInstruments.findIndex(i => i.category === category);
+            if (existing >= 0) {
+                state.activeInstruments[existing] = { name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false };
+            } else {
+                state.activeInstruments.push({ name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false });
+            }
+            
+            renderActiveInstruments();
+        }
+
+        function renderActiveInstruments() {
+            const container = document.getElementById('activeInstruments');
+            container.innerHTML = state.activeInstruments.map(inst => `
+                <div class="active-inst">
+                    <span class="dot" style="background: ${inst.color}"></span>
+                    ${inst.name}
                 </div>
             `).join('');
         }
 
-        // Toggle playback
-        let playbackInterval;
+        // Toggle instrument in modal
+        function toggleInst(el) {
+            el.classList.toggle('active');
+            haptic();
+        }
+
+        // Mode selection
+        function setMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.band-toggle button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const modeNames = { solo: 'Solo Piano', duo: 'Piano + Bass', band: 'Full Band', orchestra: 'Orchestra' };
+            showToast(`🎸 ${modeNames[mode]}`);
+            haptic();
+        }
+
+        // Pattern selection
+        function selectPattern(el, pattern) {
+            document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            state.drumPattern = pattern;
+            haptic();
+            showToast(`🥁 ${pattern.charAt(0).toUpperCase() + pattern.slice(1)} beat`);
+        }
+
+        // Bass pattern selection
+        function selectBassPattern(el, pattern) {
+            document.querySelectorAll('.bass-option').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            state.bassPattern = pattern;
+            haptic();
+        }
+
+        // Generate progression
+        function generateProgression() {
+            const progressions = [
+                ['C', 'G', 'Am', 'F'],
+                ['G', 'D', 'Em', 'C'],
+                ['Am', 'F', 'C', 'G'],
+                ['Dm', 'G', 'C', 'Am'],
+                ['E', 'A', 'D', 'A'],
+                ['Em', 'C', 'G', 'D']
+            ];
+            state.progression = progressions[Math.floor(Math.random() * progressions.length)];
+            renderChords();
+            haptic();
+            showToast('✨ New progression!');
+        }
+
+        function renderChords() {
+            const numerals = ['I', 'V', 'vi', 'IV'];
+            document.getElementById('chordGrid').innerHTML = state.progression.map((chord, i) => `
+                <div class="chord-card" onclick="playChord('${chord}')">
+                    <div class="chord-name">${chord}</div>
+                    <div class="chord-numeral">${numerals[i] || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // Playback
+        let playbackInterval, beatCount = 0;
         async function togglePlayback() {
-            if (!synth) await initAudio();
+            if (!mainSynth) await initAudio();
             state.isPlaying = !state.isPlaying;
             
             const btn = document.getElementById('playBtn');
@@ -861,157 +1102,114 @@
             
             if (state.isPlaying) {
                 btn.textContent = '⏸️';
-                display.textContent = 'Playing...';
-                let idx = 0;
+                let chordIdx = 0;
+                beatCount = 0;
                 
-                const playNext = () => {
-                    const chord = state.progression[idx % state.progression.length];
-                    playChord(chord);
-                    
-                    // Highlight current card
-                    document.querySelectorAll('.chord-card').forEach((card, i) => {
-                        card.classList.toggle('playing', i === idx % state.progression.length);
-                    });
-                    
-                    display.textContent = `Playing: ${chord}`;
-                    idx++;
-                };
+                const beatInterval = (60 / state.tempo) * 1000;
                 
-                playNext();
-                playbackInterval = setInterval(playNext, (60 / state.tempo) * 2000);
+                playbackInterval = setInterval(() => {
+                    const beatInMeasure = beatCount % 4;
+                    
+                    // Drums on every beat (if band mode)
+                    if (state.mode === 'band' || state.mode === 'orchestra') {
+                        playDrumHit('hihat');
+                        if (beatInMeasure === 0) playDrumHit('kick');
+                        if (beatInMeasure === 2) playDrumHit('snare');
+                    }
+                    
+                    // Chord on beat 1
+                    if (beatInMeasure === 0) {
+                        const chord = state.progression[chordIdx % state.progression.length];
+                        playChord(chord);
+                        display.textContent = `Playing: ${chord}`;
+                        
+                        document.querySelectorAll('.chord-card').forEach((card, i) => {
+                            card.classList.toggle('playing', i === chordIdx % state.progression.length);
+                        });
+                        
+                        chordIdx++;
+                    }
+                    
+                    beatCount++;
+                }, beatInterval);
             } else {
                 btn.textContent = '▶️';
-                display.textContent = 'Ready to play';
+                display.textContent = 'Ready to jam';
                 clearInterval(playbackInterval);
-                document.querySelectorAll('.chord-card').forEach(card => card.classList.remove('playing'));
+                document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing'));
             }
         }
 
-        // Tempo control
+        // Tempo
         function adjustTempo(delta) {
             state.tempo = Math.max(40, Math.min(200, state.tempo + delta));
-            document.getElementById('tempoDisplay').textContent = `${state.tempo} BPM`;
+            document.getElementById('tempoDisplay').textContent = state.tempo;
             haptic();
         }
 
-        // Sound presets
-        function selectPreset(el) {
-            document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            state.currentPreset = el.dataset.preset;
-            
-            // Update synth sound
-            const presets = {
-                'grand-piano': { type: 'triangle', attack: 0.02 },
-                'electric-piano': { type: 'sine', attack: 0.01 },
-                'synth-pad': { type: 'sawtooth', attack: 0.3 },
-                'organ': { type: 'square', attack: 0.005 },
-                'strings': { type: 'sawtooth', attack: 0.5 },
-                'acoustic': { type: 'triangle', attack: 0.03 },
-                'lofi': { type: 'sine', attack: 0.1 }
-            };
-            
-            const preset = presets[state.currentPreset] || presets['grand-piano'];
-            if (synth) {
-                synth.set({ oscillator: { type: preset.type }, envelope: { attack: preset.attack } });
-            }
-            
-            haptic();
-            showToast(`Sound: ${el.querySelector('.name').textContent}`);
-        }
-
-        // AI Continue
-        async function aiContinue() {
-            showToast('🤖 AI analyzing progression...');
-            
-            // Simulate AI suggestion
-            setTimeout(() => {
-                const suggestions = ['Dm', 'Em', 'Bdim', 'Am7', 'Fmaj7'];
-                const newChord = suggestions[Math.floor(Math.random() * suggestions.length)];
-                state.progression.push(newChord);
-                renderChords();
-                showToast(`✨ AI added: ${newChord}`);
-                
-                state.xp += 30;
-                document.getElementById('xpCount').textContent = state.xp.toLocaleString();
-            }, 1000);
-        }
-
-        // Mic detection
-        function startMicDetection() {
-            showToast('🎙️ Listening for chords...');
-            const display = document.getElementById('detectedChord');
-            
-            // Simulate detection
-            const chords = ['C', 'G', 'Am', 'F', 'Dm', 'Em'];
-            let count = 0;
-            const interval = setInterval(() => {
-                display.textContent = chords[count % chords.length];
-                count++;
-                if (count > 5) {
-                    clearInterval(interval);
-                    display.textContent = chords[Math.floor(Math.random() * chords.length)];
-                    showToast('✅ Chord detected!');
-                }
-            }, 500);
-        }
-
-        // Lessons
-        function startLesson(id) {
-            closeModal('learningModal');
-            showToast(`📚 Starting lesson: ${id}`);
-            // Would open lesson content
-        }
-
-        // Export PDF
-        function exportPDF() {
-            showToast('📄 Generating PDF...');
-            setTimeout(() => showToast('✅ PDF ready!'), 1500);
-        }
-
-        // Modal controls
+        // Modals
         function openModal(id) {
             document.getElementById(id).classList.add('active');
+            if (id === 'mixerModal') renderMixer();
             haptic();
         }
-
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
 
-        // Haptic feedback
-        function haptic() {
-            if (navigator.vibrate) navigator.vibrate(10);
+        // Render mixer
+        function renderMixer() {
+            const container = document.getElementById('mixerTracks');
+            container.innerHTML = state.activeInstruments.map((inst, i) => `
+                <div class="mixer-track">
+                    <div class="track-icon">${getInstIcon(inst.category)}</div>
+                    <div class="track-name">${inst.name}</div>
+                    <div class="track-fader">
+                        <div class="fader-fill" style="height: ${inst.volume}%; background: ${inst.color}"></div>
+                    </div>
+                    <div class="track-controls">
+                        <button class="track-btn mute ${inst.muted ? 'active' : ''}" onclick="toggleMute(${i})">M</button>
+                        <button class="track-btn solo ${inst.solo ? 'active' : ''}" onclick="toggleSolo(${i})">S</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Toast notifications
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2500);
+        function getInstIcon(cat) {
+            const icons = { keys: '🎹', guitar: '🎸', bass: '🎸', drums: '🥁', strings: '🎻', brass: '🎺' };
+            return icons[cat] || '🎵';
         }
 
-        // Update progression when controls change
-        function updateProgression() {
-            state.currentKey = document.getElementById('keySelect').value;
-            state.currentGenre = document.getElementById('genreSelect').value;
-            document.getElementById('progressText').textContent = `${state.progression.length} chords • ${state.currentKey}`;
+        function toggleMute(idx) {
+            state.activeInstruments[idx].muted = !state.activeInstruments[idx].muted;
+            renderMixer();
+            haptic();
         }
 
-        // Initialize
+        function toggleSolo(idx) {
+            state.activeInstruments[idx].solo = !state.activeInstruments[idx].solo;
+            renderMixer();
+            haptic();
+        }
+
+        // Utilities
+        function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        // Init
         document.addEventListener('DOMContentLoaded', () => {
             renderChords();
-            
-            // Close modals on backdrop click
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) modal.classList.remove('active');
-                });
+            renderActiveInstruments();
+            document.querySelectorAll('.modal').forEach(m => {
+                m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
             });
         });
 
-        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});
         }
