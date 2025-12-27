@@ -1,551 +1,261 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="description" content="AI-Powered Chord Progression Generator with Sound Design Studio & Advanced Instruments">
-    <meta name="theme-color" content="#ff6b35">
-    <meta name="build-version" content="7.0.0">
-    <meta name="build-date" content="2025-12-27">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ChordFlow">
-    <title>ChordFlow Pro v7 | Sound Design Studio & AI Songwriting</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-:root,[data-theme="dark"]{--bg-dark:#0a0a0f;--bg-card:#12121a;--bg-elevated:#1a1a24;--accent-primary:#ff6b35;--accent-secondary:#f7c59f;--accent-glow:#ff6b3540;--text-primary:#fff;--text-secondary:#9ca3af;--border-subtle:#1f1f2e;--success:#10b981;--warning:#f59e0b;--error:#ef4444;--info:#3b82f6;--purple:#8b5cf6;--pink:#ec4899;--cyan:#06b6d4;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-[data-theme="light"]{--bg-dark:#f8f9fa;--bg-card:#fff;--bg-elevated:#f0f0f5;--accent-primary:#ff6b35;--accent-secondary:#e85a24;--accent-glow:#ff6b3530;--text-primary:#1a1a2e;--text-secondary:#6b7280;--border-subtle:#e5e7eb}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{height:100%}body{font-family:'Outfit',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100%;overflow-x:hidden;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
-.bg-pattern{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,107,53,.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(139,92,246,.05) 0%,transparent 50%)}
-.header{position:sticky;top:0;z-index:100;background:var(--bg-dark);border-bottom:1px solid var(--border-subtle);padding:.75rem 1rem;padding-top:calc(.75rem + var(--safe-top));display:flex;align-items:center;justify-content:space-between;gap:.5rem;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.header-left{display:flex;align-items:center;gap:.75rem}
-.menu-btn{background:none;border:none;color:var(--text-primary);font-size:1.5rem;cursor:pointer;padding:.5rem;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;transition:background .2s}
-.menu-btn:active{background:var(--bg-elevated)}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.05em;background:linear-gradient(135deg,var(--accent-primary),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.version-badge{font-size:.55rem;background:linear-gradient(135deg,var(--accent-primary),var(--purple));color:#fff;padding:.15rem .35rem;border-radius:6px;margin-left:.25rem;vertical-align:super}
-.header-controls{display:flex;align-items:center;gap:.5rem}
-.icon-btn{background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);min-width:44px;min-height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;transition:all .2s}
-.icon-btn:active{transform:scale(.95);background:var(--bg-elevated)}
-.icon-btn.active{background:var(--accent-primary);color:#fff;border-color:var(--accent-primary)}
-.main-content{position:relative;z-index:1;padding:1rem;padding-bottom:calc(200px + var(--safe-bottom));max-width:800px;margin:0 auto}
-.studio-tabs{display:flex;gap:.5rem;margin-bottom:1rem;overflow-x:auto;padding:.25rem 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.studio-tabs::-webkit-scrollbar{display:none}
-.studio-tab{flex-shrink:0;padding:.75rem 1.25rem;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;cursor:pointer;font-size:.85rem;font-weight:500;color:var(--text-secondary);transition:all .2s;display:flex;align-items:center;gap:.5rem;min-height:44px;white-space:nowrap}
-.studio-tab:active{transform:scale(.95)}
-.studio-tab.active{background:linear-gradient(135deg,var(--accent-primary),var(--purple));color:#fff;border-color:transparent}
-.studio-panel{display:none;animation:fadeIn .3s ease}
-.studio-panel.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.key-scale-bar{display:flex;gap:.5rem;margin-bottom:1rem;padding:.75rem;background:var(--bg-card);border-radius:16px;border:1px solid var(--border-subtle)}
-.selector-chip{flex:1;display:flex;align-items:center;gap:.5rem;background:var(--bg-elevated);padding:.75rem 1rem;border-radius:12px;cursor:pointer;transition:all .2s}
-.selector-chip select{flex:1;background:transparent;border:none;color:var(--text-primary);font-size:1rem;font-weight:600;cursor:pointer;-webkit-appearance:none}
-.selector-chip select:focus{outline:none}
-.genre-scroll{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0;margin-bottom:1rem;scrollbar-width:none;scroll-snap-type:x mandatory}
-.genre-scroll::-webkit-scrollbar{display:none}
-.genre-btn{flex-shrink:0;background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-secondary);padding:.75rem 1.25rem;border-radius:20px;cursor:pointer;transition:all .2s ease;font-size:.9rem;font-weight:500;white-space:nowrap;min-height:44px}
-.genre-btn:active{transform:scale(.95)}
-.genre-btn.active{border-color:var(--accent-primary);color:var(--text-primary);background:rgba(255,107,53,.15)}
-.structure-section{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:20px;padding:1.25rem;margin-bottom:1rem}
-.structure-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.structure-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);display:flex;align-items:center;gap:.5rem}
-.structure-timeline{display:flex;gap:.75rem;overflow-x:auto;padding:.75rem .5rem;scrollbar-width:none}
-.structure-timeline::-webkit-scrollbar{display:none}
-.section-block{flex-shrink:0;min-width:120px;padding:1rem;border-radius:16px;cursor:pointer;border:2px solid transparent;transition:all .2s ease;text-align:center;position:relative}
-.section-block:active{transform:scale(.98)}
-.section-block.active{border-color:#fff;transform:scale(1.02)}
-.section-block.intro{background:rgba(251,191,36,.2);color:#fbbf24}
-.section-block.verse{background:rgba(59,130,246,.2);color:#60a5fa}
-.section-block.chorus{background:rgba(168,85,247,.2);color:#c084fc}
-.section-block.bridge{background:rgba(34,197,94,.2);color:#4ade80}
-.section-block.outro{background:rgba(239,68,68,.2);color:#f87171}
-.section-block.drop{background:rgba(236,72,153,.2);color:#f472b6}
-.section-block.build{background:rgba(6,182,212,.2);color:#22d3ee}
-.section-block .section-name{font-weight:600;font-size:.95rem;margin-bottom:.25rem}
-.section-block .section-bars{font-size:.7rem;opacity:.7}
-.section-block .section-chords{font-size:.65rem;margin-top:.5rem;opacity:.9}
-.section-block .delete-section{position:absolute;top:-8px;right:-8px;width:24px;height:24px;background:var(--error);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.8rem;color:#fff;cursor:pointer}
-.section-block.active .delete-section{display:flex}
-.add-section-btn{flex-shrink:0;width:50px;height:80px;border:2px dashed var(--border-subtle);border-radius:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary);font-size:1.5rem;transition:all .2s}
-.add-section-btn:active{border-color:var(--accent-primary);color:var(--accent-primary)}
-.generate-section{display:flex;gap:.75rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
-.btn{background:linear-gradient(135deg,var(--accent-primary),#ff8c5a);color:#fff;border:none;padding:1rem 2rem;border-radius:25px;font-weight:600;cursor:pointer;transition:all .2s ease;font-size:1rem;min-height:50px;display:flex;align-items:center;justify-content:center;gap:.5rem}
-.btn:active{transform:scale(.96)}
-.btn-secondary{background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary)}
-.btn-ai{background:linear-gradient(135deg,#8b5cf6,#a855f7)}
-.btn-magic{background:linear-gradient(135deg,#ec4899,#8b5cf6)}
-.btn-sm{padding:.5rem 1rem;font-size:.85rem;min-height:40px}
-.chord-section{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:20px;padding:1.25rem;margin:1rem 0}
-.chord-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.chord-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-secondary);display:flex;align-items:center;gap:.5rem}
-.current-section-badge{padding:.25rem .75rem;border-radius:12px;font-size:.75rem;font-weight:600}
-.chord-display{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:.75rem;margin:1rem 0}
-.chord-card{background:linear-gradient(145deg,var(--bg-elevated),var(--bg-dark));border:2px solid var(--border-subtle);border-radius:18px;padding:1rem;text-align:center;transition:all .2s ease;cursor:pointer;position:relative;min-height:90px;display:flex;flex-direction:column;justify-content:center}
-.chord-card:active{transform:scale(.95)}
-.chord-card.active{border-color:var(--accent-primary);box-shadow:0 0 25px var(--accent-glow)}
-.chord-card.playing{animation:pulse-glow .5s ease}
-@keyframes pulse-glow{0%,100%{box-shadow:0 0 25px var(--accent-glow)}50%{box-shadow:0 0 40px var(--accent-primary)}}
-.chord-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text-primary)}
-.chord-numeral{color:var(--accent-secondary);font-size:.85rem;margin-top:.2rem}
-.chord-function{color:var(--text-secondary);font-size:.65rem}
-.chord-card .chord-delete{position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--error);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.7rem;color:#fff;cursor:pointer}
-.chord-card.active .chord-delete{display:flex}
-.playback-section{background:var(--bg-elevated);border-radius:20px;padding:1.25rem;margin-top:1rem}
-.playback-controls{display:flex;gap:.75rem;justify-content:center;align-items:center}
-.play-btn{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent-primary),#ff8c5a);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;transition:all .2s ease;box-shadow:0 4px 20px var(--accent-glow)}
-.play-btn:active{transform:scale(.9)}
-.control-btn{background:var(--bg-card);border:1px solid var(--border-subtle);color:var(--text-primary);min-width:48px;min-height:48px;padding:0 1rem;border-radius:24px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:.3rem;transition:all .2s}
-.control-btn:active{transform:scale(.95);background:var(--bg-elevated)}
-.control-btn.active{background:var(--accent-primary);color:#fff;border-color:var(--accent-primary)}
-.tempo-control{display:flex;align-items:center;gap:.75rem;background:var(--bg-card);padding:.75rem 1rem;border-radius:24px;margin-top:1rem}
-.tempo-control input[type="range"]{flex:1;height:8px;-webkit-appearance:none;background:var(--border-subtle);border-radius:4px;cursor:pointer}
-.tempo-control input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;background:var(--accent-primary);border-radius:50%;cursor:pointer}
-.tempo-value{font-family:'JetBrains Mono',monospace;font-size:.9rem;min-width:55px;text-align:center;font-weight:600}
-.metronome-light{width:12px;height:12px;border-radius:50%;background:var(--border-subtle);transition:all .1s}
-.metronome-light.beat{background:var(--accent-primary);box-shadow:0 0 15px var(--accent-primary)}
-.backing-controls{display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
-.backing-btn{display:flex;align-items:center;gap:.4rem;background:var(--bg-card);border:1px solid var(--border-subtle);padding:.6rem 1rem;border-radius:20px;font-size:.85rem;cursor:pointer;min-height:44px;transition:all .2s}
-.backing-btn:active{transform:scale(.95)}
-.backing-btn.active{background:rgba(255,107,53,.2);border-color:var(--accent-primary);color:var(--accent-primary)}
-.backing-btn .indicator{width:8px;height:8px;border-radius:50%;background:var(--text-secondary)}
-.backing-btn.active .indicator{background:var(--accent-primary)}
-.visualizer{height:45px;display:flex;align-items:flex-end;justify-content:center;gap:3px;margin-top:1rem}
-.viz-bar{width:6px;background:linear-gradient(to top,var(--accent-primary),var(--accent-secondary));border-radius:3px;transition:height .1s ease}
-.sound-studio{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:20px;padding:1.25rem;margin-bottom:1rem}
-.studio-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.synth-designer{background:var(--bg-dark);border-radius:16px;padding:1rem;margin-bottom:1rem}
-.synth-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-.synth-knob{display:flex;flex-direction:column;align-items:center;gap:.5rem}
-.knob{width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,var(--bg-elevated),var(--bg-card));border:3px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative}
-.knob::after{content:'';position:absolute;width:3px;height:20px;background:var(--accent-primary);top:8px;border-radius:2px}
-.knob:active{border-color:var(--accent-primary)}
-.knob-label{font-size:.75rem;color:var(--text-secondary);text-transform:uppercase}
-.knob-value{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent-primary)}
-.wave-selector{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
-.wave-btn{flex:1;min-width:60px;padding:.75rem;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:12px;cursor:pointer;text-align:center;font-size:1.5rem;transition:all .2s}
-.wave-btn:active{transform:scale(.95)}
-.wave-btn.active{border-color:var(--accent-primary);background:rgba(255,107,53,.15)}
-.effects-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-.effect-card{background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:12px;padding:1rem;cursor:pointer;transition:all .2s}
-.effect-card:active{transform:scale(.97)}
-.effect-card.active{border-color:var(--accent-primary);background:rgba(255,107,53,.1)}
-.effect-name{font-weight:600;font-size:.9rem;margin-bottom:.25rem}
-.effect-icon{font-size:1.5rem;margin-bottom:.5rem}
-.effect-slider{width:100%;height:6px;-webkit-appearance:none;background:var(--border-subtle);border-radius:3px;margin-top:.5rem}
-.effect-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--accent-primary);border-radius:50%;cursor:pointer}
-.instrument-library{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:20px;padding:1.25rem}
-.instrument-categories{display:flex;gap:.5rem;overflow-x:auto;padding:.5rem 0;margin-bottom:1rem;scrollbar-width:none}
-.instrument-categories::-webkit-scrollbar{display:none}
-.category-btn{flex-shrink:0;padding:.6rem 1rem;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:16px;cursor:pointer;font-size:.8rem;white-space:nowrap;transition:all .2s}
-.category-btn.active{background:var(--accent-primary);color:#fff;border-color:var(--accent-primary)}
-.instruments-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem}
-.instrument-card{background:var(--bg-dark);border:2px solid var(--border-subtle);border-radius:16px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
-.instrument-card:active{transform:scale(.95)}
-.instrument-card.active{border-color:var(--accent-primary)}
-.instrument-icon{font-size:2rem;margin-bottom:.5rem}
-.instrument-name{font-size:.8rem;font-weight:500}
-.ai-section{background:linear-gradient(145deg,rgba(139,92,246,.1),rgba(236,72,153,.1));border:1px solid rgba(139,92,246,.3);border-radius:20px;padding:1.25rem;margin-bottom:1rem}
-.ai-header{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
-.ai-badge{background:linear-gradient(135deg,var(--purple),var(--pink));padding:.25rem .75rem;border-radius:20px;font-size:.75rem;font-weight:600}
-.sound-like-input{display:flex;gap:.5rem;margin-bottom:1rem}
-.sound-like-input input{flex:1;background:var(--bg-dark);border:1px solid var(--border-subtle);border-radius:16px;padding:1rem;color:var(--text-primary);font-size:1rem}
-.sound-like-input input::placeholder{color:var(--text-secondary)}
-.sound-like-input input:focus{outline:none;border-color:var(--purple)}
-.ai-features-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
-.ai-feature-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;padding:1rem;cursor:pointer;transition:all .2s;text-align:center}
-.ai-feature-card:active{transform:scale(.97)}
-.ai-feature-card:hover{border-color:var(--purple)}
-.ai-feature-icon{font-size:2rem;margin-bottom:.5rem}
-.ai-feature-title{font-weight:600;font-size:.9rem;margin-bottom:.25rem}
-.ai-feature-desc{font-size:.75rem;color:var(--text-secondary)}
-.melody-display{background:var(--bg-dark);border-radius:16px;padding:1rem;margin-top:1rem}
-.melody-notes{display:flex;gap:.25rem;overflow-x:auto;padding:.5rem 0;scrollbar-width:none}
-.melody-notes::-webkit-scrollbar{display:none}
-.melody-note{flex-shrink:0;min-width:40px;height:50px;background:linear-gradient(145deg,var(--purple),var(--pink));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.8rem;cursor:pointer;transition:all .2s}
-.melody-note:active{transform:scale(.95)}
-.lyrics-display{background:var(--bg-dark);border-radius:16px;padding:1rem;margin-top:1rem;min-height:120px}
-.lyrics-line{margin-bottom:.75rem;line-height:1.8}
-.lyrics-chord{color:var(--accent-primary);font-weight:600;font-size:.75rem;display:block}
-.lyrics-text{font-size:1rem;color:var(--text-primary)}
-.drum-machine{background:var(--bg-dark);border-radius:16px;padding:1rem}
-.drum-grid{display:grid;grid-template-columns:auto repeat(16,1fr);gap:4px}
-.drum-label{font-size:.7rem;color:var(--text-secondary);display:flex;align-items:center;padding-right:.5rem}
-.drum-step{width:100%;aspect-ratio:1;background:var(--bg-elevated);border-radius:4px;cursor:pointer;transition:all .1s;border:1px solid transparent}
-.drum-step:active{transform:scale(.9)}
-.drum-step.active{background:var(--accent-primary)}
-.drum-step.beat-4{border-color:var(--border-subtle)}
-.drum-step.playing{box-shadow:0 0 10px var(--accent-primary)}
-.bottom-drawer{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--bg-card);border-top:1px solid var(--border-subtle);border-radius:24px 24px 0 0;transform:translateY(calc(100% - 75px - var(--safe-bottom)));transition:transform .3s cubic-bezier(.4,0,.2,1);max-height:70vh;overflow:hidden;box-shadow:0 -10px 40px rgba(0,0,0,.3);padding-bottom:var(--safe-bottom)}
-.bottom-drawer.open{transform:translateY(0)}
-.drawer-handle{display:flex;flex-direction:column;align-items:center;padding:.75rem;cursor:pointer;touch-action:none}
-.drawer-handle-bar{width:40px;height:5px;background:var(--border-subtle);border-radius:3px;margin-bottom:.75rem}
-.drawer-tabs{display:flex;gap:.5rem;justify-content:center;padding:0 .75rem;overflow-x:auto;scrollbar-width:none}
-.drawer-tabs::-webkit-scrollbar{display:none}
-.drawer-tab{padding:.6rem 1rem;border-radius:20px;font-size:.85rem;background:transparent;border:none;color:var(--text-secondary);cursor:pointer;white-space:nowrap;min-height:40px;transition:all .2s}
-.drawer-tab:active{transform:scale(.95)}
-.drawer-tab.active{background:rgba(255,107,53,.15);color:var(--accent-primary)}
-.drawer-content{padding:1rem;overflow-y:auto;max-height:calc(70vh - 100px);-webkit-overflow-scrolling:touch}
-.drawer-panel{display:none}
-.drawer-panel.active{display:block}
-.instrument-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1rem;justify-content:center}
-.instrument-chord{background:var(--bg-dark);border-radius:16px;padding:.75rem;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s}
-.instrument-chord:active{transform:scale(.95);border-color:var(--accent-primary)}
-.instrument-chord-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent-primary);margin-bottom:.5rem}
-.chord-diagram{width:85px;height:100px;margin:0 auto}
-.fret-info{font-size:.65rem;color:var(--text-secondary);margin-top:.25rem;font-family:'JetBrains Mono',monospace}
-.piano-container{overflow-x:auto;padding:1rem 0;-webkit-overflow-scrolling:touch}
-.piano-roll{display:flex;justify-content:center;gap:1px;min-width:fit-content}
-.piano-key{width:36px;height:120px;background:#fff;border-radius:0 0 6px 6px;cursor:pointer;transition:background .1s;position:relative}
-.piano-key.black{width:26px;height:75px;background:#1a1a24;margin-left:-13px;margin-right:-13px;z-index:2;border-radius:0 0 4px 4px}
-.piano-key:active{background:var(--accent-primary)}
-.piano-key.black:active{background:var(--accent-secondary)}
-.piano-key.highlighted{background:var(--accent-primary)}
-.piano-key.black.highlighted{background:var(--accent-secondary)}
-.piano-key .key-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:.7rem;color:#333;pointer-events:none}
-.piano-key.black .key-label{color:#fff}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;visibility:hidden;transition:all .3s ease;padding:1rem}
-.modal.show{opacity:1;visibility:visible}
-.modal-content{background:var(--bg-card);border-radius:24px;padding:1.5rem;max-width:400px;width:100%;max-height:80vh;overflow-y:auto;transform:translateY(20px);transition:transform .3s ease;border:1px solid var(--border-subtle)}
-.modal.show .modal-content{transform:translateY(0)}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.modal-title{font-size:1.25rem;font-weight:600}
-.modal-close{background:none;border:none;font-size:1.5rem;color:var(--text-secondary);cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
-.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1rem 0}
-.info-card{background:var(--bg-elevated);border-radius:12px;padding:1rem;text-align:center}
-.info-card-label{font-size:.7rem;color:var(--text-secondary);margin-bottom:.25rem}
-.info-card-value{font-size:1.1rem;font-weight:600}
-.tag{display:inline-block;background:rgba(255,107,53,.15);color:var(--accent-primary);padding:.25rem .75rem;border-radius:12px;font-size:.8rem;margin:.25rem}
-.toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);z-index:600;background:var(--bg-card);border:1px solid var(--border-subtle);padding:.75rem 1.25rem;border-radius:25px;font-weight:500;box-shadow:0 10px 40px rgba(0,0,0,.3);transition:transform .3s ease;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.sample-upload{border:2px dashed var(--border-subtle);border-radius:16px;padding:2rem;text-align:center;cursor:pointer;transition:all .2s}
-.sample-upload:hover{border-color:var(--accent-primary)}
-.sample-upload-icon{font-size:2.5rem;margin-bottom:.5rem}
-.sample-upload-text{color:var(--text-secondary);font-size:.9rem}
-.samples-list{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
-.sample-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg-elevated);padding:.75rem 1rem;border-radius:12px}
-.sample-name{font-size:.9rem}
-.sample-actions{display:flex;gap:.5rem}
-.loading-spinner{width:24px;height:24px;border:3px solid var(--border-subtle);border-top-color:var(--accent-primary);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(min-width:768px){.main-content{max-width:1000px;padding:2rem}.chord-display{grid-template-columns:repeat(4,1fr)}.ai-features-grid{grid-template-columns:repeat(4,1fr)}.effects-grid{grid-template-columns:repeat(4,1fr)}}
-    </style>
-</head>
-<body>
-<div class="bg-pattern"></div>
-<header class="header">
-    <div class="header-left">
-        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <h1 class="logo" onclick="showVersionInfo()">ChordFlow<span class="version-badge">v7.0</span></h1>
-    </div>
-    <div class="header-controls">
-        <button class="icon-btn" onclick="undoAction()" title="Undo">↩️</button>
-        <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌓</button>
-        <button class="icon-btn" onclick="showExportModal()" title="Export">💾</button>
-    </div>
-</header>
-<main class="main-content">
-    <div class="studio-tabs">
-        <button class="studio-tab active" onclick="switchStudioTab('compose')"><span class="tab-icon">🎵</span><span>Compose</span></button>
-        <button class="studio-tab" onclick="switchStudioTab('sound')"><span class="tab-icon">🔊</span><span>Sound Design</span></button>
-        <button class="studio-tab" onclick="switchStudioTab('instruments')"><span class="tab-icon">🎸</span><span>Instruments</span></button>
-        <button class="studio-tab" onclick="switchStudioTab('ai')"><span class="tab-icon">🧠</span><span>AI Studio</span></button>
-        <button class="studio-tab" onclick="switchStudioTab('drums')"><span class="tab-icon">🥁</span><span>808 / Drums</span></button>
-    </div>
-    <!-- COMPOSE PANEL -->
-    <div id="composePanel" class="studio-panel active">
-        <div class="key-scale-bar">
-            <div class="selector-chip"><span class="icon">🎹</span><select id="keySelect" onchange="updateKey(this.value)"><option value="C">C</option><option value="C#">C#/Db</option><option value="D">D</option><option value="D#">D#/Eb</option><option value="E">E</option><option value="F">F</option><option value="F#">F#/Gb</option><option value="G">G</option><option value="G#">G#/Ab</option><option value="A">A</option><option value="A#">A#/Bb</option><option value="B">B</option></select></div>
-            <div class="selector-chip"><span class="icon">🎼</span><select id="scaleSelect" onchange="updateScale(this.value)"><option value="major">Major</option><option value="minor">Minor</option><option value="dorian">Dorian</option><option value="mixolydian">Mixolydian</option><option value="blues">Blues</option></select></div>
-        </div>
-        <div class="genre-scroll" id="genreScroll">
-            <button class="genre-btn active" onclick="setGenre('pop')">🎤 Pop</button>
-            <button class="genre-btn" onclick="setGenre('rock')">🎸 Rock</button>
-            <button class="genre-btn" onclick="setGenre('jazz')">🎷 Jazz</button>
-            <button class="genre-btn" onclick="setGenre('blues')">🎺 Blues</button>
-            <button class="genre-btn" onclick="setGenre('rnb')">💜 R&B</button>
-            <button class="genre-btn" onclick="setGenre('edm')">🎧 EDM</button>
-            <button class="genre-btn" onclick="setGenre('hiphop')">🔥 Hip-Hop</button>
-            <button class="genre-btn" onclick="setGenre('trap')">💎 Trap</button>
-            <button class="genre-btn" onclick="setGenre('lofi')">🌙 Lo-Fi</button>
-            <button class="genre-btn" onclick="setGenre('country')">🤠 Country</button>
-            <button class="genre-btn" onclick="setGenre('folk')">🌿 Folk</button>
-            <button class="genre-btn" onclick="setGenre('cinematic')">🎬 Cinematic</button>
-        </div>
-        <section class="structure-section">
-            <div class="structure-header"><span class="structure-title">📝 Song Structure</span><button class="btn btn-sm btn-secondary" onclick="generateFullSong()">✨ Auto Structure</button></div>
-            <div class="structure-timeline" id="structureTimeline">
-                <div class="section-block verse active" onclick="selectSection(0)"><div class="section-name">Verse</div><div class="section-bars">4 bars</div><div class="section-chords" id="sectionPreview0">—</div><div class="delete-section" onclick="event.stopPropagation();deleteSection(0)">×</div></div>
-                <div class="add-section-btn" onclick="showAddSectionModal()">+</div>
-            </div>
-        </section>
-        <div class="generate-section">
-            <button class="btn" onclick="generateProgression()">🎲 Generate Chords</button>
-            <button class="btn btn-ai" onclick="aiContinueProgression()">🤖 AI Continue</button>
-        </div>
-        <section class="chord-section">
-            <div class="chord-header"><span class="chord-title">🎵 Chord Progression</span><span class="current-section-badge" id="currentSectionBadge" style="background:rgba(59,130,246,.2);color:#60a5fa">Verse</span></div>
-            <div class="chord-display" id="chordDisplay"><div class="chord-card" onclick="playChordAtIndex(0)"><div class="chord-name">—</div><div class="chord-numeral">—</div></div></div>
-            <div class="info-grid"><div class="info-card"><div class="info-card-label">Pattern</div><div class="info-card-value" id="patternName">—</div></div><div class="info-card"><div class="info-card-label">Mood</div><div class="info-card-value" id="moodName">—</div></div></div>
-            <div style="text-align:center;margin-top:.5rem"><span class="structure-title">Famous Songs</span><div id="famousSongs" style="margin-top:.5rem"></div></div>
-        </section>
-        <section class="playback-section">
-            <div class="playback-controls"><button class="control-btn" onclick="toggleLoop()" id="loopBtn">🔁</button><button class="play-btn" onclick="playProgression()" id="playBtn">▶️</button><button class="control-btn" onclick="stopPlayback()">⏹️</button></div>
-            <div class="tempo-control"><span>🎚️</span><input type="range" min="40" max="200" value="120" id="tempoSlider" oninput="updateTempo(this.value)"><span class="tempo-value" id="tempoValue">120 BPM</span><div class="metronome-light" id="metronomeLight"></div></div>
-            <div class="backing-controls">
-                <button class="backing-btn active" onclick="toggleBacking('piano')" id="pianoBtn"><span class="indicator"></span>🎹 Piano</button>
-                <button class="backing-btn" onclick="toggleBacking('bass')" id="bassBtn"><span class="indicator"></span>🎸 Bass</button>
-                <button class="backing-btn" onclick="toggleBacking('drums')" id="drumsBtn"><span class="indicator"></span>🥁 Drums</button>
-                <button class="backing-btn" onclick="toggleBacking('metronome')" id="metronomeBtn"><span class="indicator"></span>⏱️ Click</button>
-            </div>
-            <div class="visualizer" id="visualizer"><div class="viz-bar" style="height:20px"></div><div class="viz-bar" style="height:15px"></div><div class="viz-bar" style="height:30px"></div><div class="viz-bar" style="height:25px"></div><div class="viz-bar" style="height:20px"></div><div class="viz-bar" style="height:35px"></div><div class="viz-bar" style="height:15px"></div><div class="viz-bar" style="height:28px"></div><div class="viz-bar" style="height:22px"></div><div class="viz-bar" style="height:18px"></div><div class="viz-bar" style="height:32px"></div><div class="viz-bar" style="height:20px"></div></div>
-        </section>
-    </div>
-    <!-- SOUND DESIGN PANEL -->
-    <div id="soundPanel" class="studio-panel">
-        <div class="sound-studio">
-            <div class="studio-header"><span class="structure-title">🎛️ Synth Designer</span><button class="btn btn-sm btn-secondary" onclick="resetSynth()">Reset</button></div>
-            <div class="wave-selector"><div class="wave-btn active" onclick="setWaveType('sine')" title="Sine">〰️</div><div class="wave-btn" onclick="setWaveType('triangle')" title="Triangle">📐</div><div class="wave-btn" onclick="setWaveType('sawtooth')" title="Sawtooth">📈</div><div class="wave-btn" onclick="setWaveType('square')" title="Square">⬛</div></div>
-            <div class="synth-designer">
-                <div class="synth-controls">
-                    <div class="synth-knob"><div class="knob" id="attackKnob"></div><div class="knob-label">Attack</div><div class="knob-value">0.02s</div></div>
-                    <div class="synth-knob"><div class="knob" id="decayKnob"></div><div class="knob-label">Decay</div><div class="knob-value">0.4s</div></div>
-                    <div class="synth-knob"><div class="knob" id="sustainKnob"></div><div class="knob-label">Sustain</div><div class="knob-value">0.3</div></div>
-                    <div class="synth-knob"><div class="knob" id="releaseKnob"></div><div class="knob-label">Release</div><div class="knob-value">1.2s</div></div>
-                </div>
-            </div>
-        </div>
-        <div class="sound-studio">
-            <div class="studio-header"><span class="structure-title">🔗 Effect Chain</span></div>
-            <div class="effects-grid">
-                <div class="effect-card" onclick="toggleEffect('reverb')"><div class="effect-icon">🌊</div><div class="effect-name">Reverb</div><input type="range" class="effect-slider" id="reverbMix" value="30" min="0" max="100" oninput="updateEffect('reverb',this.value)"></div>
-                <div class="effect-card" onclick="toggleEffect('delay')"><div class="effect-icon">🔄</div><div class="effect-name">Delay</div><input type="range" class="effect-slider" id="delayMix" value="20" min="0" max="100" oninput="updateEffect('delay',this.value)"></div>
-                <div class="effect-card" onclick="toggleEffect('chorus')"><div class="effect-icon">✨</div><div class="effect-name">Chorus</div><input type="range" class="effect-slider" id="chorusMix" value="25" min="0" max="100" oninput="updateEffect('chorus',this.value)"></div>
-                <div class="effect-card" onclick="toggleEffect('distortion')"><div class="effect-icon">⚡</div><div class="effect-name">Distortion</div><input type="range" class="effect-slider" id="distortionMix" value="0" min="0" max="100" oninput="updateEffect('distortion',this.value)"></div>
-                <div class="effect-card" onclick="toggleEffect('phaser')"><div class="effect-icon">🌀</div><div class="effect-name">Phaser</div><input type="range" class="effect-slider" id="phaserMix" value="0" min="0" max="100" oninput="updateEffect('phaser',this.value)"></div>
-                <div class="effect-card" onclick="toggleEffect('filter')"><div class="effect-icon">🎚️</div><div class="effect-name">Filter</div><input type="range" class="effect-slider" id="filterFreq" value="80" min="0" max="100" oninput="updateEffect('filter',this.value)"></div>
-            </div>
-        </div>
-        <div class="sound-studio">
-            <div class="studio-header"><span class="structure-title">📁 Sample Library</span></div>
-            <div class="sample-upload" onclick="document.getElementById('sampleInput').click()"><div class="sample-upload-icon">📤</div><div class="sample-upload-text">Drop or tap to upload drums, bass, or pads</div><input type="file" id="sampleInput" accept="audio/*" multiple style="display:none" onchange="handleSampleUpload(this.files)"></div>
-            <div class="samples-list" id="samplesList"></div>
-        </div>
-    </div>
-    <!-- INSTRUMENTS PANEL -->
-    <div id="instrumentsPanel" class="studio-panel">
-        <div class="instrument-library">
-            <div class="studio-header"><span class="structure-title">🎸 Instrument Library</span></div>
-            <div class="instrument-categories">
-                <button class="category-btn active" onclick="setInstrumentCategory('guitars')">🎸 Guitars</button>
-                <button class="category-btn" onclick="setInstrumentCategory('strings')">🎻 Strings</button>
-                <button class="category-btn" onclick="setInstrumentCategory('brass')">🎺 Brass</button>
-                <button class="category-btn" onclick="setInstrumentCategory('world')">🌍 World</button>
-                <button class="category-btn" onclick="setInstrumentCategory('synths')">🎹 Synths</button>
-            </div>
-            <div class="instruments-grid" id="instrumentsGrid">
-                <div class="instrument-card active" onclick="selectInstrument('acoustic-guitar')"><div class="instrument-icon">🎸</div><div class="instrument-name">Acoustic</div></div>
-                <div class="instrument-card" onclick="selectInstrument('electric-guitar')"><div class="instrument-icon">⚡</div><div class="instrument-name">Electric</div></div>
-                <div class="instrument-card" onclick="selectInstrument('nylon-guitar')"><div class="instrument-icon">🎶</div><div class="instrument-name">Nylon</div></div>
-                <div class="instrument-card" onclick="selectInstrument('bass-guitar')"><div class="instrument-icon">🎸</div><div class="instrument-name">Bass</div></div>
-            </div>
-        </div>
-        <div class="sound-studio" style="margin-top:1rem">
-            <div class="studio-header"><span class="structure-title">🎯 Guitar Articulations</span></div>
-            <div class="effects-grid">
-                <div class="effect-card active" onclick="setArticulation('strum')"><div class="effect-icon">🎵</div><div class="effect-name">Strum</div></div>
-                <div class="effect-card" onclick="setArticulation('fingerpick')"><div class="effect-icon">👆</div><div class="effect-name">Fingerpick</div></div>
-                <div class="effect-card" onclick="setArticulation('palm-mute')"><div class="effect-icon">✋</div><div class="effect-name">Palm Mute</div></div>
-                <div class="effect-card" onclick="setArticulation('power-chord')"><div class="effect-icon">💪</div><div class="effect-name">Power Chord</div></div>
-            </div>
-            <div style="margin-top:1rem"><div class="structure-title" style="margin-bottom:.5rem">Strum Pattern</div>
-                <div class="genre-scroll"><button class="genre-btn active" onclick="setStrumPattern('basic')">Basic</button><button class="genre-btn" onclick="setStrumPattern('folk')">Folk</button><button class="genre-btn" onclick="setStrumPattern('pop')">Pop</button><button class="genre-btn" onclick="setStrumPattern('rock')">Rock</button><button class="genre-btn" onclick="setStrumPattern('reggae')">Reggae</button></div>
-            </div>
-        </div>
-        <div class="sound-studio" style="margin-top:1rem">
-            <div class="studio-header"><span class="structure-title">🎻 String Section</span></div>
-            <div class="instruments-grid">
-                <div class="instrument-card" onclick="selectInstrument('violin')"><div class="instrument-icon">🎻</div><div class="instrument-name">Violin</div></div>
-                <div class="instrument-card" onclick="selectInstrument('viola')"><div class="instrument-icon">🎻</div><div class="instrument-name">Viola</div></div>
-                <div class="instrument-card" onclick="selectInstrument('cello')"><div class="instrument-icon">🎻</div><div class="instrument-name">Cello</div></div>
-                <div class="instrument-card" onclick="selectInstrument('contrabass')"><div class="instrument-icon">🎻</div><div class="instrument-name">Contrabass</div></div>
-            </div>
-            <div class="effects-grid" style="margin-top:1rem">
-                <div class="effect-card active" onclick="setStringStyle('legato')"><div class="effect-name">Legato</div></div>
-                <div class="effect-card" onclick="setStringStyle('staccato')"><div class="effect-name">Staccato</div></div>
-                <div class="effect-card" onclick="setStringStyle('pizzicato')"><div class="effect-name">Pizzicato</div></div>
-                <div class="effect-card" onclick="setStringStyle('tremolo')"><div class="effect-name">Tremolo</div></div>
-            </div>
-        </div>
-        <div class="sound-studio" style="margin-top:1rem">
-            <div class="studio-header"><span class="structure-title">🌍 World Instruments</span></div>
-            <div class="instruments-grid">
-                <div class="instrument-card" onclick="selectInstrument('sitar')"><div class="instrument-icon">🪕</div><div class="instrument-name">Sitar</div></div>
-                <div class="instrument-card" onclick="selectInstrument('koto')"><div class="instrument-icon">🎵</div><div class="instrument-name">Koto</div></div>
-                <div class="instrument-card" onclick="selectInstrument('steel-drum')"><div class="instrument-icon">🥁</div><div class="instrument-name">Steel Drum</div></div>
-                <div class="instrument-card" onclick="selectInstrument('kalimba')"><div class="instrument-icon">🎶</div><div class="instrument-name">Kalimba</div></div>
-                <div class="instrument-card" onclick="selectInstrument('shamisen')"><div class="instrument-icon">🎸</div><div class="instrument-name">Shamisen</div></div>
-                <div class="instrument-card" onclick="selectInstrument('erhu')"><div class="instrument-icon">🎻</div><div class="instrument-name">Erhu</div></div>
-            </div>
-        </div>
-    </div>
-    <!-- AI STUDIO PANEL -->
-    <div id="aiPanel" class="studio-panel">
-        <div class="ai-section">
-            <div class="ai-header"><span class="ai-badge">✨ AI</span><span class="structure-title">"Sound Like" Mode</span></div>
-            <div class="sound-like-input"><input type="text" id="soundLikeInput" placeholder="e.g., The Weeknd, Radiohead, Billie Eilish..."><button class="btn btn-magic" onclick="applySoundLike()">✨</button></div>
-            <div class="genre-scroll">
-                <button class="genre-btn" onclick="quickSoundLike('The Weeknd')">The Weeknd</button>
-                <button class="genre-btn" onclick="quickSoundLike('Radiohead')">Radiohead</button>
-                <button class="genre-btn" onclick="quickSoundLike('Billie Eilish')">Billie Eilish</button>
-                <button class="genre-btn" onclick="quickSoundLike('Arctic Monkeys')">Arctic Monkeys</button>
-                <button class="genre-btn" onclick="quickSoundLike('Taylor Swift')">Taylor Swift</button>
-                <button class="genre-btn" onclick="quickSoundLike('Drake')">Drake</button>
-                <button class="genre-btn" onclick="quickSoundLike('Coldplay')">Coldplay</button>
-            </div>
-        </div>
-        <div class="ai-section">
-            <div class="ai-header"><span class="ai-badge">🧠 AI</span><span class="structure-title">Deep Features</span></div>
-            <div class="ai-features-grid">
-                <div class="ai-feature-card" onclick="generateMelody()"><div class="ai-feature-icon">🎤</div><div class="ai-feature-title">Melody</div><div class="ai-feature-desc">Generate vocal melody</div></div>
-                <div class="ai-feature-card" onclick="generateCounterMelody()"><div class="ai-feature-icon">🎵</div><div class="ai-feature-title">Counter-Melody</div><div class="ai-feature-desc">Harmonizing line</div></div>
-                <div class="ai-feature-card" onclick="generateFullArrangement()"><div class="ai-feature-icon">🎬</div><div class="ai-feature-title">Full Arrange</div><div class="ai-feature-desc">Complete song</div></div>
-                <div class="ai-feature-card" onclick="generateLyrics()"><div class="ai-feature-icon">📝</div><div class="ai-feature-title">Lyrics</div><div class="ai-feature-desc">Fit rhythm & syllables</div></div>
-            </div>
-        </div>
-        <div class="ai-section" id="melodySection" style="display:none">
-            <div class="ai-header"><span class="structure-title">🎤 Generated Melody</span><button class="btn btn-sm" onclick="playMelody()">▶️ Play</button></div>
-            <div class="melody-display"><div class="melody-notes" id="melodyNotes"></div></div>
-        </div>
-        <div class="ai-section" id="lyricsSection" style="display:none">
-            <div class="ai-header"><span class="structure-title">📝 Generated Lyrics</span><button class="btn btn-sm btn-secondary" onclick="regenerateLyrics()">🔄</button></div>
-            <div class="lyrics-display" id="lyricsDisplay"></div>
-        </div>
-        <div class="ai-section" id="aiLoading" style="display:none"><div style="text-align:center;padding:2rem"><div class="loading-spinner" style="margin:0 auto 1rem"></div><div id="aiLoadingText">AI is thinking...</div></div></div>
-    </div>
-    <!-- DRUMS PANEL -->
-    <div id="drumsPanel" class="studio-panel">
-        <div class="sound-studio">
-            <div class="studio-header"><span class="structure-title">🔥 808 Drum Machine</span><div style="display:flex;gap:.5rem"><button class="btn btn-sm btn-secondary" onclick="clearDrumPattern()">Clear</button><button class="btn btn-sm" onclick="playDrumPattern()" id="drumPlayBtn">▶️</button></div></div>
-            <div class="drum-machine"><div class="drum-grid" id="drumGrid"></div></div>
-            <div style="margin-top:1rem"><div class="structure-title" style="margin-bottom:.5rem">Presets</div>
-                <div class="genre-scroll">
-                    <button class="genre-btn" onclick="loadDrumPreset('trap')">🔥 Trap</button>
-                    <button class="genre-btn" onclick="loadDrumPreset('boom-bap')">🎤 Boom Bap</button>
-                    <button class="genre-btn" onclick="loadDrumPreset('house')">🏠 House</button>
-                    <button class="genre-btn" onclick="loadDrumPreset('drill')">💎 Drill</button>
-                    <button class="genre-btn" onclick="loadDrumPreset('reggaeton')">🌴 Reggaeton</button>
-                    <button class="genre-btn" onclick="loadDrumPreset('dnb')">⚡ D&B</button>
-                </div>
-            </div>
-            <div style="margin-top:1rem"><div class="structure-title" style="margin-bottom:.5rem">Hi-Hat Roll Speed</div>
-                <div class="tempo-control"><span>🎩</span><input type="range" min="1" max="4" value="1" id="hihatSpeed" oninput="updateHiHatSpeed(this.value)"><span class="tempo-value" id="hihatSpeedValue">1x</span></div>
-            </div>
-            <div style="margin-top:1rem"><div class="structure-title" style="margin-bottom:.5rem">808 Bass</div>
-                <div class="effects-grid">
-                    <div class="effect-card active" onclick="set808Type('short')"><div class="effect-name">Short</div></div>
-                    <div class="effect-card" onclick="set808Type('long')"><div class="effect-name">Long</div></div>
-                    <div class="effect-card" onclick="set808Type('slide')"><div class="effect-name">Slide</div></div>
-                    <div class="effect-card" onclick="set808Type('distorted')"><div class="effect-name">Distorted</div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
-<!-- BOTTOM DRAWER -->
-<div class="bottom-drawer" id="bottomDrawer">
-    <div class="drawer-handle" onclick="toggleDrawer()"><div class="drawer-handle-bar"></div>
-        <div class="drawer-tabs">
-            <button class="drawer-tab active" onclick="event.stopPropagation();switchDrawerTab('guitar')">🎸 Guitar</button>
-            <button class="drawer-tab" onclick="event.stopPropagation();switchDrawerTab('piano')">🎹 Piano</button>
-            <button class="drawer-tab" onclick="event.stopPropagation();switchDrawerTab('bass')">🎸 Bass</button>
-            <button class="drawer-tab" onclick="event.stopPropagation();switchDrawerTab('analysis')">📊 Analysis</button>
-        </div>
-    </div>
-    <div class="drawer-content">
-        <div class="drawer-panel active" id="guitarPanel"><div class="instrument-grid" id="guitarDiagrams"></div></div>
-        <div class="drawer-panel" id="pianoPanel"><div class="piano-container"><div class="piano-roll" id="pianoRoll"></div></div></div>
-        <div class="drawer-panel" id="bassPanel"><div id="bassTab"></div></div>
-        <div class="drawer-panel" id="analysisPanel"><div class="info-grid" id="analysisGrid"></div></div>
-    </div>
-</div>
-<div class="toast" id="toast">✨ Chord generated!</div>
-<!-- MODALS -->
-<div class="modal" id="versionModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title">ChordFlow Pro v7.0</h2><button class="modal-close" onclick="closeModal('versionModal')">×</button></div><div style="text-align:center"><div style="font-size:3rem;margin-bottom:1rem">🎵</div><p style="color:var(--text-secondary);margin-bottom:1rem">Complete AI Songwriting Suite with Sound Design Studio</p><div class="info-grid"><div class="info-card"><div class="info-card-label">New</div><div class="info-card-value">🔊 Sound Design</div></div><div class="info-card"><div class="info-card-label">New</div><div class="info-card-value">🎸 30+ Instruments</div></div><div class="info-card"><div class="info-card-label">New</div><div class="info-card-value">🧠 AI Melody</div></div><div class="info-card"><div class="info-card-label">New</div><div class="info-card-value">🥁 808 Machine</div></div></div></div></div></div>
-<div class="modal" id="addSectionModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title">Add Section</h2><button class="modal-close" onclick="closeModal('addSectionModal')">×</button></div><div class="instruments-grid"><div class="instrument-card" onclick="addSection('intro')"><div class="instrument-icon">🎬</div><div class="instrument-name">Intro</div></div><div class="instrument-card" onclick="addSection('verse')"><div class="instrument-icon">📝</div><div class="instrument-name">Verse</div></div><div class="instrument-card" onclick="addSection('chorus')"><div class="instrument-icon">🎤</div><div class="instrument-name">Chorus</div></div><div class="instrument-card" onclick="addSection('bridge')"><div class="instrument-icon">🌉</div><div class="instrument-name">Bridge</div></div><div class="instrument-card" onclick="addSection('drop')"><div class="instrument-icon">💥</div><div class="instrument-name">Drop</div></div><div class="instrument-card" onclick="addSection('build')"><div class="instrument-icon">📈</div><div class="instrument-name">Build</div></div><div class="instrument-card" onclick="addSection('outro')"><div class="instrument-icon">🔚</div><div class="instrument-name">Outro</div></div></div></div></div>
-<div class="modal" id="exportModal"><div class="modal-content"><div class="modal-header"><h2 class="modal-title">Export Project</h2><button class="modal-close" onclick="closeModal('exportModal')">×</button></div><div class="instruments-grid"><div class="instrument-card" onclick="exportPDF()"><div class="instrument-icon">📄</div><div class="instrument-name">PDF</div></div><div class="instrument-card" onclick="exportMIDI()"><div class="instrument-icon">🎹</div><div class="instrument-name">MIDI</div></div><div class="instrument-card" onclick="exportJSON()"><div class="instrument-icon">💾</div><div class="instrument-name">Project</div></div><div class="instrument-card" onclick="shareLink()"><div class="instrument-icon">🔗</div><div class="instrument-name">Share</div></div></div></div></div>
-haptic('light')}
+Panel').classList.add('active')}
+function toggleDrawer(){haptic('light');state.drawerOpen=!state.drawerOpen;document.getElementById('bottomDrawer').classList.toggle('open',state.drawerOpen)}
 
-function updateAllDisplays(){const s=state.song.sections[state.song.activeSection];const g=GENRE_PROGRESSIONS[state.genre]||GENRE_PROGRESSIONS.pop;updateChordDisplay();updateStructureTimeline();updateGuitarDiagrams();updatePianoRoll();document.getElementById('patternName').textContent=s.chords.map(c=>c.numeral).join(' - ')||'—';document.getElementById('moodName').textContent=g.mood;document.getElementById('famousSongs').innerHTML=g.songs.map(x=>`<span class="tag">${x}</span>`).join('');const b=document.getElementById('currentSectionBadge');b.textContent=s.type.charAt(0).toUpperCase()+s.type.slice(1)}
+function updateKey(k){haptic('light');state.key=k;updateAllDisplays();trackAnalytics('key',k)}
+function updateScale(s){haptic('light');state.scale=s;updateAllDisplays()}
+function setGenre(g){haptic('light');state.genre=g;document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');trackAnalytics('genre',g)}
+function updateTempo(t){state.tempo=parseInt(t);document.getElementById('tempoValue').textContent=t+' BPM'}
+function setVoicing(v){haptic('light');state.voicing=v;document.querySelectorAll('.voicing-card').forEach(c=>c.classList.remove('active'));event.target.closest('.voicing-card').classList.add('active');updateAllDisplays();showToast(`🎯 ${VOICINGS[v].name}`)}
 
-function updateChordDisplay(){const s=state.song.sections[state.song.activeSection];const c=document.getElementById('chordDisplay');if(!s.chords.length){c.innerHTML='<div class="chord-card"><div class="chord-name">—</div><div class="chord-numeral">—</div></div>';return}c.innerHTML=s.chords.map((ch,i)=>`<div class="chord-card" onclick="playChordAtIndex(${i})"><div class="chord-name">${ch.symbol}</div><div class="chord-numeral">${ch.numeral}</div><div class="chord-function">${ch.function}</div><div class="chord-delete" onclick="event.stopPropagation();deleteChord(${i})">×</div></div>`).join('')}
+async function initAudio(){if(state.synth)return;await Tone.start();
+state.synth=new Tone.PolySynth(Tone.Synth,{oscillator:{type:state.waveType},envelope:{attack:.02,decay:.4,sustain:.3,release:1.2}}).toDestination();
+state.bass=new Tone.MonoSynth({oscillator:{type:'sawtooth'},envelope:{attack:.02,decay:.3,sustain:.5,release:.8}}).toDestination();state.bass.volume.value=-6;
+state.strings=new Tone.PolySynth(Tone.Synth,{oscillator:{type:'sine'},envelope:{attack:.3,decay:.5,sustain:.6,release:2}}).toDestination();state.strings.volume.value=-10;
+state.effects.reverb=new Tone.Reverb({decay:2.5,wet:.3}).toDestination();
+state.effects.delay=new Tone.FeedbackDelay({delayTime:'8n',feedback:.3,wet:.2}).toDestination();
+state.synth.connect(state.effects.reverb);state.synth.connect(state.effects.delay)}
 
-function updateStructureTimeline(){const c=document.getElementById('structureTimeline');c.innerHTML=state.song.sections.map((s,i)=>`<div class="section-block ${s.type} ${i===state.song.activeSection?'active':''}" onclick="selectSection(${i})"><div class="section-name">${s.type.charAt(0).toUpperCase()+s.type.slice(1)}</div><div class="section-bars">${s.bars} bars</div><div class="section-chords">${s.chords.map(ch=>ch.symbol).join(' ')||'—'}</div><div class="delete-section" onclick="event.stopPropagation();deleteSection(${i})">×</div></div>`).join('')+'<div class="add-section-btn" onclick="showAddSectionModal()">+</div>'}
+function buildChord(root,quality,voicing='root'){
+const r=NOTES.indexOf(root);const intervals=quality.includes('m')?[0,3,7]:quality.includes('dim')?[0,3,6]:[0,4,7];
+const v=VOICINGS[voicing]||VOICINGS.root;
+const notes=v.intervals.map(i=>{const ni=(r+intervals[i%intervals.length]+Math.floor(i/12)*12)%12;const oct=4+Math.floor(i/12);return NOTES[ni]+oct});
+return notes}
 
-function updateGuitarDiagrams(){const s=state.song.sections[state.song.activeSection];const c=document.getElementById('guitarDiagrams');c.innerHTML=s.chords.map(ch=>{const bc=ch.root+(ch.quality.includes('minor')?'m':'');const f=GUITAR_CHORDS[bc]||GUITAR_CHORDS[ch.root]||[-1,-1,-1,-1,-1,-1];return`<div class="instrument-chord" onclick="playChordAtIndex(${s.chords.indexOf(ch)})"><div class="instrument-chord-name">${ch.symbol}</div><svg class="chord-diagram" viewBox="0 0 50 60">${[0,1,2,3,4].map(x=>`<line x1="5" y1="${12+x*12}" x2="45" y2="${12+x*12}" stroke="#333" stroke-width="1"/>`).join('')}${[0,1,2,3,4,5].map(x=>`<line x1="${5+x*8}" y1="12" x2="${5+x*8}" y2="60" stroke="#666" stroke-width="${x===0||x===5?2:1}"/>`).join('')}${f.map((v,x)=>v>=0?`<circle cx="${5+x*8}" cy="${v===0?8:6+v*12}" r="3.5" fill="${v===0?'none':'var(--accent-primary)'}" stroke="var(--accent-primary)" stroke-width="1.5"/>`:`<text x="${5+x*8}" y="8" text-anchor="middle" fill="var(--text-secondary)" font-size="8">×</text>`).join('')}</svg><div class="fret-info">${f.filter(v=>v>0).length?'Fret '+Math.min(...f.filter(v=>v>0)):'Open'}</div></div>`}).join('')||'<div style="text-align:center;color:var(--text-secondary);padding:2rem">Generate chords to see diagrams</div>'}
+function generateChord(degree){
+const si=SCALES[state.scale];const ri=(NOTES.indexOf(state.key)+si[degree])%12;const root=NOTES[ri];
+const quality=state.scale==='major'?CHORD_QUALITIES.major[degree]:CHORD_QUALITIES.minor[degree];
+const numeral=state.scale==='major'?NUMERALS.major[degree]:NUMERALS.minor[degree];
+const symbol=root+quality;const notes=buildChord(root,quality,state.voicing);const func=FUNCTIONS[degree];
+return{root,quality,symbol,numeral,notes,function:func,degree,voicing:state.voicing}}
 
-function updatePianoRoll(){const c=document.getElementById('pianoRoll');const s=state.song.sections[state.song.activeSection];const h=s.chords.length?s.chords[0].notes.map(n=>n.replace(/\d/g,'')):[];const k=[];[3,4,5].forEach(o=>{['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].forEach(n=>{const b=n.includes('#');const hi=h.includes(n);k.push(`<div class="piano-key ${b?'black':''} ${hi?'highlighted':''}" onclick="playNote('${n+o}')"><span class="key-label">${n==='C'?'C'+o:''}</span></div>`)})});c.innerHTML=k.join('')}
+function generateProgression(){haptic('medium');saveToHistory();
+const g=GENRE_PROGRESSIONS[state.genre]||GENRE_PROGRESSIONS.pop;
+const pattern=g.patterns[Math.floor(Math.random()*g.patterns.length)];
+const chords=pattern.map(d=>generateChord(d));
+state.song.sections[state.song.activeSection].chords=chords;
+updateAllDisplays();showToast('🎵 Progression generated!');trackAnalytics('chords',chords.length)}
+
+function generateFullSong(){haptic('medium');saveToHistory();
+state.song.sections=[{type:'intro',chords:[],bars:2},{type:'verse',chords:[],bars:4},{type:'chorus',chords:[],bars:4},{type:'verse',chords:[],bars:4},{type:'chorus',chords:[],bars:4},{type:'bridge',chords:[],bars:4},{type:'chorus',chords:[],bars:4},{type:'outro',chords:[],bars:2}];
+state.song.sections.forEach((s,i)=>{state.song.activeSection=i;generateProgression()});
+state.song.activeSection=0;updateAllDisplays();showToast('🎬 Full song created!')}
+
+function clearProgression(){haptic('light');saveToHistory();state.song.sections[state.song.activeSection].chords=[];updateAllDisplays();showToast('🗑️ Cleared')}
+
+async function playChordAtIndex(i){await Tone.start();initAudio();
+const s=state.song.sections[state.song.activeSection];if(!s.chords[i])return;
+const ch=s.chords[i];haptic('light');state.synth.triggerAttackRelease(ch.notes,'2n');
+document.querySelectorAll('.chord-card').forEach((c,idx)=>{c.classList.remove('playing');if(idx===i)c.classList.add('playing');setTimeout(()=>c.classList.remove('playing'),500)})}
+
+async function playProgression(){if(state.playing){stopPlayback();return}
+await Tone.start();initAudio();state.playing=true;
+document.getElementById('playBtn').textContent='⏸️';haptic('medium');
+const s=state.song.sections[state.song.activeSection];if(!s.chords.length){stopPlayback();showToast('Generate chords first!');return}
+const bd=(60/state.tempo)*2*1000;let i=0;
+const play=()=>{if(!state.playing)return;
+const ch=s.chords[i];state.synth.triggerAttackRelease(ch.notes,'2n');
+if(state.backingTracks.bass)state.bass.triggerAttackRelease(ch.root+'2','2n');
+if(state.backingTracks.strings)state.strings.triggerAttackRelease(ch.notes.map(n=>n.replace(/\d/,'5')),'2n');
+document.querySelectorAll('.chord-card').forEach((c,idx)=>{c.classList.remove('playing');if(idx===i)c.classList.add('playing')});
+document.getElementById('metronomeLight').classList.add('beat');setTimeout(()=>document.getElementById('metronomeLight').classList.remove('beat'),100);
+updateVisualizer();i++;
+if(i>=s.chords.length){if(state.looping){i=0;setTimeout(play,bd)}else stopPlayback()}else setTimeout(play,bd)};play()}
+
+function stopPlayback(){state.playing=false;document.getElementById('playBtn').textContent='▶️';document.querySelectorAll('.chord-card').forEach(c=>c.classList.remove('playing'))}
+function toggleLoop(){haptic('light');state.looping=!state.looping;document.getElementById('loopBtn').classList.toggle('active',state.looping);showToast(state.looping?'🔁 Loop on':'🔁 Loop off')}
+function toggleBacking(t){haptic('light');state.backingTracks[t]=!state.backingTracks[t];document.getElementById(t+'Btn').classList.toggle('active',state.backingTracks[t])}
+
+function updateVisualizer(){const v=document.getElementById('visualizer');if(!v)return;let bars='';for(let i=0;i<12;i++){const h=Math.floor(Math.random()*35)+10;bars+=`<div class="viz-bar" style="height:${h}px"></div>`}v.innerHTML=bars}
+
+function updateAllDisplays(){const s=state.song.sections[state.song.activeSection];const g=GENRE_PROGRESSIONS[state.genre]||GENRE_PROGRESSIONS.pop;
+updateChordDisplay();updateStructureTimeline();updateGuitarDiagrams();updatePianoRoll();updateMidiKeyboard();
+document.getElementById('patternName').textContent=s.chords.map(c=>c.numeral).join(' - ')||'—';
+document.getElementById('moodName').textContent=g.mood;
+document.getElementById('famousSongs').innerHTML=g.songs.map(x=>`<span class="tag">${x}</span>`).join('');
+const b=document.getElementById('currentSectionBadge');b.textContent=s.type.charAt(0).toUpperCase()+s.type.slice(1)}
+
+function updateChordDisplay(){const s=state.song.sections[state.song.activeSection];const c=document.getElementById('chordDisplay');
+if(!s.chords.length){c.innerHTML='<div class="chord-card"><div class="chord-name">—</div><div class="chord-numeral">—</div></div>';return}
+c.innerHTML=s.chords.map((ch,i)=>`<div class="chord-card" onclick="playChordAtIndex(${i})"><div class="chord-name">${ch.symbol}</div><div class="chord-numeral">${ch.numeral}</div><div class="chord-function">${ch.function}</div><div class="chord-voicing">${VOICINGS[ch.voicing]?.name||'Root'}</div><div class="chord-delete" onclick="event.stopPropagation();deleteChord(${i})">×</div></div>`).join('')}
+
+function updateStructureTimeline(){const c=document.getElementById('structureTimeline');
+c.innerHTML=state.song.sections.map((s,i)=>`<div class="section-block ${s.type} ${i===state.song.activeSection?'active':''}" onclick="selectSection(${i})"><div class="section-name">${s.type.charAt(0).toUpperCase()+s.type.slice(1)}</div><div class="section-bars">${s.bars} bars</div><div class="section-chords">${s.chords.map(ch=>ch.symbol).join(' ')||'—'}</div><div class="delete-section" onclick="event.stopPropagation();deleteSection(${i})">×</div></div>`).join('')+'<div class="add-section-btn" onclick="showAddSectionModal()">+</div>'}
+
+function updateGuitarDiagrams(){const s=state.song.sections[state.song.activeSection];const c=document.getElementById('guitarDiagrams');
+c.innerHTML=s.chords.map(ch=>{const bc=ch.root+(ch.quality.includes('m')?'m':'');const f=GUITAR_CHORDS[bc]||GUITAR_CHORDS[ch.root]||[-1,-1,-1,-1,-1,-1];
+return`<div class="instrument-chord" onclick="playChordAtIndex(${s.chords.indexOf(ch)})"><div class="instrument-chord-name">${ch.symbol}</div><svg class="chord-diagram" viewBox="0 0 50 60">${[0,1,2,3,4].map(x=>`<line x1="5" y1="${12+x*12}" x2="45" y2="${12+x*12}" stroke="#333" stroke-width="1"/>`).join('')}${[0,1,2,3,4,5].map(x=>`<line x1="${5+x*8}" y1="12" x2="${5+x*8}" y2="60" stroke="#666" stroke-width="${x===0||x===5?2:1}"/>`).join('')}${f.map((v,x)=>v>=0?`<circle cx="${5+x*8}" cy="${v===0?8:6+v*12}" r="3.5" fill="${v===0?'none':'var(--accent-primary)'}" stroke="var(--accent-primary)" stroke-width="1.5"/>`:`<text x="${5+x*8}" y="8" text-anchor="middle" fill="var(--text-secondary)" font-size="8">×</text>`).join('')}</svg><div class="fret-info">${f.filter(v=>v>0).length?'Fret '+Math.min(...f.filter(v=>v>0)):'Open'}</div></div>`}).join('')||'<div style="text-align:center;color:var(--text-secondary);padding:2rem">Generate chords to see diagrams</div>'}
+
+function updatePianoRoll(){const c=document.getElementById('pianoRoll');const s=state.song.sections[state.song.activeSection];
+const h=s.chords.length?s.chords[0].notes.map(n=>n.replace(/\d/g,'')):[];const k=[];
+[3,4,5].forEach(o=>{['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].forEach(n=>{const b=n.includes('#');const hi=h.includes(n);k.push(`<div class="piano-key ${b?'black':''} ${hi?'highlighted':''}" onclick="playNote('${n+o}')"><span class="key-label">${n==='C'?'C'+o:''}</span></div>`)})});c.innerHTML=k.join('')}
+
+function updateMidiKeyboard(){const c=document.getElementById('midiKeyboard');if(!c)return;let k='';
+[3,4].forEach(o=>{['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].forEach(n=>{const b=n.includes('#');k+=`<div class="midi-key ${b?'black':''}" data-note="${n+o}" onclick="playMidiNote('${n+o}')"></div>`})});c.innerHTML=k}
+
+async function playNote(n){await Tone.start();initAudio();state.synth.triggerAttackRelease(n,'8n');haptic('light')}
+async function playMidiNote(n){await Tone.start();initAudio();state.synth.triggerAttackRelease(n,'8n');haptic('light');
+const k=document.querySelector(`[data-note="${n}"]`);if(k){k.classList.add('pressed');setTimeout(()=>k.classList.remove('pressed'),200)}}
 
 function selectSection(i){haptic('light');state.song.activeSection=i;updateAllDisplays()}
 function addSection(t){haptic('medium');state.song.sections.push({type:t,chords:[],bars:t==='intro'||t==='outro'?2:4});state.song.activeSection=state.song.sections.length-1;closeModal('addSectionModal');generateProgression();updateStructureTimeline()}
 function deleteSection(i){if(state.song.sections.length<=1){showToast('Need at least one section');return}haptic('light');state.song.sections.splice(i,1);if(state.song.activeSection>=state.song.sections.length)state.song.activeSection=state.song.sections.length-1;updateAllDisplays()}
 function deleteChord(i){haptic('light');state.song.sections[state.song.activeSection].chords.splice(i,1);updateAllDisplays()}
 function saveToHistory(){state.history.push(JSON.stringify(state.song));if(state.history.length>20)state.history.shift()}
-function undoAction(){if(state.history.length>0){state.song=JSON.parse(state.history.pop());updateAllDisplays();showToast('↩️ Undone')}}
 
+// MIDI Functions
+async function scanMidiDevices(){haptic('light');showToast('🔍 Scanning for MIDI devices...');
+try{state.midiAccess=await navigator.requestMIDIAccess();
+state.midiInputs=Array.from(state.midiAccess.inputs.values());
+state.midiOutputs=Array.from(state.midiAccess.outputs.values());
+if(state.midiInputs.length||state.midiOutputs.length){
+document.getElementById('midiStatusDot').classList.add('connected');
+document.getElementById('midiStatusText').textContent=`${state.midiInputs.length} input(s), ${state.midiOutputs.length} output(s)`;
+updateMidiDevicesList();state.midiConnected=true;
+state.midiInputs.forEach(input=>{input.onmidimessage=handleMidiMessage})}
+else{document.getElementById('midiStatusText').textContent='No MIDI devices found'}}
+catch(e){document.getElementById('midiStatusText').textContent='MIDI not supported';console.error(e)}}
+
+function updateMidiDevicesList(){const c=document.getElementById('midiDevices');
+let h='';state.midiInputs.forEach((d,i)=>{h+=`<div class="midi-device" onclick="selectMidiInput(${i})"><span>🎹 ${d.name||'Unknown Input'}</span><span style="color:var(--success)">Input</span></div>`});
+state.midiOutputs.forEach((d,i)=>{h+=`<div class="midi-device" onclick="selectMidiOutput(${i})"><span>🔊 ${d.name||'Unknown Output'}</span><span style="color:var(--info)">Output</span></div>`});
+c.innerHTML=h||'<div style="text-align:center;color:var(--text-secondary);padding:1rem">No devices found</div>'}
+
+function handleMidiMessage(m){const[cmd,note,vel]=m.data;
+if(cmd===144&&vel>0){const n=NOTES[note%12];const o=Math.floor(note/12)-1;playMidiNote(n+o)}
+if(cmd===128||(cmd===144&&vel===0)){const k=document.querySelector('.midi-key.pressed');if(k)k.classList.remove('pressed')}}
+
+function toggleMidiInput(){haptic('light');if(!state.midiConnected)scanMidiDevices();document.getElementById('midiBtn').classList.toggle('active',state.midiConnected)}
+function setMidiExportType(t){haptic('light');state.midiExportType=t;document.querySelectorAll('#midiPanel .effect-card').forEach(c=>c.classList.remove('active'));event.target.closest('.effect-card').classList.add('active')}
+
+function exportMIDIFile(){haptic('medium');
+const s=state.song.sections[state.song.activeSection];if(!s.chords.length){showToast('Generate chords first!');return}
+const midi=generateMIDIData();const blob=new Blob([midi],{type:'audio/midi'});
+const url=URL.createObjectURL(blob);const a=document.createElement('a');
+a.href=url;a.download='chordflow-progression.mid';a.click();
+closeModal('exportModal');showToast('🎹 MIDI exported!')}
+
+function generateMIDIData(){
+const header=[0x4D,0x54,0x68,0x64,0,0,0,6,0,1,0,2,0,96];
+const s=state.song.sections[state.song.activeSection];
+let trackData=[0x4D,0x54,0x72,0x6B];
+let events=[];events.push(0,0xFF,0x03,8,...'ChordFlow'.split('').map(c=>c.charCodeAt(0)));
+const ticksPerBeat=96;const ticksPerChord=ticksPerBeat*2;
+s.chords.forEach((ch,i)=>{const delta=i===0?0:ticksPerChord;
+ch.notes.forEach((n,j)=>{const noteNum=noteToMidi(n);events.push(j===0?delta:0,0x90,noteNum,100)});
+ch.notes.forEach((n,j)=>{const noteNum=noteToMidi(n);events.push(j===0?ticksPerChord:0,0x80,noteNum,0)})});
+events.push(0,0xFF,0x2F,0);
+const len=events.length;trackData.push((len>>24)&0xFF,(len>>16)&0xFF,(len>>8)&0xFF,len&0xFF,...events);
+return new Uint8Array([...header,...trackData])}
+
+function noteToMidi(n){const note=n.replace(/\d/,'');const oct=parseInt(n.match(/\d/)[0]);return NOTES.indexOf(note)+12*(oct+1)}
+function handleMIDIImport(files){if(!files.length)return;showToast('📥 MIDI import coming soon!')}
+function copyMIDIToClipboard(){const s=state.song.sections[state.song.activeSection];const data=JSON.stringify(s.chords.map(c=>({symbol:c.symbol,notes:c.notes})));navigator.clipboard?.writeText(data);showToast('📋 MIDI data copied!')}
+function exportFullMIDI(){haptic('medium');exportMIDIFile()}
+function recordMIDI(){haptic('light');document.getElementById('recordBtn').classList.toggle('active');showToast('⏺️ Recording coming soon!')}
+
+// Collaboration Functions
+function generateRoomCode(){return Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('')}
+function createCollabRoom(){haptic('medium');state.collabRoom=generateRoomCode();state.collabUsers=[{name:'You',color:'#ff6b35'}];
+document.getElementById('collabRoomCode').textContent=state.collabRoom;updateCollabUsers();addCollabActivity('You created the room');showToast('👥 Room created!')}
+function joinCollabRoom(){const code=document.getElementById('joinRoomInput').value.toUpperCase();if(code.length!==4){showToast('Enter 4-character code');return}
+haptic('medium');state.collabRoom=code;state.collabUsers=[{name:'You',color:'#ff6b35'},{name:'Host',color:'#8b5cf6'}];
+document.getElementById('collabRoomCode').textContent=code;updateCollabUsers();closeModal('joinRoomModal');addCollabActivity('You joined the room');showToast('🔗 Joined room!')}
+function copyRoomCode(){if(!state.collabRoom){showToast('Create a room first');return}navigator.clipboard?.writeText(state.collabRoom);showToast('📋 Room code copied!')}
+function updateCollabUsers(){const c=document.getElementById('collabUsers');c.innerHTML=state.collabUsers.map(u=>`<div class="collab-user" style="background:${u.color}">${u.name[0]}</div>`).join('')}
+function addCollabActivity(msg){const c=document.getElementById('collabActivity');const time=new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+c.innerHTML=`<div class="activity-item"><div class="activity-dot" style="background:var(--success)"></div><span>${msg}</span><span style="margin-left:auto;color:var(--text-secondary)">${time}</span></div>`+c.innerHTML}
+function sendChatMessage(){const input=document.getElementById('chatInput');const msg=input.value.trim();if(!msg)return;
+const chat=document.getElementById('collabChat');chat.innerHTML+=`<div style="margin-bottom:.5rem"><span style="color:var(--accent-primary);font-weight:600">You:</span> ${msg}</div>`;
+input.value='';chat.scrollTop=chat.scrollHeight;haptic('light')}
+
+// Share Functions
+function shareNative(){if(navigator.share){navigator.share({title:'ChordFlow Progression',text:`Check out my chord progression in ${state.key} ${state.scale}: ${state.song.sections[state.song.activeSection].chords.map(c=>c.symbol).join(' - ')}`,url:window.location.href})}else{shareLink()}}
+function shareToTwitter(){const text=encodeURIComponent(`🎵 Just created a ${state.genre} chord progression: ${state.song.sections[state.song.activeSection].chords.map(c=>c.symbol).join(' - ')} #ChordFlow #Music`);window.open(`https://twitter.com/intent/tweet?text=${text}`,'_blank')}
+function shareToFacebook(){window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,'_blank')}
+function shareToWhatsApp(){const text=encodeURIComponent(`🎵 Check out my chord progression: ${state.song.sections[state.song.activeSection].chords.map(c=>c.symbol).join(' - ')}`);window.open(`https://wa.me/?text=${text}`,'_blank')}
+function shareLink(){const d=btoa(JSON.stringify({key:state.key,scale:state.scale,genre:state.genre,chords:state.song.sections[0].chords.map(c=>c.symbol)}));const u=window.location.origin+'?s='+d;navigator.clipboard?.writeText(u);showToast('🔗 Link copied!')}
+
+// Theme Functions
+function toggleTheme(){const themes=['dark','light','sunset','ocean','forest'];const i=(themes.indexOf(state.currentTheme)+1)%themes.length;setTheme(themes[i])}
+function setTheme(t){haptic('light');state.currentTheme=t;document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('.theme-preset').forEach(p=>p.classList.remove('active'));document.querySelector(`.theme-preset-${t}`)?.classList.add('active');showToast(`🎨 ${t.charAt(0).toUpperCase()+t.slice(1)} theme`)}
+function setCustomAccent(color){document.documentElement.style.setProperty('--accent-primary',color);showToast('🎨 Accent updated')}
+
+// AI Functions
+function quickSoundLike(a){document.getElementById('soundLikeInput').value=a;applySoundLike()}
+async function applySoundLike(){const a=document.getElementById('soundLikeInput').value.toLowerCase().trim();if(!a){showToast('Enter an artist name');return}
+haptic('medium');showAILoading('Analyzing '+a+' style...');await new Promise(r=>setTimeout(r,1500));
+const p=ARTIST_PROFILES[a]||{scale:Math.random()>0.5?'major':'minor',genre:Object.keys(GENRE_PROGRESSIONS)[Math.floor(Math.random()*Object.keys(GENRE_PROGRESSIONS).length)],tempo:80+Math.floor(Math.random()*60)};
+state.scale=p.scale;state.genre=p.genre;state.tempo=p.tempo;
+document.getElementById('scaleSelect').value=p.scale;document.getElementById('tempoSlider').value=p.tempo;document.getElementById('tempoValue').textContent=p.tempo+' BPM';
+generateProgression();hideAILoading();showToast(`✨ ${a} vibes applied!`)}
+function showAILoading(t){document.getElementById('aiLoading').style.display='block';document.getElementById('aiLoadingText').textContent=t}
+function hideAILoading(){document.getElementById('aiLoading').style.display='none'}
+
+async function aiContinueProgression(){haptic('medium');showAILoading('AI analyzing progression...');await new Promise(r=>setTimeout(r,1500));
+const s=state.song.sections[state.song.activeSection];if(!s.chords.length){generateProgression();hideAILoading();return}
+const last=s.chords[s.chords.length-1].degree;const next=(last+4)%7;s.chords.push(generateChord(next));
+updateAllDisplays();hideAILoading();showToast('🤖 AI added chord!')}
+
+async function generateMelody(){haptic('medium');showAILoading('Creating melody...');await new Promise(r=>setTimeout(r,2000));
+const sn=SCALES[state.scale].map(i=>NOTES[(NOTES.indexOf(state.key)+i)%12]);state.generatedMelody=[];
+for(let i=0;i<16;i++){const n=sn[Math.floor(Math.random()*sn.length)];const o=Math.random()>0.3?'4':'5';state.generatedMelody.push(n+o)}
+const c=document.getElementById('melodyNotes');c.innerHTML=state.generatedMelody.map((n,i)=>`<div class="melody-note" onclick="playMelodyNote(${i})">${n.replace(/\d/,'')}</div>`).join('');
+document.getElementById('melodySection').style.display='block';hideAILoading();showToast('🎤 Melody generated!')}
+async function playMelodyNote(i){await Tone.start();initAudio();state.synth.triggerAttackRelease(state.generatedMelody[i],'8n');haptic('light')}
+async function playMelody(){await Tone.start();initAudio();haptic('medium');
+const bd=(60/state.tempo/2)*1000;for(let i=0;i<state.generatedMelody.length;i++){setTimeout(()=>{state.synth.triggerAttackRelease(state.generatedMelody[i],'8n');document.querySelectorAll('.melody-note')[i]?.classList.add('playing');setTimeout(()=>document.querySelectorAll('.melody-note')[i]?.classList.remove('playing'),bd-50)},i*bd)}}
+async function generateBassLine(){haptic('medium');showAILoading('Creating bass line...');await new Promise(r=>setTimeout(r,1500));hideAILoading();showToast('🎸 Bass line coming soon!')}
+async function generateFullArrangement(){haptic('medium');showAILoading('Creating full arrangement...');await new Promise(r=>setTimeout(r,3000));generateFullSong();hideAILoading();showToast('🎬 Full arrangement created!')}
+async function generateLyrics(){haptic('medium');showAILoading('Writing lyrics...');await new Promise(r=>setTimeout(r,2000));
+const s=state.song.sections[state.song.activeSection];const t=['love','dreams','freedom','night','journey','hope'][Math.floor(Math.random()*6)];
+const l=[{chord:s.chords[0]?.symbol||'C',text:`In the ${t} of the night, I see your light`},{chord:s.chords[1]?.symbol||'Am',text:'Shadows dancing, hearts are racing'},{chord:s.chords[2]?.symbol||'F',text:`Chasing ${t}s that we found`},{chord:s.chords[3]?.symbol||'G',text:'Never letting our feet touch the ground'}];
+const c=document.getElementById('lyricsDisplay');c.innerHTML=l.map(x=>`<div class="lyrics-line"><span class="lyrics-chord">[${x.chord}]</span><span class="lyrics-text">${x.text}</span></div>`).join('');
+document.getElementById('lyricsSection').style.display='block';hideAILoading();showToast('📝 Lyrics generated!')}
+function regenerateLyrics(){generateLyrics()}
+
+// Sound Functions
 function setWaveType(t){haptic('light');state.waveType=t;document.querySelectorAll('.wave-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');if(state.synth)state.synth.set({oscillator:{type:t}});showToast(`🔊 ${t} wave`)}
 function toggleEffect(e){haptic('light');state.effectsEnabled[e]=!state.effectsEnabled[e];event.target.closest('.effect-card').classList.toggle('active',state.effectsEnabled[e])}
 function updateEffect(e,v){if(!state.effects[e])return;const n=v/100;if(e==='reverb'&&state.effects.reverb)state.effects.reverb.wet.value=n;if(e==='delay'&&state.effects.delay)state.effects.delay.wet.value=n}
 function resetSynth(){haptic('light');state.waveType='sine';document.querySelectorAll('.wave-btn').forEach(b=>b.classList.remove('active'));document.querySelector('.wave-btn').classList.add('active');showToast('🔄 Synth reset')}
 
-function handleSampleUpload(f){haptic('medium');Array.from(f).forEach(file=>{const r=new FileReader();r.onload=async e=>{const b=await Tone.context.decodeAudioData(e.target.result);const p=new Tone.Player(b).toDestination();state.userSamples.push({name:file.name,player:p});updateSamplesList();showToast(`📁 ${file.name} loaded`)};r.readAsArrayBuffer(file)})}
-function updateSamplesList(){const c=document.getElementById('samplesList');c.innerHTML=state.userSamples.map((s,i)=>`<div class="sample-item"><span class="sample-name">${s.name}</span><div class="sample-actions"><button class="btn btn-sm" onclick="playSample(${i})">▶️</button><button class="btn btn-sm btn-secondary" onclick="deleteSample(${i})">🗑️</button></div></div>`).join('')}
-async function playSample(i){await Tone.start();state.userSamples[i].player.start()}
-function deleteSample(i){state.userSamples.splice(i,1);updateSamplesList()}
+// Analytics Functions
+function trackAnalytics(type,value){
+if(type==='key'){state.analytics.keys[value]=(state.analytics.keys[value]||0)+1}
+if(type==='genre'){state.analytics.genres[value]=(state.analytics.genres[value]||0)+1}
+if(type==='chords'){state.analytics.chords+=value;state.analytics.songs++}
+updateAnalyticsDisplay()}
 
-function setInstrumentCategory(c){haptic('light');document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active')}
-function selectInstrument(i){haptic('light');state.currentInstrument=i;document.querySelectorAll('.instrument-card').forEach(c=>c.classList.remove('active'));event.target.closest('.instrument-card').classList.add('active');showToast(`🎸 ${i.replace('-',' ')}`)}
-function setArticulation(a){haptic('light');document.querySelectorAll('#instrumentsPanel .effects-grid .effect-card').forEach(c=>c.classList.remove('active'));event.target.closest('.effect-card').classList.add('active')}
-function setStrumPattern(p){haptic('light');document.querySelectorAll('#instrumentsPanel .genre-scroll .genre-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active')}
-function setStringStyle(s){haptic('light');event.target.closest('.effect-card').classList.add('active')}
+function updateAnalyticsDisplay(){
+document.getElementById('totalSongs').textContent=state.analytics.songs;
+document.getElementById('totalChords').textContent=state.analytics.chords;
+const topKey=Object.entries(state.analytics.keys).sort((a,b)=>b[1]-a[1])[0];
+const topGenre=Object.entries(state.analytics.genres).sort((a,b)=>b[1]-a[1])[0];
+document.getElementById('favoriteKey').textContent=topKey?topKey[0]:'C';
+document.getElementById('favoriteGenre').textContent=topGenre?topGenre[0].charAt(0).toUpperCase()+topGenre[0].slice(1):'Pop';
+updateChordUsageChart()}
 
-function quickSoundLike(a){document.getElementById('soundLikeInput').value=a;applySoundLike()}
-async function applySoundLike(){const a=document.getElementById('soundLikeInput').value.toLowerCase().trim();if(!a){showToast('Enter an artist name');return}haptic('medium');showAILoading('Analyzing '+a+' style...');await new Promise(r=>setTimeout(r,1500));const p=ARTIST_PROFILES[a]||{scale:Math.random()>0.5?'major':'minor',genre:Object.keys(GENRE_PROGRESSIONS)[Math.floor(Math.random()*Object.keys(GENRE_PROGRESSIONS).length)],tempo:80+Math.floor(Math.random()*60)};state.scale=p.scale;state.genre=p.genre;state.tempo=p.tempo;document.getElementById('scaleSelect').value=p.scale;document.getElementById('tempoSlider').value=p.tempo;document.getElementById('tempoValue').textContent=p.tempo+' BPM';generateProgression();hideAILoading();showToast(`✨ ${a} vibes applied!`)}
-function showAILoading(t){document.getElementById('aiLoading').style.display='block';document.getElementById('aiLoadingText').textContent=t}
-function hideAILoading(){document.getElementById('aiLoading').style.display='none'}
+function updateChordUsageChart(){const c=document.getElementById('chordUsageChart');
+const chordCounts={I:0,ii:0,iii:0,IV:0,V:0,vi:0};
+state.song.sections.forEach(s=>{s.chords.forEach(ch=>{const n=ch.numeral.replace('°','');if(chordCounts[n]!==undefined)chordCounts[n]++})});
+const max=Math.max(...Object.values(chordCounts),1);
+c.innerHTML=Object.entries(chordCounts).map(([k,v])=>`<div style="display:flex;flex-direction:column;align-items:center;flex:1"><div class="chart-bar" style="height:${(v/max)*80}px"></div><div style="font-size:.7rem;margin-top:.25rem;color:var(--text-secondary)">${k}</div></div>`).join('')}
 
-async function generateMelody(){haptic('medium');showAILoading('Creating melody...');await new Promise(r=>setTimeout(r,2000));const sn=SCALES[state.scale].map(i=>NOTES[(NOTES.indexOf(state.key)+i)%12]);state.generatedMelody=[];for(let i=0;i<16;i++){const n=sn[Math.floor(Math.random()*sn.length)];const o=Math.random()>0.3?'4':'5';state.generatedMelody.push(n+o)}const c=document.getElementById('melodyNotes');c.innerHTML=state.generatedMelody.map((n,i)=>`<div class="melody-note" onclick="playMelodyNote(${i})">${n.replace(/\d/,'')}</div>`).join('');document.getElementById('melodySection').style.display='block';hideAILoading();showToast('🎤 Melody generated!')}
-async function playMelodyNote(i){await Tone.start();initAudio();state.synth.triggerAttackRelease(state.generatedMelody[i],'8n');haptic('light')}
-async function playMelody(){await Tone.start();initAudio();haptic('medium');const bd=(60/state.tempo/2)*1000;for(let i=0;i<state.generatedMelody.length;i++){setTimeout(()=>{state.synth.triggerAttackRelease(state.generatedMelody[i],'8n');document.querySelectorAll('.melody-note')[i]?.classList.add('playing');setTimeout(()=>document.querySelectorAll('.melody-note')[i]?.classList.remove('playing'),bd-50)},i*bd)}}
-async function generateCounterMelody(){haptic('medium');showToast('🎵 Counter-melody coming soon!')}
-async function generateFullArrangement(){haptic('medium');showAILoading('Creating full arrangement...');await new Promise(r=>setTimeout(r,3000));generateFullSong();hideAILoading();showToast('🎬 Full arrangement created!')}
-async function generateLyrics(){haptic('medium');showAILoading('Writing lyrics...');await new Promise(r=>setTimeout(r,2000));const s=state.song.sections[state.song.activeSection];const t=['love','dreams','freedom','night','journey','hope'][Math.floor(Math.random()*6)];const l=[{chord:s.chords[0]?.symbol||'C',text:`In the ${t} of the night, I see your light`},{chord:s.chords[1]?.symbol||'Am',text:'Shadows dancing, hearts are racing'},{chord:s.chords[2]?.symbol||'F',text:`Chasing ${t}s that we found`},{chord:s.chords[3]?.symbol||'G',text:'Never letting our feet touch the ground'}];const c=document.getElementById('lyricsDisplay');c.innerHTML=l.map(x=>`<div class="lyrics-line"><span class="lyrics-chord">[${x.chord}]</span><span class="lyrics-text">${x.text}</span></div>`).join('');document.getElementById('lyricsSection').style.display='block';hideAILoading();showToast('📝 Lyrics generated!')}
-function regenerateLyrics(){generateLyrics()}
-
-function initDrumGrid(){const c=document.getElementById('drumGrid');const d=['kick','snare','hihat','clap','808'];const l=['🦵 Kick','🥁 Snare','🎩 Hi-Hat','👏 Clap','📻 808'];let h='';d.forEach((dr,ri)=>{h+=`<div class="drum-label">${l[ri]}</div>`;for(let st=0;st<16;st++){const a=state.drumPattern[dr][st];const b4=st%4===0;h+=`<div class="drum-step ${a?'active':''} ${b4?'beat-4':''}" onclick="toggleDrumStep('${dr}',${st})" data-drum="${dr}" data-step="${st}"></div>`}});c.innerHTML=h}
-function toggleDrumStep(d,s){haptic('light');state.drumPattern[d][s]=state.drumPattern[d][s]?0:1;const e=document.querySelector(`[data-drum="${d}"][data-step="${s}"]`);e.classList.toggle('active',state.drumPattern[d][s]);initAudio();playDrumSound(d)}
-async function playDrumSound(d){await Tone.start();switch(d){case'kick':state.drumSynths.kick.triggerAttackRelease('C1','8n');break;case'snare':state.drumSynths.snare.triggerAttackRelease('8n');break;case'hihat':state.drumSynths.hihat.triggerAttackRelease('C6','32n');break;case'clap':state.drumSynths.clap.triggerAttackRelease('8n');break;case'808':state.drumSynths['808'].triggerAttackRelease('C1','4n');break}}
-async function playDrumPattern(){if(state.drumPlaying){stopDrumPattern();return}await Tone.start();initAudio();state.drumPlaying=true;document.getElementById('drumPlayBtn').textContent='⏹️';haptic('medium');const bd=(60/state.tempo/4)*1000;let st=0;const ps=()=>{if(!state.drumPlaying)return;document.querySelectorAll('.drum-step').forEach(e=>e.classList.remove('playing'));document.querySelectorAll(`[data-step="${st}"]`).forEach(e=>e.classList.add('playing'));Object.keys(state.drumPattern).forEach(d=>{if(state.drumPattern[d][st])playDrumSound(d)});st=(st+1)%16;state.drumTimeout=setTimeout(ps,bd)};ps()}
-function stopDrumPattern(){state.drumPlaying=false;clearTimeout(state.drumTimeout);document.getElementById('drumPlayBtn').textContent='▶️';document.querySelectorAll('.drum-step').forEach(e=>e.classList.remove('playing'))}
-function clearDrumPattern(){haptic('light');Object.keys(state.drumPattern).forEach(d=>{state.drumPattern[d]=Array(16).fill(0)});initDrumGrid();showToast('🗑️ Pattern cleared')}
-function loadDrumPreset(p){haptic('medium');const pt=DRUM_PRESETS[p];if(pt){state.drumPattern=JSON.parse(JSON.stringify(pt));initDrumGrid();showToast(`🔥 ${p} loaded`)}}
-function updateHiHatSpeed(s){document.getElementById('hihatSpeedValue').textContent=s+'x'}
-function set808Type(t){haptic('light');document.querySelectorAll('#drumsPanel .effect-card').forEach(c=>c.classList.remove('active'));event.target.closest('.effect-card').classList.add('active')}
-
-function exportPDF(){haptic('medium');const{jsPDF}=window.jspdf;const d=new jsPDF();d.setFontSize(24);d.text('ChordFlow Pro',20,20);d.setFontSize(12);d.text(`Key: ${state.key} ${state.scale}`,20,35);d.text(`Genre: ${state.genre}`,20,45);d.text(`Tempo: ${state.tempo} BPM`,20,55);let y=75;state.song.sections.forEach(s=>{d.setFontSize(14);d.text(s.type.toUpperCase(),20,y);y+=10;d.setFontSize(12);d.text(s.chords.map(c=>c.symbol).join(' - ')||'(no chords)',20,y);y+=15});d.save('chordflow-song.pdf');closeModal('exportModal');showToast('📄 PDF exported!')}
-function exportMIDI(){haptic('medium');showToast('🎹 MIDI export coming soon!');closeModal('exportModal')}
+// Export Functions
+function exportPDF(){haptic('medium');const{jsPDF}=window.jspdf;const d=new jsPDF();
+d.setFontSize(24);d.text('ChordFlow Pro',20,20);d.setFontSize(12);
+d.text(`Key: ${state.key} ${state.scale}`,20,35);d.text(`Genre: ${state.genre}`,20,45);d.text(`Tempo: ${state.tempo} BPM`,20,55);
+let y=75;state.song.sections.forEach(s=>{d.setFontSize(14);d.text(s.type.toUpperCase(),20,y);y+=10;d.setFontSize(12);d.text(s.chords.map(c=>c.symbol).join(' - ')||'(no chords)',20,y);y+=15});
+d.save('chordflow-song.pdf');closeModal('exportModal');showToast('📄 PDF exported!')}
 function exportJSON(){haptic('medium');const d=JSON.stringify(state,null,2);const b=new Blob([d],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='chordflow-project.json';a.click();closeModal('exportModal');showToast('💾 Project saved!')}
-function shareLink(){haptic('medium');const d=btoa(JSON.stringify({key:state.key,scale:state.scale,genre:state.genre,chords:state.song.sections[0].chords.map(c=>c.symbol)}));const u=window.location.origin+'?s='+d;navigator.clipboard?.writeText(u);closeModal('exportModal');showToast('🔗 Link copied!')}
 function toggleSidebar(){haptic('light');showToast('Menu coming soon!')}
 
-document.addEventListener('DOMContentLoaded',()=>{const p=new URLSearchParams(window.location.search);if(p.get('s')){try{const d=JSON.parse(atob(p.get('s')));state.key=d.key||'C';state.scale=d.scale||'major';state.genre=d.genre||'pop'}catch(e){}}updateAllDisplays();initDrumGrid();if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{})});
+// Initialize
+document.addEventListener('DOMContentLoaded',()=>{
+const p=new URLSearchParams(window.location.search);
+if(p.get('s')){try{const d=JSON.parse(atob(p.get('s')));state.key=d.key||'C';state.scale=d.scale||'major';state.genre=d.genre||'pop'}catch(e){}}
+updateAllDisplays();updateMidiKeyboard();updateAnalyticsDisplay();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{})});
 
 let touchStartY=0;
 document.getElementById('bottomDrawer').addEventListener('touchstart',e=>{touchStartY=e.touches[0].clientY});
