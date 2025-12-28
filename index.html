@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v10.0 - Full Band Mode</title>
+    <title>ChordFlow v10.1 - Full Band Mode + AI</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -24,6 +24,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --gold: #fbbf24;
+            --ai-purple: #a855f7;
             --keys: #667eea;
             --guitar: #f59e0b;
             --bass: #ef4444;
@@ -42,7 +43,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             padding-top: var(--safe-top);
-            padding-bottom: calc(var(--safe-bottom) + 160px);
+            padding-bottom: calc(var(--safe-bottom) + 180px);
         }
         
         /* Header */
@@ -60,6 +61,7 @@
         .logo { display: flex; align-items: center; gap: 10px; }
         .logo h1 { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .version-badge { font-size: 10px; background: var(--success); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 6px; }
+        .ai-badge { font-size: 10px; background: linear-gradient(135deg, var(--ai-purple), #ec4899); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 4px; }
         .header-actions { display: flex; gap: 8px; }
         .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-secondary); border: none; color: var(--text-primary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .icon-btn:active { transform: scale(0.95); background: var(--accent); }
@@ -89,6 +91,41 @@
             background: var(--accent);
             color: white;
         }
+        
+        /* AI Actions Bar */
+        .ai-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .ai-actions::-webkit-scrollbar { display: none; }
+        .ai-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 18px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .ai-btn:hover, .ai-btn:active {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(236, 72, 153, 0.4));
+            transform: scale(0.98);
+        }
+        .ai-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .ai-btn .sparkle { font-size: 16px; }
         
         /* Instrument Categories */
         .instrument-section {
@@ -141,72 +178,6 @@
         .instrument-card .name { font-size: 11px; color: var(--text-secondary); }
         .instrument-card.active .name { color: var(--text-primary); }
         
-        /* Mixer Panel */
-        .mixer-panel {
-            background: var(--bg-secondary);
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            margin: 0 12px;
-        }
-        .mixer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .mixer-title { font-size: 16px; font-weight: 600; }
-        .mixer-tracks {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-        }
-        .mixer-track {
-            min-width: 70px;
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 12px 8px;
-            text-align: center;
-        }
-        .track-icon { font-size: 20px; margin-bottom: 8px; }
-        .track-name { font-size: 10px; color: var(--text-secondary); margin-bottom: 10px; }
-        .track-fader {
-            width: 6px;
-            height: 80px;
-            background: var(--bg-primary);
-            border-radius: 3px;
-            margin: 0 auto 10px;
-            position: relative;
-        }
-        .fader-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--accent);
-            border-radius: 3px;
-            transition: height 0.2s;
-        }
-        .track-controls {
-            display: flex;
-            gap: 4px;
-            justify-content: center;
-        }
-        .track-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: none;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .track-btn.mute { background: var(--bg-primary); color: var(--text-secondary); }
-        .track-btn.mute.active { background: var(--danger); color: white; }
-        .track-btn.solo { background: var(--bg-primary); color: var(--text-secondary); }
-        .track-btn.solo.active { background: var(--warning); color: black; }
-        
         /* Chord Display */
         .chord-section {
             padding: 16px 20px;
@@ -252,25 +223,9 @@
         .pattern-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .pattern-icon { font-size: 20px; }
         .pattern-name { font-size: 13px; font-weight: 600; }
-        .pattern-viz {
-            display: flex;
-            gap: 3px;
-        }
-        .beat {
-            flex: 1;
-            height: 24px;
-            background: var(--bg-primary);
-            border-radius: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 2px;
-        }
-        .beat-line {
-            flex: 1;
-            border-radius: 2px;
-            background: var(--bg-secondary);
-        }
+        .pattern-viz { display: flex; gap: 3px; }
+        .beat { flex: 1; height: 24px; background: var(--bg-primary); border-radius: 4px; display: flex; flex-direction: column; gap: 2px; padding: 2px; }
+        .beat-line { flex: 1; border-radius: 2px; background: var(--bg-secondary); }
         .beat-line.active { background: var(--drums); }
         .beat-line.accent { background: var(--warning); }
         
@@ -350,11 +305,7 @@
         .playback-info { flex: 1; }
         .now-playing { font-size: 14px; font-weight: 600; }
         .playback-sub { font-size: 12px; color: var(--text-secondary); }
-        .tempo-control {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .tempo-control { display: flex; align-items: center; gap: 6px; }
         .tempo-btn {
             width: 32px;
             height: 32px;
@@ -481,6 +432,54 @@
             transition: all 0.3s;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        
+        /* AI Response Modal */
+        .ai-response {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .ai-response h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--ai-purple);
+        }
+        .ai-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .ai-suggestion-btn {
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .ai-suggestion-btn:hover {
+            background: var(--accent);
+        }
+        
+        /* Spinner */
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -488,7 +487,7 @@
     <header class="header">
         <div class="logo">
             <span>🎵</span>
-            <h1>ChordFlow<span class="version-badge">v10</span></h1>
+            <h1>ChordFlow<span class="version-badge">v10.1</span><span class="ai-badge">AI</span></h1>
         </div>
         <div class="header-actions">
             <button class="icon-btn" onclick="openModal('instrumentsModal')">🎹</button>
@@ -496,6 +495,30 @@
             <button class="icon-btn" onclick="openModal('settingsModal')">⚙️</button>
         </div>
     </header>
+
+    <!-- AI Actions Bar -->
+    <div class="ai-actions">
+        <button class="ai-btn" onclick="aiGenerate('progression')">
+            <span class="sparkle">✨</span>
+            AI Generate
+        </button>
+        <button class="ai-btn" onclick="aiGenerate('continue')">
+            <span class="sparkle">🔮</span>
+            Continue
+        </button>
+        <button class="ai-btn" onclick="aiGenerate('variation')">
+            <span class="sparkle">🎲</span>
+            Variation
+        </button>
+        <button class="ai-btn" onclick="aiGenerate('style')">
+            <span class="sparkle">🎭</span>
+            Style Match
+        </button>
+        <button class="ai-btn" onclick="aiGenerate('surprise')">
+            <span class="sparkle">🌟</span>
+            Surprise Me
+        </button>
+    </div>
 
     <!-- Band Mode Toggle -->
     <div class="band-toggle">
@@ -514,27 +537,27 @@
             </div>
         </div>
         <div class="instrument-scroll">
-            <div class="instrument-card active" data-inst="grand-piano" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card active" data-inst="grand-piano" onclick="selectInstrument(this, 'keys', 'grand-piano')">
                 <div class="icon">🎹</div>
                 <div class="name">Grand Piano</div>
             </div>
-            <div class="instrument-card" data-inst="electric-piano" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card" data-inst="electric-piano" onclick="selectInstrument(this, 'keys', 'electric-piano')">
                 <div class="icon">🎹</div>
                 <div class="name">Electric Piano</div>
             </div>
-            <div class="instrument-card" data-inst="organ" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card" data-inst="organ" onclick="selectInstrument(this, 'keys', 'organ')">
                 <div class="icon">🎚️</div>
                 <div class="name">Organ</div>
             </div>
-            <div class="instrument-card" data-inst="synth-pad" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card" data-inst="synth-pad" onclick="selectInstrument(this, 'keys', 'synth-pad')">
                 <div class="icon">🎛️</div>
                 <div class="name">Synth Pad</div>
             </div>
-            <div class="instrument-card" data-inst="clavinet" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card" data-inst="clavinet" onclick="selectInstrument(this, 'keys', 'clavinet')">
                 <div class="icon">🎹</div>
                 <div class="name">Clavinet</div>
             </div>
-            <div class="instrument-card" data-inst="harpsichord" onclick="selectInstrument(this, 'keys')">
+            <div class="instrument-card" data-inst="harpsichord" onclick="selectInstrument(this, 'keys', 'harpsichord')">
                 <div class="icon">🎼</div>
                 <div class="name">Harpsichord</div>
             </div>
@@ -550,29 +573,25 @@
             </div>
         </div>
         <div class="instrument-scroll">
-            <div class="instrument-card" data-inst="acoustic-guitar" onclick="selectInstrument(this, 'guitar')">
+            <div class="instrument-card" data-inst="acoustic-guitar" onclick="selectInstrument(this, 'guitar', 'acoustic-guitar')">
                 <div class="icon">🎸</div>
                 <div class="name">Acoustic</div>
             </div>
-            <div class="instrument-card" data-inst="electric-clean" onclick="selectInstrument(this, 'guitar')">
+            <div class="instrument-card" data-inst="electric-clean" onclick="selectInstrument(this, 'guitar', 'electric-clean')">
                 <div class="icon">🎸</div>
                 <div class="name">Electric Clean</div>
             </div>
-            <div class="instrument-card" data-inst="electric-overdrive" onclick="selectInstrument(this, 'guitar')">
+            <div class="instrument-card" data-inst="electric-overdrive" onclick="selectInstrument(this, 'guitar', 'electric-overdrive')">
                 <div class="icon">🎸</div>
                 <div class="name">Overdrive</div>
             </div>
-            <div class="instrument-card" data-inst="electric-distorted" onclick="selectInstrument(this, 'guitar')">
+            <div class="instrument-card" data-inst="electric-distorted" onclick="selectInstrument(this, 'guitar', 'electric-distorted')">
                 <div class="icon">🔥</div>
                 <div class="name">Distorted</div>
             </div>
-            <div class="instrument-card" data-inst="nylon-guitar" onclick="selectInstrument(this, 'guitar')">
+            <div class="instrument-card" data-inst="nylon-guitar" onclick="selectInstrument(this, 'guitar', 'nylon-guitar')">
                 <div class="icon">🎸</div>
                 <div class="name">Nylon</div>
-            </div>
-            <div class="instrument-card" data-inst="12-string" onclick="selectInstrument(this, 'guitar')">
-                <div class="icon">✨</div>
-                <div class="name">12-String</div>
             </div>
         </div>
     </div>
@@ -586,23 +605,23 @@
             </div>
         </div>
         <div class="instrument-scroll">
-            <div class="instrument-card" data-inst="electric-bass" onclick="selectInstrument(this, 'bass')">
+            <div class="instrument-card active" data-inst="electric-bass" onclick="selectInstrument(this, 'bass', 'electric-bass')">
                 <div class="icon">🎸</div>
                 <div class="name">Electric Bass</div>
             </div>
-            <div class="instrument-card" data-inst="synth-bass" onclick="selectInstrument(this, 'bass')">
+            <div class="instrument-card" data-inst="synth-bass" onclick="selectInstrument(this, 'bass', 'synth-bass')">
                 <div class="icon">🎛️</div>
                 <div class="name">Synth Bass</div>
             </div>
-            <div class="instrument-card" data-inst="upright-bass" onclick="selectInstrument(this, 'bass')">
+            <div class="instrument-card" data-inst="upright-bass" onclick="selectInstrument(this, 'bass', 'upright-bass')">
                 <div class="icon">🎻</div>
                 <div class="name">Upright</div>
             </div>
-            <div class="instrument-card" data-inst="slap-bass" onclick="selectInstrument(this, 'bass')">
+            <div class="instrument-card" data-inst="slap-bass" onclick="selectInstrument(this, 'bass', 'slap-bass')">
                 <div class="icon">👋</div>
                 <div class="name">Slap Bass</div>
             </div>
-            <div class="instrument-card" data-inst="sub-bass" onclick="selectInstrument(this, 'bass')">
+            <div class="instrument-card" data-inst="sub-bass" onclick="selectInstrument(this, 'bass', 'sub-bass')">
                 <div class="icon">📢</div>
                 <div class="name">Sub Bass</div>
             </div>
@@ -618,30 +637,30 @@
             </div>
         </div>
         <div class="instrument-scroll">
-            <div class="instrument-card" data-inst="acoustic-kit" onclick="selectInstrument(this, 'drums')">
+            <div class="instrument-card active" data-inst="acoustic-kit" onclick="selectInstrument(this, 'drums', 'acoustic-kit')">
                 <div class="icon">🥁</div>
                 <div class="name">Acoustic Kit</div>
             </div>
-            <div class="instrument-card" data-inst="electronic-kit" onclick="selectInstrument(this, 'drums')">
+            <div class="instrument-card" data-inst="electronic-kit" onclick="selectInstrument(this, 'drums', 'electronic-kit')">
                 <div class="icon">🎛️</div>
                 <div class="name">Electronic</div>
             </div>
-            <div class="instrument-card" data-inst="lofi-kit" onclick="selectInstrument(this, 'drums')">
+            <div class="instrument-card" data-inst="lofi-kit" onclick="selectInstrument(this, 'drums', 'lofi-kit')">
                 <div class="icon">📻</div>
                 <div class="name">Lo-Fi</div>
             </div>
-            <div class="instrument-card" data-inst="808-kit" onclick="selectInstrument(this, 'drums')">
+            <div class="instrument-card" data-inst="808-kit" onclick="selectInstrument(this, 'drums', '808-kit')">
                 <div class="icon">💥</div>
                 <div class="name">808 Trap</div>
             </div>
-            <div class="instrument-card" data-inst="brushes-kit" onclick="selectInstrument(this, 'drums')">
+            <div class="instrument-card" data-inst="brushes-kit" onclick="selectInstrument(this, 'drums', 'brushes-kit')">
                 <div class="icon">🖌️</div>
                 <div class="name">Jazz Brushes</div>
             </div>
         </div>
     </div>
 
-    <!-- More Instruments (Strings, Brass, Synth) -->
+    <!-- Strings & Brass Section -->
     <div class="instrument-section">
         <div class="section-header">
             <div class="section-title">
@@ -650,101 +669,26 @@
             </div>
         </div>
         <div class="instrument-scroll">
-            <div class="instrument-card" data-inst="strings" onclick="selectInstrument(this, 'strings')">
+            <div class="instrument-card" data-inst="strings" onclick="selectInstrument(this, 'strings', 'strings')">
                 <div class="icon">🎻</div>
                 <div class="name">Strings</div>
             </div>
-            <div class="instrument-card" data-inst="cello" onclick="selectInstrument(this, 'strings')">
+            <div class="instrument-card" data-inst="cello" onclick="selectInstrument(this, 'strings', 'cello')">
                 <div class="icon">🎻</div>
                 <div class="name">Cello</div>
             </div>
-            <div class="instrument-card" data-inst="trumpet" onclick="selectInstrument(this, 'brass')">
+            <div class="instrument-card" data-inst="trumpet" onclick="selectInstrument(this, 'brass', 'trumpet')">
                 <div class="icon">🎺</div>
                 <div class="name">Trumpet</div>
             </div>
-            <div class="instrument-card" data-inst="saxophone" onclick="selectInstrument(this, 'brass')">
+            <div class="instrument-card" data-inst="saxophone" onclick="selectInstrument(this, 'brass', 'saxophone')">
                 <div class="icon">🎷</div>
                 <div class="name">Saxophone</div>
             </div>
-            <div class="instrument-card" data-inst="choir" onclick="selectInstrument(this, 'strings')">
+            <div class="instrument-card" data-inst="choir" onclick="selectInstrument(this, 'strings', 'choir')">
                 <div class="icon">🎤</div>
                 <div class="name">Choir</div>
             </div>
-            <div class="instrument-card" data-inst="ukulele" onclick="selectInstrument(this, 'world')">
-                <div class="icon">🪕</div>
-                <div class="name">Ukulele</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Drum Pattern Selection -->
-    <div class="pattern-section">
-        <div class="section-header">
-            <div class="section-title">🥁 Drum Pattern</div>
-        </div>
-        <div class="pattern-grid">
-            <div class="pattern-card active" onclick="selectPattern(this, 'rock')">
-                <div class="pattern-header">
-                    <span class="pattern-icon">🎸</span>
-                    <span class="pattern-name">Rock</span>
-                </div>
-                <div class="pattern-viz">
-                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                </div>
-            </div>
-            <div class="pattern-card" onclick="selectPattern(this, 'pop')">
-                <div class="pattern-header">
-                    <span class="pattern-icon">🎵</span>
-                    <span class="pattern-name">Pop</span>
-                </div>
-                <div class="pattern-viz">
-                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line active"></div></div>
-                </div>
-            </div>
-            <div class="pattern-card" onclick="selectPattern(this, 'jazz')">
-                <div class="pattern-header">
-                    <span class="pattern-icon">🎷</span>
-                    <span class="pattern-name">Jazz Swing</span>
-                </div>
-                <div class="pattern-viz">
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line active"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                </div>
-            </div>
-            <div class="pattern-card" onclick="selectPattern(this, 'hiphop')">
-                <div class="pattern-header">
-                    <span class="pattern-icon">🎤</span>
-                    <span class="pattern-name">Hip-Hop</span>
-                </div>
-                <div class="pattern-viz">
-                    <div class="beat"><div class="beat-line accent"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                    <div class="beat"><div class="beat-line"></div><div class="beat-line accent"></div><div class="beat-line"></div></div>
-                    <div class="beat"><div class="beat-line active"></div><div class="beat-line"></div><div class="beat-line active"></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bass Line Pattern -->
-    <div class="bass-section">
-        <div class="section-header">
-            <div class="section-title">🎸 Bass Line</div>
-        </div>
-        <div class="bass-options">
-            <div class="bass-option active" onclick="selectBassPattern(this, 'root')">Root Notes</div>
-            <div class="bass-option" onclick="selectBassPattern(this, 'octave')">Octave Jump</div>
-            <div class="bass-option" onclick="selectBassPattern(this, 'walking')">Walking Bass</div>
-            <div class="bass-option" onclick="selectBassPattern(this, 'arpeggiate')">Arpeggiate</div>
-            <div class="bass-option" onclick="selectBassPattern(this, 'syncopated')">Syncopated</div>
         </div>
     </div>
 
@@ -752,13 +696,14 @@
     <div class="controls-row">
         <div class="control-group">
             <div class="control-label">Key</div>
-            <select class="control-select" id="keySelect">
+            <select class="control-select" id="keySelect" onchange="updateKey()">
                 <option value="C">C Major</option>
                 <option value="G">G Major</option>
                 <option value="D">D Major</option>
                 <option value="A">A Major</option>
                 <option value="E">E Major</option>
                 <option value="F">F Major</option>
+                <option value="Bb">Bb Major</option>
                 <option value="Am">A Minor</option>
                 <option value="Em">E Minor</option>
                 <option value="Dm">D Minor</option>
@@ -766,7 +711,7 @@
         </div>
         <div class="control-group">
             <div class="control-label">Genre</div>
-            <select class="control-select" id="genreSelect">
+            <select class="control-select" id="genreSelect" onchange="updateGenre()">
                 <option value="pop">Pop</option>
                 <option value="rock">Rock</option>
                 <option value="jazz">Jazz</option>
@@ -775,6 +720,8 @@
                 <option value="country">Country</option>
                 <option value="edm">EDM</option>
                 <option value="lofi">Lo-Fi</option>
+                <option value="classical">Classical</option>
+                <option value="gospel">Gospel</option>
             </select>
         </div>
     </div>
@@ -783,25 +730,13 @@
     <div class="chord-section">
         <div class="section-header">
             <div class="section-title">🎶 Progression</div>
-            <button class="icon-btn" style="width:36px;height:36px;font-size:16px;" onclick="generateProgression()">✨</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="icon-btn" style="width:36px;height:36px;font-size:16px;background:linear-gradient(135deg, var(--ai-purple), #ec4899);" onclick="aiGenerate('progression')">✨</button>
+                <button class="icon-btn" style="width:36px;height:36px;font-size:16px;" onclick="generateProgression()">🎲</button>
+            </div>
         </div>
         <div class="chord-grid" id="chordGrid">
-            <div class="chord-card" onclick="playChord('C')">
-                <div class="chord-name">C</div>
-                <div class="chord-numeral">I</div>
-            </div>
-            <div class="chord-card" onclick="playChord('G')">
-                <div class="chord-name">G</div>
-                <div class="chord-numeral">V</div>
-            </div>
-            <div class="chord-card" onclick="playChord('Am')">
-                <div class="chord-name">Am</div>
-                <div class="chord-numeral">vi</div>
-            </div>
-            <div class="chord-card" onclick="playChord('F')">
-                <div class="chord-name">F</div>
-                <div class="chord-numeral">IV</div>
-            </div>
+            <!-- Dynamically populated -->
         </div>
     </div>
 
@@ -811,7 +746,7 @@
             <button class="play-btn" id="playBtn" onclick="togglePlayback()">▶️</button>
             <div class="playback-info">
                 <div class="now-playing" id="nowPlaying">Ready to jam</div>
-                <div class="playback-sub">4 chords • C Major • Full Band</div>
+                <div class="playback-sub" id="playbackSub">4 chords • C Major • Solo</div>
             </div>
             <div class="tempo-control">
                 <button class="tempo-btn" onclick="adjustTempo(-5)">−</button>
@@ -837,7 +772,27 @@
         </div>
     </div>
 
-    <!-- All Instruments Modal -->
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ Settings</div>
+                <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
+            </div>
+            <div style="padding: 16px 0;">
+                <div style="margin-bottom: 16px;">
+                    <div class="control-label">Master Volume</div>
+                    <input type="range" min="0" max="100" value="80" style="width: 100%;" onchange="setMasterVolume(this.value)">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <div class="control-label">Swing Amount</div>
+                    <input type="range" min="0" max="100" value="0" style="width: 100%;" onchange="setSwing(this.value)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruments Modal -->
     <div class="modal" id="instrumentsModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -861,8 +816,6 @@
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Electric Clean</div></div>
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🔥</div><div class="name">Distorted</div></div>
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Nylon</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">✨</div><div class="name">12-String</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪕</div><div class="name">Ukulele</div></div>
             </div>
             
             <div class="inst-category">🎸 Bass</div>
@@ -870,37 +823,6 @@
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎸</div><div class="name">Electric Bass</div></div>
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Synth Bass</div></div>
                 <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Upright</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">👋</div><div class="name">Slap Bass</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📢</div><div class="name">Sub Bass</div></div>
-            </div>
-            
-            <div class="inst-category">🥁 Drums</div>
-            <div class="all-instruments-grid">
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🥁</div><div class="name">Acoustic Kit</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Electronic</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📻</div><div class="name">Lo-Fi</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">💥</div><div class="name">808</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🖌️</div><div class="name">Brushes</div></div>
-            </div>
-            
-            <div class="inst-category">🎻 Strings & Brass</div>
-            <div class="all-instruments-grid">
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Strings</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎻</div><div class="name">Cello</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎺</div><div class="name">Trumpet</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎷</div><div class="name">Saxophone</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">📯</div><div class="name">Trombone</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎤</div><div class="name">Choir</div></div>
-            </div>
-            
-            <div class="inst-category">🌍 World & Synth</div>
-            <div class="all-instruments-grid">
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪘</div><div class="name">Steel Drums</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎶</div><div class="name">Kalimba</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🪕</div><div class="name">Sitar</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🎛️</div><div class="name">Lead Synth</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">🔊</div><div class="name">Wobble</div></div>
-                <div class="inst-item" onclick="toggleInst(this)"><div class="icon">👾</div><div class="name">Chiptune</div></div>
             </div>
         </div>
     </div>
@@ -909,189 +831,279 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // State
+        // =============================================
+        // STATE
+        // =============================================
         const state = {
             mode: 'solo',
             tempo: 120,
+            key: 'C',
+            genre: 'pop',
             isPlaying: false,
             progression: ['C', 'G', 'Am', 'F'],
+            currentInstrument: 'grand-piano',
+            currentBass: 'electric-bass',
+            currentDrums: 'acoustic-kit',
             activeInstruments: [
                 { name: 'Grand Piano', category: 'keys', color: '#667eea', volume: 80, muted: false, solo: false }
             ],
             drumPattern: 'rock',
-            bassPattern: 'root'
+            bassPattern: 'root',
+            masterVolume: 0.8
         };
 
-        // Synths
-        let mainSynth, bassSynth, drumSynth;
+        // =============================================
+        // INSTRUMENT SOUND DEFINITIONS
+        // =============================================
+        const instrumentConfigs = {
+            // Keys
+            'grand-piano': {
+                oscillator: { type: 'triangle8' },
+                envelope: { attack: 0.005, decay: 0.3, sustain: 0.3, release: 1.2 }
+            },
+            'electric-piano': {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.001, decay: 0.5, sustain: 0.2, release: 0.8 },
+                modulation: { type: 'square' },
+                modulationIndex: 2
+            },
+            'organ': {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.01, decay: 0.1, sustain: 0.9, release: 0.1 }
+            },
+            'synth-pad': {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.5, decay: 0.5, sustain: 0.8, release: 2 },
+                filterEnvelope: { attack: 0.5, decay: 0.2, sustain: 0.5, release: 2 }
+            },
+            'clavinet': {
+                oscillator: { type: 'pulse' },
+                envelope: { attack: 0.001, decay: 0.2, sustain: 0.1, release: 0.3 }
+            },
+            'harpsichord': {
+                oscillator: { type: 'sawtooth8' },
+                envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
+            },
+            // Guitars
+            'acoustic-guitar': {
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.002, decay: 0.3, sustain: 0.2, release: 0.8 }
+            },
+            'electric-clean': {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.001, decay: 0.4, sustain: 0.3, release: 0.6 }
+            },
+            'electric-overdrive': {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0.5, release: 0.4 }
+            },
+            'electric-distorted': {
+                oscillator: { type: 'fatsquare' },
+                envelope: { attack: 0.02, decay: 0.2, sustain: 0.6, release: 0.3 }
+            },
+            'nylon-guitar': {
+                oscillator: { type: 'sine4' },
+                envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 1 }
+            },
+            // Bass
+            'electric-bass': {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.3 },
+                filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2, baseFrequency: 200, octaves: 2.5 }
+            },
+            'synth-bass': {
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.001, decay: 0.1, sustain: 0.9, release: 0.1 },
+                filterEnvelope: { attack: 0.05, decay: 0.3, sustain: 0.3, release: 0.2, baseFrequency: 150, octaves: 3 }
+            },
+            'upright-bass': {
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.05, decay: 0.4, sustain: 0.3, release: 0.8 }
+            },
+            'slap-bass': {
+                oscillator: { type: 'fatsawtooth' },
+                envelope: { attack: 0.001, decay: 0.15, sustain: 0.4, release: 0.2 }
+            },
+            'sub-bass': {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0.9, release: 0.5 }
+            },
+            // Strings
+            'strings': {
+                oscillator: { type: 'fatsawtooth' },
+                envelope: { attack: 0.3, decay: 0.4, sustain: 0.7, release: 1.5 }
+            },
+            'cello': {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.2, decay: 0.3, sustain: 0.6, release: 1 }
+            },
+            'choir': {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.5, decay: 0.5, sustain: 0.8, release: 2 }
+            },
+            // Brass
+            'trumpet': {
+                oscillator: { type: 'square' },
+                envelope: { attack: 0.05, decay: 0.2, sustain: 0.7, release: 0.4 }
+            },
+            'saxophone': {
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.1, decay: 0.2, sustain: 0.6, release: 0.5 }
+            }
+        };
+
+        const drumConfigs = {
+            'acoustic-kit': { kickFreq: 60, snareDecay: 0.2, hihatDecay: 0.1 },
+            'electronic-kit': { kickFreq: 50, snareDecay: 0.15, hihatDecay: 0.08 },
+            'lofi-kit': { kickFreq: 55, snareDecay: 0.25, hihatDecay: 0.15 },
+            '808-kit': { kickFreq: 40, snareDecay: 0.3, hihatDecay: 0.05 },
+            'brushes-kit': { kickFreq: 70, snareDecay: 0.35, hihatDecay: 0.2 }
+        };
+
+        // =============================================
+        // AUDIO ENGINE
+        // =============================================
+        let mainSynth, bassSynth, drumSynth, stringSynth, brassSynth;
+        let reverb, delay;
         
         async function initAudio() {
             await Tone.start();
             
-            // Main synth for chords
-            mainSynth = new Tone.PolySynth(Tone.Synth).toDestination();
-            mainSynth.set({
-                oscillator: { type: 'triangle' },
-                envelope: { attack: 0.02, decay: 0.3, sustain: 0.4, release: 0.8 }
-            });
+            // Effects
+            reverb = new Tone.Reverb({ decay: 2, wet: 0.3 }).toDestination();
+            delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.2, wet: 0.15 }).connect(reverb);
+            
+            // Main synth for chords - uses current instrument config
+            updateMainSynth();
             
             // Bass synth
-            bassSynth = new Tone.MonoSynth().toDestination();
-            bassSynth.set({
-                oscillator: { type: 'sawtooth' },
-                envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.3 },
-                filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.5, release: 0.2 }
-            });
-            bassSynth.volume.value = -6;
+            updateBassSynth();
             
-            // Drum synth (noise for hi-hat, membrane for kick/snare)
+            // Drum synth
+            updateDrumSynth();
+            
+            // String synth for orchestra mode
+            stringSynth = new Tone.PolySynth(Tone.Synth).connect(reverb);
+            stringSynth.set(instrumentConfigs['strings']);
+            stringSynth.volume.value = -10;
+            
+            // Brass synth
+            brassSynth = new Tone.PolySynth(Tone.Synth).connect(reverb);
+            brassSynth.set(instrumentConfigs['trumpet']);
+            brassSynth.volume.value = -12;
+        }
+
+        function updateMainSynth() {
+            if (mainSynth) mainSynth.dispose();
+            
+            const config = instrumentConfigs[state.currentInstrument] || instrumentConfigs['grand-piano'];
+            mainSynth = new Tone.PolySynth(Tone.Synth).connect(delay);
+            mainSynth.set(config);
+            mainSynth.volume.value = -6;
+        }
+
+        function updateBassSynth() {
+            if (bassSynth) bassSynth.dispose();
+            
+            const config = instrumentConfigs[state.currentBass] || instrumentConfigs['electric-bass'];
+            bassSynth = new Tone.MonoSynth().connect(reverb);
+            bassSynth.set({
+                oscillator: config.oscillator,
+                envelope: config.envelope
+            });
+            if (config.filterEnvelope) {
+                bassSynth.filterEnvelope.set(config.filterEnvelope);
+            }
+            bassSynth.volume.value = -8;
+        }
+
+        function updateDrumSynth() {
+            if (drumSynth) {
+                if (drumSynth.kick) drumSynth.kick.dispose();
+                if (drumSynth.snare) drumSynth.snare.dispose();
+                if (drumSynth.hihat) drumSynth.hihat.dispose();
+            }
+            
+            const config = drumConfigs[state.currentDrums] || drumConfigs['acoustic-kit'];
+            
             drumSynth = {
-                kick: new Tone.MembraneSynth().toDestination(),
-                snare: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0 }}).toDestination(),
-                hihat: new Tone.MetalSynth({ frequency: 200, envelope: { attack: 0.001, decay: 0.1, release: 0.01 }}).toDestination()
+                kick: new Tone.MembraneSynth({
+                    pitchDecay: 0.05,
+                    octaves: 6,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 }
+                }).toDestination(),
+                snare: new Tone.NoiseSynth({
+                    noise: { type: 'pink' },
+                    envelope: { attack: 0.001, decay: config.snareDecay, sustain: 0, release: 0.1 }
+                }).toDestination(),
+                hihat: new Tone.MetalSynth({
+                    frequency: 300,
+                    envelope: { attack: 0.001, decay: config.hihatDecay, release: 0.01 },
+                    harmonicity: 5.1,
+                    modulationIndex: 32,
+                    resonance: 4000,
+                    octaves: 1.5
+                }).toDestination()
             };
+            
             drumSynth.kick.volume.value = -4;
             drumSynth.snare.volume.value = -10;
             drumSynth.hihat.volume.value = -20;
         }
 
-        // Chord notes
+        // =============================================
+        // CHORD DEFINITIONS
+        // =============================================
         const chordNotes = {
-            'C': ['C3', 'E3', 'G3'], 'Cm': ['C3', 'Eb3', 'G3'],
-            'D': ['D3', 'F#3', 'A3'], 'Dm': ['D3', 'F3', 'A3'],
-            'E': ['E3', 'G#3', 'B3'], 'Em': ['E3', 'G3', 'B3'],
-            'F': ['F3', 'A3', 'C4'], 'Fm': ['F3', 'Ab3', 'C4'],
-            'G': ['G3', 'B3', 'D4'], 'Gm': ['G3', 'Bb3', 'D4'],
-            'A': ['A3', 'C#4', 'E4'], 'Am': ['A3', 'C4', 'E4'],
-            'B': ['B3', 'D#4', 'F#4'], 'Bm': ['B3', 'D4', 'F#4'],
-            'Bb': ['Bb3', 'D4', 'F4']
+            'C': ['C4', 'E4', 'G4'], 'Cm': ['C4', 'Eb4', 'G4'], 'C7': ['C4', 'E4', 'G4', 'Bb4'],
+            'Cmaj7': ['C4', 'E4', 'G4', 'B4'], 'Cm7': ['C4', 'Eb4', 'G4', 'Bb4'],
+            'D': ['D4', 'F#4', 'A4'], 'Dm': ['D4', 'F4', 'A4'], 'D7': ['D4', 'F#4', 'A4', 'C5'],
+            'Dm7': ['D4', 'F4', 'A4', 'C5'],
+            'E': ['E4', 'G#4', 'B4'], 'Em': ['E4', 'G4', 'B4'], 'E7': ['E4', 'G#4', 'B4', 'D5'],
+            'Em7': ['E4', 'G4', 'B4', 'D5'],
+            'F': ['F4', 'A4', 'C5'], 'Fm': ['F4', 'Ab4', 'C5'], 'Fmaj7': ['F4', 'A4', 'C5', 'E5'],
+            'G': ['G4', 'B4', 'D5'], 'Gm': ['G4', 'Bb4', 'D5'], 'G7': ['G4', 'B4', 'D5', 'F5'],
+            'A': ['A4', 'C#5', 'E5'], 'Am': ['A4', 'C5', 'E5'], 'A7': ['A4', 'C#5', 'E5', 'G5'],
+            'Am7': ['A4', 'C5', 'E5', 'G5'],
+            'B': ['B4', 'D#5', 'F#5'], 'Bm': ['B4', 'D5', 'F#5'], 'B7': ['B4', 'D#5', 'F#5', 'A5'],
+            'Bb': ['Bb4', 'D5', 'F5'], 'Bbm': ['Bb4', 'Db5', 'F5'],
+            'Bdim': ['B4', 'D5', 'F5'], 'Ddim': ['D4', 'F4', 'Ab4']
         };
 
-        // Play chord with all active instruments
+        // =============================================
+        // PLAYBACK FUNCTIONS
+        // =============================================
         async function playChord(chord) {
             if (!mainSynth) await initAudio();
             
             const notes = chordNotes[chord] || chordNotes['C'];
-            const bassNote = notes[0].replace('3', '2');
+            const bassNote = notes[0].replace('4', '2').replace('5', '3');
             
-            // Play chord
+            // Play main instrument chord
             mainSynth.triggerAttackRelease(notes, '2n');
             
-            // Play bass if in band mode
-            if (state.mode === 'band' || state.mode === 'duo') {
+            // Play bass if in duo/band/orchestra mode
+            if (state.mode !== 'solo') {
                 bassSynth.triggerAttackRelease(bassNote, '4n');
             }
             
+            // Play strings/brass in orchestra mode
+            if (state.mode === 'orchestra') {
+                const padNotes = notes.map(n => n.replace('4', '3').replace('5', '4'));
+                stringSynth.triggerAttackRelease(padNotes, '1n');
+            }
+            
             haptic();
-            showToast(`🎵 ${chord}`);
         }
 
-        // Play drum hit
         function playDrumHit(type) {
             if (!drumSynth) return;
             if (type === 'kick') drumSynth.kick.triggerAttackRelease('C1', '8n');
             if (type === 'snare') drumSynth.snare.triggerAttackRelease('8n');
-            if (type === 'hihat') drumSynth.hihat.triggerAttackRelease('16n');
+            if (type === 'hihat') drumSynth.hihat.triggerAttackRelease('32n');
         }
 
-        // Select instrument
-        function selectInstrument(el, category) {
-            const section = el.closest('.instrument-section');
-            section.querySelectorAll('.instrument-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            
-            const name = el.querySelector('.name').textContent;
-            updateActiveInstruments(name, category);
-            haptic();
-            showToast(`${el.querySelector('.icon').textContent} ${name}`);
-        }
-
-        // Update active instruments display
-        function updateActiveInstruments(name, category) {
-            const colors = { keys: '#667eea', guitar: '#f59e0b', bass: '#ef4444', drums: '#10b981', strings: '#8b5cf6', brass: '#f97316' };
-            
-            // Check if category already exists
-            const existing = state.activeInstruments.findIndex(i => i.category === category);
-            if (existing >= 0) {
-                state.activeInstruments[existing] = { name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false };
-            } else {
-                state.activeInstruments.push({ name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false });
-            }
-            
-            renderActiveInstruments();
-        }
-
-        function renderActiveInstruments() {
-            const container = document.getElementById('activeInstruments');
-            container.innerHTML = state.activeInstruments.map(inst => `
-                <div class="active-inst">
-                    <span class="dot" style="background: ${inst.color}"></span>
-                    ${inst.name}
-                </div>
-            `).join('');
-        }
-
-        // Toggle instrument in modal
-        function toggleInst(el) {
-            el.classList.toggle('active');
-            haptic();
-        }
-
-        // Mode selection
-        function setMode(mode) {
-            state.mode = mode;
-            document.querySelectorAll('.band-toggle button').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const modeNames = { solo: 'Solo Piano', duo: 'Piano + Bass', band: 'Full Band', orchestra: 'Orchestra' };
-            showToast(`🎸 ${modeNames[mode]}`);
-            haptic();
-        }
-
-        // Pattern selection
-        function selectPattern(el, pattern) {
-            document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            state.drumPattern = pattern;
-            haptic();
-            showToast(`🥁 ${pattern.charAt(0).toUpperCase() + pattern.slice(1)} beat`);
-        }
-
-        // Bass pattern selection
-        function selectBassPattern(el, pattern) {
-            document.querySelectorAll('.bass-option').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            state.bassPattern = pattern;
-            haptic();
-        }
-
-        // Generate progression
-        function generateProgression() {
-            const progressions = [
-                ['C', 'G', 'Am', 'F'],
-                ['G', 'D', 'Em', 'C'],
-                ['Am', 'F', 'C', 'G'],
-                ['Dm', 'G', 'C', 'Am'],
-                ['E', 'A', 'D', 'A'],
-                ['Em', 'C', 'G', 'D']
-            ];
-            state.progression = progressions[Math.floor(Math.random() * progressions.length)];
-            renderChords();
-            haptic();
-            showToast('✨ New progression!');
-        }
-
-        function renderChords() {
-            const numerals = ['I', 'V', 'vi', 'IV'];
-            document.getElementById('chordGrid').innerHTML = state.progression.map((chord, i) => `
-                <div class="chord-card" onclick="playChord('${chord}')">
-                    <div class="chord-name">${chord}</div>
-                    <div class="chord-numeral">${numerals[i] || ''}</div>
-                </div>
-            `).join('');
-        }
-
-        // Playback
         let playbackInterval, beatCount = 0;
         async function togglePlayback() {
             if (!mainSynth) await initAudio();
@@ -1110,7 +1122,7 @@
                 playbackInterval = setInterval(() => {
                     const beatInMeasure = beatCount % 4;
                     
-                    // Drums on every beat (if band mode)
+                    // Drums on every beat (if band/orchestra mode)
                     if (state.mode === 'band' || state.mode === 'orchestra') {
                         playDrumHit('hihat');
                         if (beatInMeasure === 0) playDrumHit('kick');
@@ -1140,71 +1152,306 @@
             }
         }
 
-        // Tempo
+        // =============================================
+        // INSTRUMENT SELECTION
+        // =============================================
+        function selectInstrument(el, category, instrument) {
+            const section = el.closest('.instrument-section');
+            section.querySelectorAll('.instrument-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            
+            const name = el.querySelector('.name').textContent;
+            
+            // Update the appropriate synth based on category
+            if (category === 'keys' || category === 'guitar' || category === 'strings' || category === 'brass') {
+                state.currentInstrument = instrument;
+                if (mainSynth) updateMainSynth();
+            } else if (category === 'bass') {
+                state.currentBass = instrument;
+                if (bassSynth) updateBassSynth();
+            } else if (category === 'drums') {
+                state.currentDrums = instrument;
+                if (drumSynth) updateDrumSynth();
+            }
+            
+            updateActiveInstruments(name, category);
+            haptic();
+            showToast(`${el.querySelector('.icon').textContent} ${name} selected`);
+        }
+
+        function updateActiveInstruments(name, category) {
+            const colors = { keys: '#667eea', guitar: '#f59e0b', bass: '#ef4444', drums: '#10b981', strings: '#8b5cf6', brass: '#f97316' };
+            
+            const existing = state.activeInstruments.findIndex(i => i.category === category);
+            if (existing >= 0) {
+                state.activeInstruments[existing] = { name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false };
+            } else {
+                state.activeInstruments.push({ name, category, color: colors[category] || '#667eea', volume: 80, muted: false, solo: false });
+            }
+            
+            renderActiveInstruments();
+        }
+
+        function renderActiveInstruments() {
+            const container = document.getElementById('activeInstruments');
+            container.innerHTML = state.activeInstruments.map(inst => `
+                <div class="active-inst">
+                    <span class="dot" style="background: ${inst.color}"></span>
+                    ${inst.name}
+                </div>
+            `).join('');
+        }
+
+        // =============================================
+        // AI GENERATION
+        // =============================================
+        async function aiGenerate(type) {
+            const btn = event.target.closest('.ai-btn');
+            if (btn) {
+                btn.classList.add('loading');
+                btn.innerHTML = '<div class="spinner"></div> Generating...';
+            }
+            
+            try {
+                const key = document.getElementById('keySelect').value;
+                const genre = document.getElementById('genreSelect').value;
+                const currentProg = state.progression.join(' - ');
+                
+                let prompt = '';
+                switch(type) {
+                    case 'progression':
+                        prompt = `Generate a creative ${genre} chord progression in the key of ${key}. Return ONLY a JSON array of 4-8 chord symbols, like ["C", "Am", "F", "G"]. Use chord extensions like 7, maj7, m7 when appropriate for the genre. Only return the JSON array, nothing else.`;
+                        break;
+                    case 'continue':
+                        prompt = `The current chord progression is: ${currentProg}. Suggest the next 4 chords that would naturally continue this progression in the ${genre} style. Return ONLY a JSON array like ["Em", "Am", "D", "G"]. Only return the JSON array, nothing else.`;
+                        break;
+                    case 'variation':
+                        prompt = `Create a variation of this progression: ${currentProg}. Keep the same feel but substitute some chords with more interesting alternatives (like using Am7 instead of Am, or a tritone substitution). Return ONLY a JSON array. Only return the JSON array, nothing else.`;
+                        break;
+                    case 'style':
+                        prompt = `Convert this progression to ${genre} style: ${currentProg}. Add genre-appropriate extensions and substitutions. Return ONLY a JSON array. Only return the JSON array, nothing else.`;
+                        break;
+                    case 'surprise':
+                        prompt = `Generate an unexpected but musically satisfying chord progression that's creative and interesting. Mix genres, use borrowed chords, or try something unusual. Key of ${key}. Return ONLY a JSON array of 4-6 chords. Only return the JSON array, nothing else.`;
+                        break;
+                }
+                
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Parse the AI response
+                let newProgression;
+                try {
+                    // Clean up the response - remove markdown code blocks if present
+                    let cleanResponse = data.result || data.response || data.text || '';
+                    cleanResponse = cleanResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                    newProgression = JSON.parse(cleanResponse);
+                } catch (e) {
+                    // Try to extract array from text
+                    const match = (data.result || data.response || data.text || '').match(/\[.*\]/s);
+                    if (match) {
+                        newProgression = JSON.parse(match[0]);
+                    } else {
+                        throw new Error('Could not parse AI response');
+                    }
+                }
+                
+                if (Array.isArray(newProgression) && newProgression.length > 0) {
+                    state.progression = newProgression;
+                    renderChords();
+                    showToast(`✨ AI generated: ${newProgression.join(' - ')}`);
+                }
+                
+            } catch (error) {
+                console.error('AI Generation error:', error);
+                showToast('⚠️ AI generation failed, using random');
+                generateProgression();
+            } finally {
+                if (btn) {
+                    btn.classList.remove('loading');
+                    const icons = { progression: '✨', continue: '🔮', variation: '🎲', style: '🎭', surprise: '🌟' };
+                    const labels = { progression: 'AI Generate', continue: 'Continue', variation: 'Variation', style: 'Style Match', surprise: 'Surprise Me' };
+                    btn.innerHTML = `<span class="sparkle">${icons[type]}</span> ${labels[type]}`;
+                }
+            }
+        }
+
+        // =============================================
+        // PROGRESSION GENERATION (Fallback)
+        // =============================================
+        function generateProgression() {
+            const key = document.getElementById('keySelect').value;
+            const genre = document.getElementById('genreSelect').value;
+            
+            const progressionsByGenre = {
+                pop: [
+                    ['C', 'G', 'Am', 'F'],
+                    ['G', 'D', 'Em', 'C'],
+                    ['Am', 'F', 'C', 'G'],
+                    ['C', 'Am', 'F', 'G']
+                ],
+                rock: [
+                    ['A', 'D', 'E', 'A'],
+                    ['E', 'A', 'D', 'A'],
+                    ['G', 'C', 'D', 'G'],
+                    ['Am', 'G', 'F', 'E']
+                ],
+                jazz: [
+                    ['Cmaj7', 'Am7', 'Dm7', 'G7'],
+                    ['Dm7', 'G7', 'Cmaj7', 'A7'],
+                    ['Fmaj7', 'Em7', 'Dm7', 'Cmaj7'],
+                    ['Am7', 'D7', 'Gmaj7', 'Cmaj7']
+                ],
+                blues: [
+                    ['A7', 'D7', 'A7', 'E7'],
+                    ['E7', 'A7', 'B7', 'E7'],
+                    ['G7', 'C7', 'G7', 'D7']
+                ],
+                rnb: [
+                    ['Am7', 'Dm7', 'G7', 'Cmaj7'],
+                    ['Dm7', 'Em7', 'Am7', 'Gm7'],
+                    ['Fm7', 'Bb7', 'Ebmaj7', 'Abmaj7']
+                ],
+                country: [
+                    ['G', 'C', 'D', 'G'],
+                    ['D', 'G', 'A', 'D'],
+                    ['C', 'F', 'G', 'C']
+                ],
+                edm: [
+                    ['Am', 'F', 'C', 'G'],
+                    ['Dm', 'Bb', 'F', 'C'],
+                    ['Em', 'C', 'G', 'D']
+                ],
+                lofi: [
+                    ['Cmaj7', 'Am7', 'Dm7', 'Gmaj7'],
+                    ['Fmaj7', 'Em7', 'Am7', 'Dm7'],
+                    ['Am7', 'Dm7', 'Gmaj7', 'Cmaj7']
+                ],
+                classical: [
+                    ['C', 'G', 'Am', 'Em', 'F', 'C', 'F', 'G'],
+                    ['Dm', 'Gm', 'C', 'F'],
+                    ['Am', 'E', 'Am', 'Dm']
+                ],
+                gospel: [
+                    ['C', 'F', 'G', 'Am'],
+                    ['G', 'C', 'D', 'Em'],
+                    ['Bb', 'F', 'C', 'Gm']
+                ]
+            };
+            
+            const options = progressionsByGenre[genre] || progressionsByGenre.pop;
+            state.progression = options[Math.floor(Math.random() * options.length)];
+            renderChords();
+            haptic();
+            showToast(`🎲 Random ${genre} progression!`);
+        }
+
+        function renderChords() {
+            const numeralMap = {
+                'C': 'I', 'Cmaj7': 'Imaj7', 'Dm': 'ii', 'Dm7': 'ii7', 'Em': 'iii', 'Em7': 'iii7',
+                'F': 'IV', 'Fmaj7': 'IVmaj7', 'G': 'V', 'G7': 'V7', 'Am': 'vi', 'Am7': 'vi7',
+                'Bm': 'vii°', 'Bdim': 'vii°'
+            };
+            
+            document.getElementById('chordGrid').innerHTML = state.progression.map((chord, i) => `
+                <div class="chord-card" onclick="playChord('${chord}')">
+                    <div class="chord-name">${chord}</div>
+                    <div class="chord-numeral">${numeralMap[chord] || ''}</div>
+                </div>
+            `).join('');
+            
+            updatePlaybackSub();
+        }
+
+        // =============================================
+        // UI FUNCTIONS
+        // =============================================
+        function setMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.band-toggle button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const modeNames = { solo: 'Solo Piano', duo: 'Piano + Bass', band: 'Full Band', orchestra: 'Orchestra' };
+            showToast(`🎸 ${modeNames[mode]}`);
+            updatePlaybackSub();
+            haptic();
+        }
+
+        function updateKey() {
+            state.key = document.getElementById('keySelect').value;
+            updatePlaybackSub();
+        }
+
+        function updateGenre() {
+            state.genre = document.getElementById('genreSelect').value;
+            updatePlaybackSub();
+        }
+
+        function updatePlaybackSub() {
+            const modeNames = { solo: 'Solo', duo: 'Duo', band: 'Full Band', orchestra: 'Orchestra' };
+            document.getElementById('playbackSub').textContent = 
+                `${state.progression.length} chords • ${state.key} • ${modeNames[state.mode]}`;
+        }
+
         function adjustTempo(delta) {
             state.tempo = Math.max(40, Math.min(200, state.tempo + delta));
             document.getElementById('tempoDisplay').textContent = state.tempo;
             haptic();
         }
 
-        // Modals
+        function setMasterVolume(value) {
+            state.masterVolume = value / 100;
+            if (Tone.Destination) {
+                Tone.Destination.volume.value = Tone.gainToDb(state.masterVolume);
+            }
+        }
+
+        function setSwing(value) {
+            // Swing implementation
+        }
+
         function openModal(id) {
             document.getElementById(id).classList.add('active');
-            if (id === 'mixerModal') renderMixer();
             haptic();
         }
+
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
 
-        // Render mixer
-        function renderMixer() {
-            const container = document.getElementById('mixerTracks');
-            container.innerHTML = state.activeInstruments.map((inst, i) => `
-                <div class="mixer-track">
-                    <div class="track-icon">${getInstIcon(inst.category)}</div>
-                    <div class="track-name">${inst.name}</div>
-                    <div class="track-fader">
-                        <div class="fader-fill" style="height: ${inst.volume}%; background: ${inst.color}"></div>
-                    </div>
-                    <div class="track-controls">
-                        <button class="track-btn mute ${inst.muted ? 'active' : ''}" onclick="toggleMute(${i})">M</button>
-                        <button class="track-btn solo ${inst.solo ? 'active' : ''}" onclick="toggleSolo(${i})">S</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getInstIcon(cat) {
-            const icons = { keys: '🎹', guitar: '🎸', bass: '🎸', drums: '🥁', strings: '🎻', brass: '🎺' };
-            return icons[cat] || '🎵';
-        }
-
-        function toggleMute(idx) {
-            state.activeInstruments[idx].muted = !state.activeInstruments[idx].muted;
-            renderMixer();
+        function toggleInst(el) {
+            el.classList.toggle('active');
             haptic();
         }
 
-        function toggleSolo(idx) {
-            state.activeInstruments[idx].solo = !state.activeInstruments[idx].solo;
-            renderMixer();
-            haptic();
+        function haptic() {
+            if (navigator.vibrate) navigator.vibrate(10);
         }
 
-        // Utilities
-        function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
         function showToast(msg) {
             const t = document.getElementById('toast');
             t.textContent = msg;
             t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
+            setTimeout(() => t.classList.remove('show'), 2500);
         }
 
-        // Init
+        // =============================================
+        // INITIALIZATION
+        // =============================================
         document.addEventListener('DOMContentLoaded', () => {
             renderChords();
             renderActiveInstruments();
+            updatePlaybackSub();
+            
             document.querySelectorAll('.modal').forEach(m => {
                 m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
             });
