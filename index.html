@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v11.0 - Song Arrangement & Recording Studio</title>
+    <title>ChordFlow v11.4 - Song Arrangement & Recording Studio</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -697,7 +697,7 @@
     <header class="header">
         <div class="logo">
             <span>🎵</span>
-            <h1>ChordFlow<span class="version-badge">v11</span><span class="ai-badge">AI</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
+            <h1>ChordFlow<span class="version-badge">v11.4</span><span class="ai-badge">AI</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
         </div>
         <div class="header-actions">
             <button class="icon-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
@@ -976,7 +976,7 @@
                 <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
             </div>
             <div style="padding: 12px 0;">
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.0</p>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.4</p>
                 <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
                     🎬 Song Arrangement<br>
                     🎙️ Recording Studio<br>
@@ -1007,6 +1007,7 @@
             progression: ['C', 'G', 'Am', 'F'],
             currentInstrument: 'grand-piano',
             instrumentName: '🎹 Grand Piano',
+            currentOctaveShift: 0,
             currentSection: 'intro',
             songSections: {
                 intro: ['C', 'G'],
@@ -1039,90 +1040,312 @@
         ];
 
         // =============================================
-        // AUDIO
+        // AUDIO ENGINE v11.4 - DRAMATICALLY DISTINCT INSTRUMENTS
         // =============================================
         let audioInitialized = false;
         let mainSynth = null;
         let bassSynth = null;
         let drumKit = null;
         let reverb = null;
+        let delay = null;
+        let filter = null;
+        let distortion = null;
+        let vibrato = null;
+        let chorus = null;
         let recorder = null;
 
         async function initAudio() {
             if (audioInitialized) return;
             await Tone.start();
             
-            reverb = new Tone.Reverb({ decay: 1.5, wet: 0.2 }).toDestination();
+            // Global effects
+            reverb = new Tone.Reverb({ decay: 2.5, wet: 0.25 }).toDestination();
             await reverb.generate();
             
+            delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.2, wet: 0 }).connect(reverb);
+            chorus = new Tone.Chorus({ frequency: 1.5, delayTime: 3.5, depth: 0.7, wet: 0 }).connect(delay);
+            vibrato = new Tone.Vibrato({ frequency: 5, depth: 0.1, wet: 0 }).connect(chorus);
+            distortion = new Tone.Distortion({ distortion: 0, wet: 0 }).connect(vibrato);
+            filter = new Tone.Filter({ frequency: 5000, type: 'lowpass', rolloff: -12 }).connect(distortion);
+            
+            // Bass synth
             bassSynth = new Tone.MonoSynth({
                 oscillator: { type: 'sawtooth' },
-                envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.3 }
+                filter: { Q: 2, type: 'lowpass', rolloff: -24 },
+                envelope: { attack: 0.01, decay: 0.3, sustain: 0.6, release: 0.4 },
+                filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.4, baseFrequency: 100, octaves: 2 }
             }).toDestination();
-            bassSynth.volume.value = -10;
+            bassSynth.volume.value = -8;
             
+            // Drum kit
             drumKit = {
-                kick: new Tone.MembraneSynth().toDestination(),
+                kick: new Tone.MembraneSynth({
+                    pitchDecay: 0.05,
+                    octaves: 6,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 1.4 }
+                }).toDestination(),
                 snare: new Tone.NoiseSynth({ 
-                    noise: { type: 'pink' }, 
-                    envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+                    noise: { type: 'white' }, 
+                    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
                 }).toDestination(),
                 hihat: new Tone.MetalSynth({
-                    frequency: 400,
-                    envelope: { attack: 0.001, decay: 0.1, release: 0.01 }
+                    frequency: 250,
+                    envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
+                    harmonicity: 5.1,
+                    modulationIndex: 32,
+                    resonance: 4000,
+                    octaves: 1.5
                 }).toDestination()
             };
-            drumKit.kick.volume.value = -6;
-            drumKit.snare.volume.value = -12;
-            drumKit.hihat.volume.value = -18;
+            drumKit.kick.volume.value = -4;
+            drumKit.snare.volume.value = -10;
+            drumKit.hihat.volume.value = -16;
             
             createMainSynth();
             audioInitialized = true;
+            console.log('🎵 Audio Engine v11.4 initialized - Instrument:', state.currentInstrument);
         }
 
-        function createMainSynth() {
-            if (mainSynth) { mainSynth.dispose(); mainSynth = null; }
-            
-            const inst = state.currentInstrument;
-            const synthConfigs = {
-                'grand-piano': { osc: 'triangle', env: { attack: 0.005, decay: 0.3, sustain: 0.3, release: 1.2 } },
-                'electric-piano': { type: 'fm', harmonicity: 3, modulationIndex: 10 },
-                'organ': { osc: 'sine', env: { attack: 0.01, decay: 0.1, sustain: 0.9, release: 0.1 } },
-                'synth-pad': { osc: 'sawtooth', env: { attack: 0.5, decay: 0.5, sustain: 0.8, release: 2 } },
-                'acoustic-guitar': { osc: 'triangle', env: { attack: 0.002, decay: 0.4, sustain: 0.1, release: 0.8 } },
-                'electric-clean': { osc: 'sine', env: { attack: 0.001, decay: 0.5, sustain: 0.3, release: 0.6 } },
-                'electric-overdrive': { osc: 'sawtooth', env: { attack: 0.01, decay: 0.3, sustain: 0.5, release: 0.4 } },
-                'strings': { osc: 'sawtooth', env: { attack: 0.3, decay: 0.4, sustain: 0.7, release: 1.5 } },
-                'cello': { osc: 'sawtooth', env: { attack: 0.2, decay: 0.3, sustain: 0.6, release: 1 } },
-                'trumpet': { osc: 'square', env: { attack: 0.05, decay: 0.2, sustain: 0.7, release: 0.4 } },
-                'saxophone': { osc: 'sawtooth', env: { attack: 0.1, decay: 0.2, sustain: 0.6, release: 0.5 } },
-                'choir': { osc: 'sine', env: { attack: 0.5, decay: 0.5, sustain: 0.8, release: 2 } },
-                'bell': { type: 'fm', harmonicity: 8, modulationIndex: 2 },
-                'music-box': { osc: 'sine', env: { attack: 0.001, decay: 1.5, sustain: 0, release: 1.5 } }
-            };
-            
-            const cfg = synthConfigs[inst] || synthConfigs['grand-piano'];
-            
-            if (cfg.type === 'fm') {
-                mainSynth = new Tone.PolySynth(Tone.FMSynth, {
-                    harmonicity: cfg.harmonicity,
-                    modulationIndex: cfg.modulationIndex,
+        // Comprehensive instrument configurations with DRASTICALLY different sounds
+        const instrumentConfigs = {
+            'grand-piano': {
+                synthType: 'polySynth',
+                voiceSynth: 'Synth',
+                options: {
+                    oscillator: { type: 'triangle8', partials: [1, 0.5, 0.3, 0.15] },
+                    envelope: { attack: 0.005, decay: 1.2, sustain: 0.3, release: 1.8 }
+                },
+                effects: { reverb: 0.3, delay: 0.1, filter: 8000 },
+                volume: -6,
+                octaveShift: 0
+            },
+            'electric-piano': {
+                synthType: 'polySynth',
+                voiceSynth: 'FMSynth',
+                options: {
+                    harmonicity: 3.01,
+                    modulationIndex: 14,
                     oscillator: { type: 'sine' },
-                    envelope: cfg.env || { attack: 0.001, decay: 0.4, sustain: 0.2, release: 0.5 },
-                    modulation: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 0.5, sustain: 0.3, release: 0.8 },
+                    modulation: { type: 'square' },
                     modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.2 }
-                });
-            } else {
-                mainSynth = new Tone.PolySynth(Tone.Synth, {
-                    oscillator: { type: cfg.osc },
-                    envelope: cfg.env
-                });
+                },
+                effects: { reverb: 0.25, chorus: 0.4, delay: 0.15, filter: 6000 },
+                volume: -5,
+                octaveShift: 0
+            },
+            'organ': {
+                synthType: 'polySynth',
+                voiceSynth: 'Synth',
+                options: {
+                    oscillator: { type: 'sine', partialCount: 8 },
+                    envelope: { attack: 0.01, decay: 0.01, sustain: 1, release: 0.05 }
+                },
+                effects: { reverb: 0.4, chorus: 0.6, vibrato: 0.3, filter: 4000 },
+                volume: -4,
+                octaveShift: 0
+            },
+            'synth-pad': {
+                synthType: 'polySynth',
+                voiceSynth: 'AMSynth',
+                options: {
+                    harmonicity: 2,
+                    oscillator: { type: 'sawtooth' },
+                    envelope: { attack: 0.8, decay: 0.5, sustain: 0.9, release: 3 },
+                    modulation: { type: 'sine' },
+                    modulationEnvelope: { attack: 0.5, decay: 0, sustain: 1, release: 1 }
+                },
+                effects: { reverb: 0.6, chorus: 0.5, delay: 0.3, filter: 3000, vibrato: 0.2 },
+                volume: -8,
+                octaveShift: 0
+            },
+            'acoustic-guitar': {
+                synthType: 'polySynth',
+                voiceSynth: 'Synth',
+                options: {
+                    oscillator: { type: 'fmsine', modulationIndex: 3, harmonicity: 3.5 },
+                    envelope: { attack: 0.002, decay: 0.6, sustain: 0.1, release: 1.2 }
+                },
+                effects: { reverb: 0.3, filter: 4500, delay: 0.1 },
+                volume: -5,
+                octaveShift: 0
+            },
+            'electric-clean': {
+                synthType: 'polySynth',
+                voiceSynth: 'FMSynth',
+                options: {
+                    harmonicity: 1,
+                    modulationIndex: 1,
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.001, decay: 0.8, sustain: 0.2, release: 0.8 },
+                    modulation: { type: 'sine' },
+                    modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.1 }
+                },
+                effects: { reverb: 0.25, delay: 0.2, chorus: 0.3, filter: 5500 },
+                volume: -6,
+                octaveShift: 0
+            },
+            'electric-overdrive': {
+                synthType: 'polySynth',
+                voiceSynth: 'Synth',
+                options: {
+                    oscillator: { type: 'sawtooth' },
+                    envelope: { attack: 0.01, decay: 0.4, sustain: 0.6, release: 0.5 }
+                },
+                effects: { reverb: 0.3, distortion: 0.6, filter: 3500, delay: 0.15 },
+                volume: -8,
+                octaveShift: 0
+            },
+            'strings': {
+                synthType: 'polySynth',
+                voiceSynth: 'AMSynth',
+                options: {
+                    harmonicity: 3,
+                    oscillator: { type: 'fatsawtooth', spread: 30, count: 3 },
+                    envelope: { attack: 0.4, decay: 0.3, sustain: 0.8, release: 2 },
+                    modulation: { type: 'sine' },
+                    modulationEnvelope: { attack: 0.3, decay: 0.1, sustain: 1, release: 0.5 }
+                },
+                effects: { reverb: 0.5, chorus: 0.4, vibrato: 0.25, filter: 4000 },
+                volume: -7,
+                octaveShift: 0
+            },
+            'cello': {
+                synthType: 'monoSynth',
+                options: {
+                    oscillator: { type: 'sawtooth' },
+                    filter: { Q: 3, type: 'lowpass', rolloff: -12 },
+                    envelope: { attack: 0.3, decay: 0.4, sustain: 0.7, release: 1.5 },
+                    filterEnvelope: { attack: 0.2, decay: 0.3, sustain: 0.5, release: 1, baseFrequency: 200, octaves: 3 }
+                },
+                effects: { reverb: 0.45, vibrato: 0.35, filter: 3500 },
+                volume: -6,
+                octaveShift: -1
+            },
+            'trumpet': {
+                synthType: 'monoSynth',
+                options: {
+                    oscillator: { type: 'square' },
+                    filter: { Q: 6, type: 'lowpass', rolloff: -24 },
+                    envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.3 },
+                    filterEnvelope: { attack: 0.06, decay: 0.2, sustain: 0.5, release: 0.3, baseFrequency: 500, octaves: 4 }
+                },
+                effects: { reverb: 0.35, delay: 0.1, filter: 5000, vibrato: 0.15 },
+                volume: -4,
+                octaveShift: 1
+            },
+            'saxophone': {
+                synthType: 'monoSynth',
+                options: {
+                    oscillator: { type: 'sawtooth' },
+                    filter: { Q: 4, type: 'bandpass', rolloff: -12 },
+                    envelope: { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.4 },
+                    filterEnvelope: { attack: 0.1, decay: 0.15, sustain: 0.4, release: 0.3, baseFrequency: 300, octaves: 3 }
+                },
+                effects: { reverb: 0.4, vibrato: 0.3, filter: 4500, delay: 0.1 },
+                volume: -5,
+                octaveShift: 0
+            },
+            'choir': {
+                synthType: 'polySynth',
+                voiceSynth: 'AMSynth',
+                options: {
+                    harmonicity: 1.5,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.6, decay: 0.4, sustain: 0.9, release: 2.5 },
+                    modulation: { type: 'sine' },
+                    modulationEnvelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 1 }
+                },
+                effects: { reverb: 0.65, chorus: 0.5, vibrato: 0.2, filter: 3000 },
+                volume: -8,
+                octaveShift: 0
+            },
+            'bell': {
+                synthType: 'polySynth',
+                voiceSynth: 'FMSynth',
+                options: {
+                    harmonicity: 12,
+                    modulationIndex: 20,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 2 },
+                    modulation: { type: 'square' },
+                    modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.5 }
+                },
+                effects: { reverb: 0.5, delay: 0.25, filter: 8000 },
+                volume: -8,
+                octaveShift: 1
+            },
+            'music-box': {
+                synthType: 'polySynth',
+                voiceSynth: 'FMSynth',
+                options: {
+                    harmonicity: 8,
+                    modulationIndex: 2,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 2, sustain: 0, release: 2.5 },
+                    modulation: { type: 'sine' },
+                    modulationEnvelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 }
+                },
+                effects: { reverb: 0.45, delay: 0.2, filter: 7000 },
+                volume: -6,
+                octaveShift: 1
+            }
+        };
+
+        function createMainSynth() {
+            // Dispose old synth completely
+            if (mainSynth) {
+                try { mainSynth.disconnect(); } catch(e) {}
+                try { mainSynth.dispose(); } catch(e) {}
+                mainSynth = null;
             }
             
-            if (reverb) mainSynth.connect(reverb);
-            else mainSynth.toDestination();
-            mainSynth.volume.value = -6;
+            const inst = state.currentInstrument;
+            const config = instrumentConfigs[inst] || instrumentConfigs['grand-piano'];
+            
+            console.log('🎹 Creating synth for:', inst, config.synthType);
+            
+            // Reset all effects first
+            if (reverb) reverb.wet.value = 0.2;
+            if (delay) delay.wet.value = 0;
+            if (chorus) chorus.wet.value = 0;
+            if (vibrato) vibrato.wet.value = 0;
+            if (distortion) distortion.wet.value = 0;
+            if (filter) filter.frequency.value = 10000;
+            
+            // Create the appropriate synth type
+            if (config.synthType === 'monoSynth') {
+                mainSynth = new Tone.MonoSynth(config.options);
+            } else if (config.synthType === 'polySynth') {
+                const VoiceClass = config.voiceSynth === 'FMSynth' ? Tone.FMSynth :
+                                   config.voiceSynth === 'AMSynth' ? Tone.AMSynth :
+                                   Tone.Synth;
+                mainSynth = new Tone.PolySynth(VoiceClass, config.options);
+            } else {
+                mainSynth = new Tone.PolySynth(Tone.Synth, config.options);
+            }
+            
+            // Apply effects based on config
+            if (config.effects) {
+                if (config.effects.reverb && reverb) reverb.wet.value = config.effects.reverb;
+                if (config.effects.delay && delay) delay.wet.value = config.effects.delay;
+                if (config.effects.chorus && chorus) chorus.wet.value = config.effects.chorus;
+                if (config.effects.vibrato && vibrato) vibrato.wet.value = config.effects.vibrato;
+                if (config.effects.distortion && distortion) distortion.wet.value = config.effects.distortion;
+                if (config.effects.filter && filter) filter.frequency.value = config.effects.filter;
+            }
+            
+            // Connect synth through effects chain
+            mainSynth.connect(filter);
+            mainSynth.volume.value = config.volume || -6;
+            
+            // Store octave shift for note transposition
+            state.currentOctaveShift = config.octaveShift || 0;
+            
+            console.log('✅ Synth created:', inst, '| Effects:', config.effects);
         }
+
 
         // =============================================
         // CHORD DATA
@@ -1197,10 +1420,22 @@
 
         function playCurrentChord() {
             const chord = state.progression[currentChordIndex];
-            const notes = chordNotes[chord] || chordNotes['C'];
+            let notes = chordNotes[chord] || chordNotes['C'];
+            
+            // Apply octave shift based on instrument
+            const shift = state.currentOctaveShift || 0;
+            if (shift !== 0) {
+                notes = notes.map(note => {
+                    const match = note.match(/([A-G][#b]?)(\d)/);
+                    if (match) {
+                        return match[1] + (parseInt(match[2]) + shift);
+                    }
+                    return note;
+                });
+            }
             
             if (mainSynth) {
-                mainSynth.releaseAll();
+                if (mainSynth.releaseAll) mainSynth.releaseAll();
                 mainSynth.triggerAttack(notes);
             }
             
@@ -1228,9 +1463,22 @@
 
         function playChord(chord, index) {
             initAudio().then(() => {
-                const notes = chordNotes[chord] || chordNotes['C'];
+                let notes = chordNotes[chord] || chordNotes['C'];
+                
+                // Apply octave shift
+                const shift = state.currentOctaveShift || 0;
+                if (shift !== 0) {
+                    notes = notes.map(note => {
+                        const match = note.match(/([A-G][#b]?)(\d)/);
+                        if (match) {
+                            return match[1] + (parseInt(match[2]) + shift);
+                        }
+                        return note;
+                    });
+                }
+                
                 if (mainSynth) {
-                    mainSynth.releaseAll();
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
                     mainSynth.triggerAttackRelease(notes, '1n');
                 }
                 
@@ -1674,3 +1922,4 @@ ${state.progression[3]} - We made it here somehow`;
     </script>
 </body>
 </html>
+
