@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v11.4 - Song Arrangement & Recording Studio</title>
+    <title>ChordFlow v11.6 - Song Arrangement & Recording Studio</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -69,7 +69,7 @@
             z-index: 100;
         }
         .logo { display: flex; align-items: center; gap: 8px; }
-        .logo h1 { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo h1 { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .version-badge { font-size: 9px; background: var(--success); color: white; padding: 2px 5px; border-radius: 6px; }
         .ai-badge { font-size: 9px; background: linear-gradient(135deg, var(--ai-purple), #ec4899); color: white; padding: 2px 5px; border-radius: 6px; margin-left: 3px; }
         .recording-badge { font-size: 9px; background: var(--recording); color: white; padding: 2px 5px; border-radius: 6px; margin-left: 3px; animation: recordPulse 1s infinite; display: none; }
@@ -110,14 +110,16 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
+            transition: all 0.2s;
         }
         .tab-btn.active { background: var(--accent); color: white; }
+        .tab-btn:active { transform: scale(0.98); }
         .tab-btn .icon { font-size: 16px; }
         
         .tab-content { display: none; padding: 0 16px; }
         .tab-content.active { display: block; }
         
-        /* AI Actions */
+        /* AI Actions - Enhanced */
         .ai-actions {
             display: flex;
             gap: 8px;
@@ -140,9 +142,12 @@
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s;
         }
+        .ai-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3); }
         .ai-btn:active { transform: scale(0.98); }
         .ai-btn.loading { opacity: 0.7; pointer-events: none; }
+        
         .generate-section { margin-bottom: 12px; }
         .big-generate-btn {
             width: 100%;
@@ -161,6 +166,7 @@
             box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
             transition: transform 0.2s, box-shadow 0.2s;
         }
+        .big-generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5); }
         .big-generate-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3); }
         .gen-icon { font-size: 20px; }
         .gen-text { letter-spacing: 0.5px; }
@@ -194,6 +200,7 @@
             transition: all 0.2s;
         }
         .song-section.active { border-color: var(--accent); background: rgba(102, 126, 234, 0.15); }
+        .song-section:active { transform: scale(0.97); }
         .song-section .icon { font-size: 20px; margin-bottom: 4px; }
         .song-section .name { font-size: 11px; color: var(--text-secondary); }
         .song-section .count { font-size: 10px; color: var(--accent-light); margin-top: 2px; }
@@ -207,7 +214,9 @@
             color: var(--text-secondary);
             font-size: 20px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .add-section-btn:hover { border-color: var(--accent); color: var(--accent); }
         
         /* Chord Timeline */
         .timeline-container {
@@ -233,7 +242,9 @@
             border: none;
             color: var(--text-primary);
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .zoom-btn:active { background: var(--accent); }
         
         .timeline {
             display: flex;
@@ -266,7 +277,9 @@
             color: var(--text-secondary);
             font-size: 20px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .add-chord-btn:hover { border-color: var(--accent); color: var(--accent); }
         
         /* Recording Studio */
         .studio-panel {
@@ -332,6 +345,7 @@
         }
         .record-btn.stop { background: var(--bg-card); color: var(--text-primary); }
         .record-btn.export { background: linear-gradient(135deg, var(--accent), #764ba2); color: white; }
+        .record-btn:active { transform: scale(0.95); }
         
         .export-options {
             display: flex;
@@ -349,6 +363,7 @@
             color: var(--text-primary);
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .export-btn:active { background: var(--accent); }
         
@@ -369,6 +384,11 @@
             color: var(--text-primary);
             font-size: 14px;
             resize: vertical;
+            font-family: inherit;
+        }
+        .lyrics-input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
         .lyrics-sync {
             display: flex;
@@ -384,7 +404,9 @@
             color: var(--text-primary);
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .sync-btn:active { background: var(--accent); }
         
         /* Practice Mode */
         .practice-panel {
@@ -403,6 +425,7 @@
             border: none;
             position: relative;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .practice-toggle.active { background: var(--success); }
         .practice-toggle::after {
@@ -455,8 +478,10 @@
             border-radius: 12px;
             text-align: center;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .instrument-card.active { border-color: var(--accent); background: rgba(102, 126, 234, 0.15); }
+        .instrument-card:active { transform: scale(0.97); }
         .instrument-card .icon { font-size: 24px; margin-bottom: 4px; }
         .instrument-card .name { font-size: 10px; color: var(--text-secondary); }
         
@@ -479,8 +504,10 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .mode-toggle button.active { background: var(--accent); color: white; }
+        .mode-toggle button:active { transform: scale(0.98); }
         
         /* Controls Row */
         .controls-row {
@@ -489,7 +516,7 @@
             margin-bottom: 16px;
         }
         .control-group { flex: 1; }
-        .control-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; }
+        .control-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .control-select {
             width: 100%;
             padding: 10px;
@@ -498,6 +525,11 @@
             border-radius: 10px;
             color: var(--text-primary);
             font-size: 13px;
+            cursor: pointer;
+        }
+        .control-select:focus {
+            outline: none;
+            border-color: var(--accent);
         }
         
         /* Chord Grid */
@@ -514,6 +546,7 @@
             padding: 14px 6px;
             text-align: center;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .chord-card:active { transform: scale(0.96); }
         .chord-card.playing { border-color: var(--success); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
@@ -543,6 +576,7 @@
             color: var(--text-primary);
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
         .mod-key.recommended { border-color: var(--gold); background: rgba(251, 191, 36, 0.15); }
         .mod-key:active { transform: scale(0.95); }
@@ -572,6 +606,7 @@
             font-size: 22px;
             cursor: pointer;
             box-shadow: 0 4px 20px var(--accent-glow);
+            transition: all 0.2s;
         }
         .play-btn:active { transform: scale(0.95); }
         .playback-info { flex: 1; }
@@ -587,7 +622,9 @@
             color: var(--text-primary);
             font-size: 14px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .tempo-btn:active { background: var(--accent); }
         .tempo-display { font-size: 13px; font-weight: 600; min-width: 50px; text-align: center; }
         
         .active-instruments {
@@ -651,7 +688,9 @@
             color: var(--text-primary);
             font-size: 16px;
             cursor: pointer;
+            transition: all 0.2s;
         }
+        .close-btn:active { background: var(--accent); }
         
         /* Theme Selector */
         .theme-options {
@@ -668,8 +707,10 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            transition: all 0.2s;
         }
         .theme-option.active { border-color: var(--accent); }
+        .theme-option:active { transform: scale(0.95); }
         .theme-option.dark { background: #0a0a0f; }
         .theme-option.light { background: #f8fafc; }
         .theme-option.midnight { background: linear-gradient(135deg, #1a1a3e, #2d1b4e); }
@@ -690,6 +731,7 @@
             z-index: 2000;
             opacity: 0;
             transition: all 0.3s;
+            pointer-events: none;
         }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         
@@ -699,6 +741,7 @@
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            display: inline-block;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
@@ -712,13 +755,40 @@
             display: inline-block;
             margin-bottom: 12px;
         }
+        
+        /* Mixer Channels */
+        .mixer-channel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .mixer-label { font-size: 12px; min-width: 80px; }
+        .mixer-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--bg-card);
+            border-radius: 2px;
+        }
+        .mixer-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+        .mixer-value { font-size: 11px; min-width: 35px; text-align: right; color: var(--text-secondary); }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="logo">
             <span>🎵</span>
-            <h1>ChordFlow<span class="version-badge">v11.4</span><span class="ai-badge">AI</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
+            <h1>ChordFlow<span class="version-badge">v11.6</span><span class="ai-badge">AI</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
         </div>
         <div class="header-actions">
             <button class="icon-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
@@ -920,7 +990,23 @@
             <div class="studio-header">
                 <div class="studio-title">🎚️ Mixer</div>
             </div>
-            <div id="mixerChannels"></div>
+            <div id="mixerChannels">
+                <div class="mixer-channel">
+                    <span class="mixer-label">🎹 Main</span>
+                    <input type="range" class="mixer-slider" value="80" min="0" max="100" onchange="setMixerLevel('main', this.value)">
+                    <span class="mixer-value">80%</span>
+                </div>
+                <div class="mixer-channel">
+                    <span class="mixer-label">🎸 Bass</span>
+                    <input type="range" class="mixer-slider" value="70" min="0" max="100" onchange="setMixerLevel('bass', this.value)">
+                    <span class="mixer-value">70%</span>
+                </div>
+                <div class="mixer-channel">
+                    <span class="mixer-label">🥁 Drums</span>
+                    <input type="range" class="mixer-slider" value="75" min="0" max="100" onchange="setMixerLevel('drums', this.value)">
+                    <span class="mixer-value">75%</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1003,20 +1089,22 @@
                 <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
             </div>
             <div style="padding: 12px 0;">
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.4</p>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.6</p>
                 <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
                     🎬 Song Arrangement<br>
                     🎙️ Recording Studio<br>
                     📊 Timeline Editor<br>
                     🔄 Key Modulation<br>
                     📚 Practice Mode<br>
-                    🎨 Theme Engine
+                    🎨 Theme Engine<br>
+                    🎚️ Mixer Controls
                 </p>
             </div>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
+
 
     <script>
         // =============================================
@@ -1045,7 +1133,8 @@
                 outro: ['C', 'G', 'C']
             },
             recordingData: [],
-            practiceStats: { accuracy: 0, streak: 0 }
+            practiceStats: { accuracy: 0, streak: 0 },
+            mixerLevels: { main: 80, bass: 70, drums: 75 }
         };
 
         // Instruments
@@ -1067,7 +1156,7 @@
         ];
 
         // =============================================
-        // AUDIO ENGINE v11.4 - DRAMATICALLY DISTINCT INSTRUMENTS
+        // AUDIO ENGINE v11.6
         // =============================================
         let audioInitialized = false;
         let mainSynth = null;
@@ -1079,13 +1168,11 @@
         let distortion = null;
         let vibrato = null;
         let chorus = null;
-        let recorder = null;
 
         async function initAudio() {
             if (audioInitialized) return;
             await Tone.start();
             
-            // Global effects
             reverb = new Tone.Reverb({ decay: 2.5, wet: 0.25 }).toDestination();
             await reverb.generate();
             
@@ -1095,7 +1182,6 @@
             distortion = new Tone.Distortion({ distortion: 0, wet: 0 }).connect(vibrato);
             filter = new Tone.Filter({ frequency: 5000, type: 'lowpass', rolloff: -12 }).connect(distortion);
             
-            // Bass synth
             bassSynth = new Tone.MonoSynth({
                 oscillator: { type: 'sawtooth' },
                 filter: { Q: 2, type: 'lowpass', rolloff: -24 },
@@ -1104,11 +1190,9 @@
             }).toDestination();
             bassSynth.volume.value = -8;
             
-            // Drum kit
             drumKit = {
                 kick: new Tone.MembraneSynth({
-                    pitchDecay: 0.05,
-                    octaves: 6,
+                    pitchDecay: 0.05, octaves: 6,
                     oscillator: { type: 'sine' },
                     envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 1.4 }
                 }).toDestination(),
@@ -1119,10 +1203,7 @@
                 hihat: new Tone.MetalSynth({
                     frequency: 250,
                     envelope: { attack: 0.001, decay: 0.05, release: 0.01 },
-                    harmonicity: 5.1,
-                    modulationIndex: 32,
-                    resonance: 4000,
-                    octaves: 1.5
+                    harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5
                 }).toDestination()
             };
             drumKit.kick.volume.value = -4;
@@ -1131,209 +1212,91 @@
             
             createMainSynth();
             audioInitialized = true;
-            console.log('🎵 Audio Engine v11.4 initialized - Instrument:', state.currentInstrument);
+            console.log('🎵 Audio Engine v11.6 initialized');
         }
 
-        // Comprehensive instrument configurations with DRASTICALLY different sounds
         const instrumentConfigs = {
             'grand-piano': {
-                synthType: 'polySynth',
-                voiceSynth: 'Synth',
-                options: {
-                    oscillator: { type: 'triangle8', partials: [1, 0.5, 0.3, 0.15] },
-                    envelope: { attack: 0.005, decay: 1.2, sustain: 0.3, release: 1.8 }
-                },
-                effects: { reverb: 0.3, delay: 0.1, filter: 8000 },
-                volume: -6,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'Synth',
+                options: { oscillator: { type: 'triangle8', partials: [1, 0.5, 0.3, 0.15] }, envelope: { attack: 0.005, decay: 1.2, sustain: 0.3, release: 1.8 } },
+                effects: { reverb: 0.3, delay: 0.1, filter: 8000 }, volume: -6, octaveShift: 0
             },
             'electric-piano': {
-                synthType: 'polySynth',
-                voiceSynth: 'FMSynth',
-                options: {
-                    harmonicity: 3.01,
-                    modulationIndex: 14,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 0.5, sustain: 0.3, release: 0.8 },
-                    modulation: { type: 'square' },
-                    modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.2 }
-                },
-                effects: { reverb: 0.25, chorus: 0.4, delay: 0.15, filter: 6000 },
-                volume: -5,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'FMSynth',
+                options: { harmonicity: 3.01, modulationIndex: 14, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.5, sustain: 0.3, release: 0.8 }, modulation: { type: 'square' }, modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.2 } },
+                effects: { reverb: 0.25, chorus: 0.4, delay: 0.15, filter: 6000 }, volume: -5, octaveShift: 0
             },
             'organ': {
-                synthType: 'polySynth',
-                voiceSynth: 'Synth',
-                options: {
-                    oscillator: { type: 'sine', partialCount: 8 },
-                    envelope: { attack: 0.01, decay: 0.01, sustain: 1, release: 0.05 }
-                },
-                effects: { reverb: 0.4, chorus: 0.6, vibrato: 0.3, filter: 4000 },
-                volume: -4,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'Synth',
+                options: { oscillator: { type: 'sine', partialCount: 8 }, envelope: { attack: 0.01, decay: 0.01, sustain: 1, release: 0.05 } },
+                effects: { reverb: 0.4, chorus: 0.6, vibrato: 0.3, filter: 4000 }, volume: -4, octaveShift: 0
             },
             'synth-pad': {
-                synthType: 'polySynth',
-                voiceSynth: 'AMSynth',
-                options: {
-                    harmonicity: 2,
-                    oscillator: { type: 'sawtooth' },
-                    envelope: { attack: 0.8, decay: 0.5, sustain: 0.9, release: 3 },
-                    modulation: { type: 'sine' },
-                    modulationEnvelope: { attack: 0.5, decay: 0, sustain: 1, release: 1 }
-                },
-                effects: { reverb: 0.6, chorus: 0.5, delay: 0.3, filter: 3000, vibrato: 0.2 },
-                volume: -8,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'AMSynth',
+                options: { harmonicity: 2, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.8, decay: 0.5, sustain: 0.9, release: 3 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.5, decay: 0, sustain: 1, release: 1 } },
+                effects: { reverb: 0.6, chorus: 0.5, delay: 0.3, filter: 3000, vibrato: 0.2 }, volume: -8, octaveShift: 0
             },
             'acoustic-guitar': {
-                synthType: 'polySynth',
-                voiceSynth: 'Synth',
-                options: {
-                    oscillator: { type: 'fmsine', modulationIndex: 3, harmonicity: 3.5 },
-                    envelope: { attack: 0.002, decay: 0.6, sustain: 0.1, release: 1.2 }
-                },
-                effects: { reverb: 0.3, filter: 4500, delay: 0.1 },
-                volume: -5,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'Synth',
+                options: { oscillator: { type: 'fmsine', modulationIndex: 3, harmonicity: 3.5 }, envelope: { attack: 0.002, decay: 0.6, sustain: 0.1, release: 1.2 } },
+                effects: { reverb: 0.3, filter: 4500, delay: 0.1 }, volume: -5, octaveShift: 0
             },
             'electric-clean': {
-                synthType: 'polySynth',
-                voiceSynth: 'FMSynth',
-                options: {
-                    harmonicity: 1,
-                    modulationIndex: 1,
-                    oscillator: { type: 'triangle' },
-                    envelope: { attack: 0.001, decay: 0.8, sustain: 0.2, release: 0.8 },
-                    modulation: { type: 'sine' },
-                    modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.1 }
-                },
-                effects: { reverb: 0.25, delay: 0.2, chorus: 0.3, filter: 5500 },
-                volume: -6,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'FMSynth',
+                options: { harmonicity: 1, modulationIndex: 1, oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 0.8, sustain: 0.2, release: 0.8 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.1 } },
+                effects: { reverb: 0.25, delay: 0.2, chorus: 0.3, filter: 5500 }, volume: -6, octaveShift: 0
             },
             'electric-overdrive': {
-                synthType: 'polySynth',
-                voiceSynth: 'Synth',
-                options: {
-                    oscillator: { type: 'sawtooth' },
-                    envelope: { attack: 0.01, decay: 0.4, sustain: 0.6, release: 0.5 }
-                },
-                effects: { reverb: 0.3, distortion: 0.6, filter: 3500, delay: 0.15 },
-                volume: -8,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'Synth',
+                options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.6, release: 0.5 } },
+                effects: { reverb: 0.3, distortion: 0.6, filter: 3500, delay: 0.15 }, volume: -8, octaveShift: 0
             },
             'strings': {
-                synthType: 'polySynth',
-                voiceSynth: 'AMSynth',
-                options: {
-                    harmonicity: 3,
-                    oscillator: { type: 'fatsawtooth', spread: 30, count: 3 },
-                    envelope: { attack: 0.4, decay: 0.3, sustain: 0.8, release: 2 },
-                    modulation: { type: 'sine' },
-                    modulationEnvelope: { attack: 0.3, decay: 0.1, sustain: 1, release: 0.5 }
-                },
-                effects: { reverb: 0.5, chorus: 0.4, vibrato: 0.25, filter: 4000 },
-                volume: -7,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'AMSynth',
+                options: { harmonicity: 3, oscillator: { type: 'fatsawtooth', spread: 30, count: 3 }, envelope: { attack: 0.4, decay: 0.3, sustain: 0.8, release: 2 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.3, decay: 0.1, sustain: 1, release: 0.5 } },
+                effects: { reverb: 0.5, chorus: 0.4, vibrato: 0.25, filter: 4000 }, volume: -7, octaveShift: 0
             },
             'cello': {
                 synthType: 'monoSynth',
-                options: {
-                    oscillator: { type: 'sawtooth' },
-                    filter: { Q: 3, type: 'lowpass', rolloff: -12 },
-                    envelope: { attack: 0.3, decay: 0.4, sustain: 0.7, release: 1.5 },
-                    filterEnvelope: { attack: 0.2, decay: 0.3, sustain: 0.5, release: 1, baseFrequency: 200, octaves: 3 }
-                },
-                effects: { reverb: 0.45, vibrato: 0.35, filter: 3500 },
-                volume: -6,
-                octaveShift: -1
+                options: { oscillator: { type: 'sawtooth' }, filter: { Q: 3, type: 'lowpass', rolloff: -12 }, envelope: { attack: 0.3, decay: 0.4, sustain: 0.7, release: 1.5 }, filterEnvelope: { attack: 0.2, decay: 0.3, sustain: 0.5, release: 1, baseFrequency: 200, octaves: 3 } },
+                effects: { reverb: 0.45, vibrato: 0.35, filter: 3500 }, volume: -6, octaveShift: -1
             },
             'trumpet': {
                 synthType: 'monoSynth',
-                options: {
-                    oscillator: { type: 'square' },
-                    filter: { Q: 6, type: 'lowpass', rolloff: -24 },
-                    envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.3 },
-                    filterEnvelope: { attack: 0.06, decay: 0.2, sustain: 0.5, release: 0.3, baseFrequency: 500, octaves: 4 }
-                },
-                effects: { reverb: 0.35, delay: 0.1, filter: 5000, vibrato: 0.15 },
-                volume: -4,
-                octaveShift: 1
+                options: { oscillator: { type: 'square' }, filter: { Q: 6, type: 'lowpass', rolloff: -24 }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.3 }, filterEnvelope: { attack: 0.06, decay: 0.2, sustain: 0.5, release: 0.3, baseFrequency: 500, octaves: 4 } },
+                effects: { reverb: 0.35, delay: 0.1, filter: 5000, vibrato: 0.15 }, volume: -4, octaveShift: 1
             },
             'saxophone': {
                 synthType: 'monoSynth',
-                options: {
-                    oscillator: { type: 'sawtooth' },
-                    filter: { Q: 4, type: 'bandpass', rolloff: -12 },
-                    envelope: { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.4 },
-                    filterEnvelope: { attack: 0.1, decay: 0.15, sustain: 0.4, release: 0.3, baseFrequency: 300, octaves: 3 }
-                },
-                effects: { reverb: 0.4, vibrato: 0.3, filter: 4500, delay: 0.1 },
-                volume: -5,
-                octaveShift: 0
+                options: { oscillator: { type: 'sawtooth' }, filter: { Q: 4, type: 'bandpass', rolloff: -12 }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.7, release: 0.4 }, filterEnvelope: { attack: 0.1, decay: 0.15, sustain: 0.4, release: 0.3, baseFrequency: 300, octaves: 3 } },
+                effects: { reverb: 0.4, vibrato: 0.3, filter: 4500, delay: 0.1 }, volume: -5, octaveShift: 0
             },
             'choir': {
-                synthType: 'polySynth',
-                voiceSynth: 'AMSynth',
-                options: {
-                    harmonicity: 1.5,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.6, decay: 0.4, sustain: 0.9, release: 2.5 },
-                    modulation: { type: 'sine' },
-                    modulationEnvelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 1 }
-                },
-                effects: { reverb: 0.65, chorus: 0.5, vibrato: 0.2, filter: 3000 },
-                volume: -8,
-                octaveShift: 0
+                synthType: 'polySynth', voiceSynth: 'AMSynth',
+                options: { harmonicity: 1.5, oscillator: { type: 'sine' }, envelope: { attack: 0.6, decay: 0.4, sustain: 0.9, release: 2.5 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 1 } },
+                effects: { reverb: 0.65, chorus: 0.5, vibrato: 0.2, filter: 3000 }, volume: -8, octaveShift: 0
             },
             'bell': {
-                synthType: 'polySynth',
-                voiceSynth: 'FMSynth',
-                options: {
-                    harmonicity: 12,
-                    modulationIndex: 20,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 2 },
-                    modulation: { type: 'square' },
-                    modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.5 }
-                },
-                effects: { reverb: 0.5, delay: 0.25, filter: 8000 },
-                volume: -8,
-                octaveShift: 1
+                synthType: 'polySynth', voiceSynth: 'FMSynth',
+                options: { harmonicity: 12, modulationIndex: 20, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 2 }, modulation: { type: 'square' }, modulationEnvelope: { attack: 0.002, decay: 0.2, sustain: 0, release: 0.5 } },
+                effects: { reverb: 0.5, delay: 0.25, filter: 8000 }, volume: -8, octaveShift: 1
             },
             'music-box': {
-                synthType: 'polySynth',
-                voiceSynth: 'FMSynth',
-                options: {
-                    harmonicity: 8,
-                    modulationIndex: 2,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 2, sustain: 0, release: 2.5 },
-                    modulation: { type: 'sine' },
-                    modulationEnvelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 }
-                },
-                effects: { reverb: 0.45, delay: 0.2, filter: 7000 },
-                volume: -6,
-                octaveShift: 1
+                synthType: 'polySynth', voiceSynth: 'FMSynth',
+                options: { harmonicity: 8, modulationIndex: 2, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 2, sustain: 0, release: 2.5 }, modulation: { type: 'sine' }, modulationEnvelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 } },
+                effects: { reverb: 0.45, delay: 0.2, filter: 7000 }, volume: -6, octaveShift: 1
             }
         };
 
         function createMainSynth() {
-            // Dispose old synth completely
             if (mainSynth) {
                 try { mainSynth.disconnect(); } catch(e) {}
                 try { mainSynth.dispose(); } catch(e) {}
                 mainSynth = null;
             }
             
-            const inst = state.currentInstrument;
-            const config = instrumentConfigs[inst] || instrumentConfigs['grand-piano'];
+            const config = instrumentConfigs[state.currentInstrument] || instrumentConfigs['grand-piano'];
             
-            console.log('🎹 Creating synth for:', inst, config.synthType);
-            
-            // Reset all effects first
             if (reverb) reverb.wet.value = 0.2;
             if (delay) delay.wet.value = 0;
             if (chorus) chorus.wet.value = 0;
@@ -1341,19 +1304,14 @@
             if (distortion) distortion.wet.value = 0;
             if (filter) filter.frequency.value = 10000;
             
-            // Create the appropriate synth type
             if (config.synthType === 'monoSynth') {
                 mainSynth = new Tone.MonoSynth(config.options);
-            } else if (config.synthType === 'polySynth') {
-                const VoiceClass = config.voiceSynth === 'FMSynth' ? Tone.FMSynth :
-                                   config.voiceSynth === 'AMSynth' ? Tone.AMSynth :
-                                   Tone.Synth;
-                mainSynth = new Tone.PolySynth(VoiceClass, config.options);
             } else {
-                mainSynth = new Tone.PolySynth(Tone.Synth, config.options);
+                const VoiceClass = config.voiceSynth === 'FMSynth' ? Tone.FMSynth :
+                                   config.voiceSynth === 'AMSynth' ? Tone.AMSynth : Tone.Synth;
+                mainSynth = new Tone.PolySynth(VoiceClass, config.options);
             }
             
-            // Apply effects based on config
             if (config.effects) {
                 if (config.effects.reverb && reverb) reverb.wet.value = config.effects.reverb;
                 if (config.effects.delay && delay) delay.wet.value = config.effects.delay;
@@ -1363,16 +1321,10 @@
                 if (config.effects.filter && filter) filter.frequency.value = config.effects.filter;
             }
             
-            // Connect synth through effects chain
             mainSynth.connect(filter);
             mainSynth.volume.value = config.volume || -6;
-            
-            // Store octave shift for note transposition
             state.currentOctaveShift = config.octaveShift || 0;
-            
-            console.log('✅ Synth created:', inst, '| Effects:', config.effects);
         }
-
 
         // =============================================
         // CHORD DATA
@@ -1385,9 +1337,12 @@
             'G': ['G4', 'B4', 'D5'], 'Gm': ['G4', 'Bb4', 'D5'],
             'A': ['A4', 'C#5', 'E5'], 'Am': ['A4', 'C5', 'E5'],
             'B': ['B4', 'D#5', 'F#5'], 'Bm': ['B4', 'D5', 'F#5'],
+            'Bb': ['Bb4', 'D5', 'F5'],
             'C7': ['C4', 'E4', 'G4', 'Bb4'], 'Cmaj7': ['C4', 'E4', 'G4', 'B4'],
             'Dm7': ['D4', 'F4', 'A4', 'C5'], 'G7': ['G4', 'B4', 'D5', 'F5'],
-            'Am7': ['A4', 'C5', 'E5', 'G5'], 'Fmaj7': ['F4', 'A4', 'C5', 'E5']
+            'Am7': ['A4', 'C5', 'E5', 'G5'], 'Fmaj7': ['F4', 'A4', 'C5', 'E5'],
+            'A7': ['A4', 'C#5', 'E5', 'G5'], 'D7': ['D4', 'F#4', 'A4', 'C5'],
+            'E7': ['E4', 'G#4', 'B4', 'D5'], 'F7': ['F4', 'A4', 'C5', 'Eb5']
         };
 
         const progressions = {
@@ -1412,12 +1367,8 @@
 
         async function togglePlayback() {
             await initAudio();
-            
-            if (state.isPlaying) {
-                stopPlayback();
-            } else {
-                startPlayback();
-            }
+            if (state.isPlaying) { stopPlayback(); } 
+            else { startPlayback(); }
         }
 
         function startPlayback() {
@@ -1439,7 +1390,7 @@
             state.isPlaying = false;
             document.getElementById('playBtn').textContent = '▶️';
             if (playLoop) { clearInterval(playLoop); playLoop = null; }
-            if (mainSynth) mainSynth.releaseAll();
+            if (mainSynth && mainSynth.releaseAll) mainSynth.releaseAll();
             document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing'));
             document.querySelectorAll('.timeline-chord').forEach(c => c.classList.remove('playing'));
             document.getElementById('nowPlaying').textContent = 'Ready to jam';
@@ -1449,15 +1400,11 @@
             const chord = state.progression[currentChordIndex];
             let notes = chordNotes[chord] || chordNotes['C'];
             
-            // Apply octave shift based on instrument
             const shift = state.currentOctaveShift || 0;
             if (shift !== 0) {
                 notes = notes.map(note => {
                     const match = note.match(/([A-G][#b]?)(\d)/);
-                    if (match) {
-                        return match[1] + (parseInt(match[2]) + shift);
-                    }
-                    return note;
+                    return match ? match[1] + (parseInt(match[2]) + shift) : note;
                 });
             }
             
@@ -1466,41 +1413,26 @@
                 mainSynth.triggerAttack(notes);
             }
             
-            // Play bass for band mode
             if ((state.mode === 'band' || state.mode === 'orchestra') && bassSynth) {
                 const bassNote = notes[0].replace('4', '2').replace('5', '3');
                 bassSynth.triggerAttackRelease(bassNote, '2n');
             }
             
-            // Update UI
-            document.querySelectorAll('.chord-card').forEach((c, i) => {
-                c.classList.toggle('playing', i === currentChordIndex);
-            });
-            document.querySelectorAll('.timeline-chord').forEach((c, i) => {
-                c.classList.toggle('playing', i === currentChordIndex);
-            });
-            
+            document.querySelectorAll('.chord-card').forEach((c, i) => c.classList.toggle('playing', i === currentChordIndex));
+            document.querySelectorAll('.timeline-chord').forEach((c, i) => c.classList.toggle('playing', i === currentChordIndex));
             document.getElementById('nowPlaying').textContent = `Playing: ${chord}`;
             
-            // Record if recording
-            if (state.isRecording) {
-                state.recordingData.push({ chord, time: Date.now() });
-            }
+            if (state.isRecording) state.recordingData.push({ chord, time: Date.now() });
         }
 
         function playChord(chord, index) {
             initAudio().then(() => {
                 let notes = chordNotes[chord] || chordNotes['C'];
-                
-                // Apply octave shift
                 const shift = state.currentOctaveShift || 0;
                 if (shift !== 0) {
                     notes = notes.map(note => {
                         const match = note.match(/([A-G][#b]?)(\d)/);
-                        if (match) {
-                            return match[1] + (parseInt(match[2]) + shift);
-                        }
-                        return note;
+                        return match ? match[1] + (parseInt(match[2]) + shift) : note;
                     });
                 }
                 
@@ -1509,13 +1441,8 @@
                     mainSynth.triggerAttackRelease(notes, '1n');
                 }
                 
-                document.querySelectorAll('.chord-card').forEach((c, i) => {
-                    c.classList.toggle('playing', i === index);
-                });
-                
-                setTimeout(() => {
-                    document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing'));
-                }, 500);
+                document.querySelectorAll('.chord-card').forEach((c, i) => c.classList.toggle('playing', i === index));
+                setTimeout(() => document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('playing')), 500);
             });
         }
 
@@ -1584,11 +1511,8 @@
                 </div>
             `).join('');
             
-            // Also render practice chords
             const practiceGrid = document.getElementById('practiceChords');
-            if (practiceGrid) {
-                practiceGrid.innerHTML = grid.innerHTML;
-            }
+            if (practiceGrid) practiceGrid.innerHTML = grid.innerHTML;
         }
 
         function renderTimeline() {
@@ -1602,8 +1526,7 @@
         }
 
         function renderInstruments() {
-            const list = document.getElementById('instrumentList');
-            list.innerHTML = instruments.map(inst => `
+            document.getElementById('instrumentList').innerHTML = instruments.map(inst => `
                 <div class="instrument-card ${inst.id === state.currentInstrument ? 'active' : ''}" 
                      onclick="selectInstrument('${inst.id}', '${inst.name}', '${inst.icon}')">
                     <div class="icon">${inst.icon}</div>
@@ -1618,9 +1541,7 @@
         }
 
         function updateActiveInstruments() {
-            const container = document.getElementById('activeInstruments');
             let html = `<div class="active-inst"><span class="dot" style="background: var(--keys)"></span> ${state.instrumentName.replace(/^./, '')}</div>`;
-            
             if (state.mode === 'band' || state.mode === 'orchestra') {
                 html += '<div class="active-inst"><span class="dot" style="background: var(--bass)"></span> Bass</div>';
                 html += '<div class="active-inst"><span class="dot" style="background: var(--drums)"></span> Drums</div>';
@@ -1628,20 +1549,18 @@
             if (state.mode === 'orchestra') {
                 html += '<div class="active-inst"><span class="dot" style="background: var(--strings)"></span> Strings</div>';
             }
-            container.innerHTML = html;
+            document.getElementById('activeInstruments').innerHTML = html;
         }
 
         function updateModulationKeys() {
-            const modKeys = document.getElementById('modKeys');
             const relatedKeys = {
                 'C': [{ key: 'G', rel: 'V' }, { key: 'Am', rel: 'vi' }, { key: 'F', rel: 'IV' }, { key: 'Dm', rel: 'ii' }],
                 'G': [{ key: 'D', rel: 'V' }, { key: 'Em', rel: 'vi' }, { key: 'C', rel: 'IV' }, { key: 'Am', rel: 'ii' }],
                 'Am': [{ key: 'Em', rel: 'v' }, { key: 'C', rel: 'III' }, { key: 'Dm', rel: 'iv' }, { key: 'F', rel: 'VI' }],
                 'F': [{ key: 'C', rel: 'V' }, { key: 'Dm', rel: 'vi' }, { key: 'Bb', rel: 'IV' }, { key: 'Gm', rel: 'ii' }]
             };
-            
             const keys = relatedKeys[state.key] || relatedKeys['C'];
-            modKeys.innerHTML = keys.map((k, i) => `
+            document.getElementById('modKeys').innerHTML = keys.map((k, i) => `
                 <button class="mod-key ${i < 2 ? 'recommended' : ''}" onclick="modulateTo('${k.key}')">${k.key} (${k.rel})</button>
             `).join('');
         }
@@ -1660,11 +1579,8 @@
         let recordingSeconds = 0;
 
         function toggleRecording() {
-            if (state.isRecording) {
-                stopRecordingSession();
-            } else {
-                startRecordingSession();
-            }
+            if (state.isRecording) { stopRecordingSession(); } 
+            else { startRecordingSession(); }
         }
 
         function startRecordingSession() {
@@ -1680,8 +1596,7 @@
                 recordingSeconds++;
                 const mins = Math.floor(recordingSeconds / 60);
                 const secs = recordingSeconds % 60;
-                document.getElementById('recordingTime').textContent = 
-                    `${mins}:${secs.toString().padStart(2, '0')}`;
+                document.getElementById('recordingTime').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
                 updateWaveform();
             }, 1000);
             
@@ -1706,8 +1621,7 @@
 
         function updateWaveform() {
             const waveform = document.getElementById('waveform');
-            const bars = 40;
-            waveform.innerHTML = Array(bars).fill(0).map(() => {
+            waveform.innerHTML = Array(40).fill(0).map(() => {
                 const height = state.isRecording ? Math.random() * 40 + 10 : 10;
                 return `<div class="waveform-bar" style="height:${height}px;"></div>`;
             }).join('');
@@ -1723,16 +1637,21 @@
             setTimeout(() => showToast('MIDI file ready!'), 1500);
         }
 
+        function openExportModal() {
+            showToast('Export options available below');
+        }
+
         function shareSong() {
             if (navigator.share) {
-                navigator.share({
-                    title: 'ChordFlow Song',
-                    text: `Check out my chord progression: ${state.progression.join(' → ')}`,
-                    url: window.location.href
-                });
+                navigator.share({ title: 'ChordFlow Song', text: `Check out my chord progression: ${state.progression.join(' → ')}`, url: window.location.href });
             } else {
                 showToast('Link copied to clipboard!');
             }
+        }
+
+        function setMixerLevel(channel, value) {
+            state.mixerLevels[channel] = parseInt(value);
+            event.target.nextElementSibling.textContent = value + '%';
         }
 
         // =============================================
@@ -1752,7 +1671,7 @@
         }
 
         // =============================================
-        // SECTIONS
+        // SECTIONS & LYRICS
         // =============================================
         function selectSection(section) {
             state.currentSection = section;
@@ -1763,22 +1682,18 @@
             renderTimeline();
         }
 
-        function addSection() {
-            showToast('Add section coming soon!');
-        }
+        function addSection() { showToast('Add section coming soon!'); }
+        function addChordToTimeline() { state.progression.push('C'); renderChords(); renderTimeline(); }
+        function dragChord(e, index) { e.dataTransfer.setData('text/plain', index); }
+        function zoomTimeline(direction) { showToast(direction > 0 ? 'Zoom in' : 'Zoom out'); }
 
-        function addChordToTimeline() {
-            state.progression.push('C');
-            renderChords();
-            renderTimeline();
-        }
-
-        function dragChord(e, index) {
-            e.dataTransfer.setData('text/plain', index);
-        }
-
-        function zoomTimeline(direction) {
-            showToast(direction > 0 ? 'Zoom in' : 'Zoom out');
+        function syncLyrics() {
+            const lyrics = document.getElementById('lyricsInput').value;
+            if (lyrics.trim()) {
+                showToast('🔗 Lyrics synced to chords!');
+            } else {
+                showToast('Enter lyrics first');
+            }
         }
 
         // =============================================
@@ -1787,63 +1702,45 @@
         async function aiGenerate(type) {
             const btn = event?.target?.closest('.ai-btn') || event?.target?.closest('.big-generate-btn');
             const originalText = btn ? btn.innerHTML : "";
-            if (btn) btn.classList.add('loading');
-            if (btn) btn.innerHTML = '<div class="spinner"></div> Generating...';
+            if (btn) { btn.classList.add('loading'); btn.innerHTML = '<div class="spinner"></div> Generating...'; }
             
             try {
                 const prompts = {
                     progression: `Generate a ${state.genre} chord progression in the key of ${state.key}. Return ONLY a JSON array of 4 chord names like ["C", "G", "Am", "F"]. No other text.`,
                     continue: `Continue this ${state.genre} chord progression: ${state.progression.join(', ')}. Add 2-4 more chords. Return ONLY a JSON array like ["Em", "Dm", "G", "C"]. No other text.`,
                     variation: `Create a variation of this progression: ${state.progression.join(', ')} in ${state.key}. Return ONLY a JSON array of 4 chord names. No other text.`,
-                    modulate: `Suggest a key modulation from ${state.key}. Return ONLY a JSON array of 4 chords in the new key. No other text.`,
-                    surprise: `Generate a creative unexpected ${state.genre} chord progression. Return ONLY a JSON array of 4 chord names. No other text.`
+                    modulate: `Suggest a key modulation from ${state.key}. Return ONLY a JSON array of 4 chords in the new key. No other text.`
                 };
                 
                 const response = await fetch('/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        prompt: prompts[type] || prompts.progression,
-                        action: type
-                    })
+                    body: JSON.stringify({ prompt: prompts[type] || prompts.progression, action: type })
                 });
                 
                 const data = await response.json();
                 
                 if (data.result) {
-                    // Parse chords from AI response - find JSON array in text
                     const jsonMatch = data.result.match(/\[[\s\S]*?\]/);
                     if (jsonMatch) {
                         const chords = JSON.parse(jsonMatch[0]);
                         if (Array.isArray(chords) && chords.length > 0) {
-                            // Validate chords exist in our chord library
                             const validChords = chords.filter(c => chordNotes[c]);
                             if (validChords.length > 0) {
                                 state.progression = validChords;
-                                renderChords();
-                                renderTimeline();
-                                updatePlaybackInfo();
+                                renderChords(); renderTimeline(); updatePlaybackInfo();
                                 showToast('✨ AI progression generated!');
-                            } else {
-                                throw new Error('Invalid chords');
-                            }
+                            } else { throw new Error('Invalid chords'); }
                         }
-                    } else {
-                        throw new Error('No chords found');
-                    }
-                } else if (data.error) {
-                    console.error('AI Error:', data.error);
-                    throw new Error(data.error);
-                }
+                    } else { throw new Error('No chords found'); }
+                } else if (data.error) { throw new Error(data.error); }
             } catch (err) {
                 console.error('AI Generate error:', err);
-                // Fallback to random generation
                 generateProgression();
                 showToast('🎲 Random progression generated!');
             }
             
-            if (btn) btn.classList.remove('loading');
-            if (btn) btn.innerHTML = originalText;
+            if (btn) { btn.classList.remove('loading'); btn.innerHTML = originalText; }
         }
 
         async function aiGenerateLyrics() {
@@ -1855,42 +1752,17 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        prompt: `Write short song lyrics for a ${state.genre} song. 
-                                 Chord progression: ${state.progression.join(' - ')}
-                                 Key: ${state.key}
-                                 Format each line with the chord name first, like:
-                                 ${state.progression[0]} - First line of lyrics
-                                 ${state.progression[1]} - Second line of lyrics
-                                 
-                                 Write a verse (4 lines) and chorus (4 lines). Keep it simple and catchy.`
+                        prompt: `Write short song lyrics for a ${state.genre} song. Chord progression: ${state.progression.join(' - ')}. Key: ${state.key}. Write a verse (4 lines) and chorus (4 lines). Keep it simple.`
                     })
                 });
                 
                 const data = await response.json();
-                if (data.result) {
-                    lyrics.value = data.result;
-                    showToast('✨ AI lyrics generated!');
-                } else {
-                    throw new Error('No lyrics generated');
-                }
+                if (data.result) { lyrics.value = data.result; showToast('✨ AI lyrics generated!'); } 
+                else { throw new Error('No lyrics'); }
             } catch (err) {
-                // Fallback to placeholder lyrics
-                lyrics.value = `Verse 1:
-${state.progression[0]} - Walking down the road today
-${state.progression[1]} - Feeling like I've found my way
-${state.progression[2]} - Everything is falling into place
-${state.progression[3]} - I can see the smile on your face
-
-Chorus:
-${state.progression[0]} - This is where I want to be
-${state.progression[1]} - You and me, finally free
-${state.progression[2]} - Nothing else matters now
-${state.progression[3]} - We made it here somehow`;
+                lyrics.value = `Verse 1:\n${state.progression[0]} - Walking down the road today\n${state.progression[1]} - Feeling like I've found my way\n${state.progression[2]} - Everything is falling into place\n${state.progression[3] || 'C'} - I can see the smile on your face\n\nChorus:\n${state.progression[0]} - This is where I want to be\n${state.progression[1]} - You and me, finally free`;
                 showToast('📝 Default lyrics added');
             }
-        }
-
-            showToast('Lyrics synced to chords!');
         }
 
         // =============================================
@@ -1900,11 +1772,7 @@ ${state.progression[3]} - We made it here somehow`;
             document.querySelectorAll('.theme-option').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             document.body.classList.remove('theme-light');
-            
-            if (theme === 'light') {
-                document.body.classList.add('theme-light');
-            }
-            
+            if (theme === 'light') document.body.classList.add('theme-light');
             localStorage.setItem('chordflow-theme', theme);
             closeModal('themeModal');
             showToast(`Theme: ${theme}`);
@@ -1933,20 +1801,13 @@ ${state.progression[3]} - We made it here somehow`;
             updateWaveform();
             updateModulationKeys();
             
-            // Store original button text
-            document.querySelectorAll('.ai-btn').forEach(btn => {
-                btn.dataset.original = btn.innerHTML;
-            });
-            
-            // Load saved theme
             const savedTheme = localStorage.getItem('chordflow-theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('theme-light');
-            }
+            if (savedTheme === 'light') document.body.classList.add('theme-light');
+            
+            console.log('🎵 ChordFlow v11.6 initialized');
         }
 
         init();
     </script>
 </body>
 </html>
-
