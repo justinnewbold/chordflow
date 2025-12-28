@@ -1,11 +1,11 @@
-# 🎵 ChordFlow v11.0 - Song Arrangement & Recording Studio
+# 🎵 ChordFlow v11.3 - Song Arrangement & Recording Studio
 
 > **AI-powered chord progression generator and complete songwriting suite**
 
 [![Live Demo](https://img.shields.io/badge/Live-chords.newbold.cloud-667eea?style=for-the-badge)](https://chords.newbold.cloud)
 [![Version](https://img.shields.io/badge/Version-11.0-10b981?style=for-the-badge)](https://github.com/justinnewbold/chordflow)
 
-## ✨ What's New in v11.0
+## ✨ What's New in v11.3
 
 ### 🎬 Song Arrangement Mode
 Build complete songs with Intro, Verse, Chorus, Bridge, and Outro sections. Each section has its own chord progression that you can customize.
@@ -99,4 +99,4 @@ MIT License - Feel free to use and modify!
 
 [🌐 Live App](https://chords.newbold.cloud) • [📦 GitHub](https://github.com/justinnewbold/chordflow)
 
-<!-- v11.2 deployed Sun Dec 28 02:53:43 UTC 2025 -->
+<!-- Gemini key updated Sun Dec 28 13:47:54 UTC 2025 -->
