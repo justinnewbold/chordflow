@@ -1511,44 +1511,110 @@
         // =============================================
         async function aiGenerate(type) {
             const btn = event.target.closest('.ai-btn');
+            const originalText = btn.innerHTML;
             btn.classList.add('loading');
             btn.innerHTML = '<div class="spinner"></div> Generating...';
+            
+            try {
+                const prompts = {
+                    progression: `Generate a ${state.genre} chord progression in the key of ${state.key}. Return ONLY a JSON array of 4 chord names like ["C", "G", "Am", "F"]. No other text.`,
+                    continue: `Continue this ${state.genre} chord progression: ${state.progression.join(', ')}. Add 2-4 more chords. Return ONLY a JSON array like ["Em", "Dm", "G", "C"]. No other text.`,
+                    variation: `Create a variation of this progression: ${state.progression.join(', ')} in ${state.key}. Return ONLY a JSON array of 4 chord names. No other text.`,
+                    modulate: `Suggest a key modulation from ${state.key}. Return ONLY a JSON array of 4 chords in the new key. No other text.`,
+                    surprise: `Generate a creative unexpected ${state.genre} chord progression. Return ONLY a JSON array of 4 chord names. No other text.`
+                };
+                
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: prompts[type] || prompts.progression,
+                        action: type
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.result) {
+                    // Parse chords from AI response - find JSON array in text
+                    const jsonMatch = data.result.match(/\[[\s\S]*?\]/);
+                    if (jsonMatch) {
+                        const chords = JSON.parse(jsonMatch[0]);
+                        if (Array.isArray(chords) && chords.length > 0) {
+                            // Validate chords exist in our chord library
+                            const validChords = chords.filter(c => chordNotes[c]);
+                            if (validChords.length > 0) {
+                                state.progression = validChords;
+                                renderChords();
+                                renderTimeline();
+                                updatePlaybackInfo();
+                                showToast('✨ AI progression generated!');
+                            } else {
+                                throw new Error('Invalid chords');
+                            }
+                        }
+                    } else {
+                        throw new Error('No chords found');
+                    }
+                } else if (data.error) {
+                    console.error('AI Error:', data.error);
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                console.error('AI Generate error:', err);
+                // Fallback to random generation
+                generateProgression();
+                showToast('🎲 Random progression generated!');
+            }
+            
+            btn.classList.remove('loading');
+            btn.innerHTML = originalText;
+        }
+
+        async function aiGenerateLyrics() {
+            showToast('✨ Generating lyrics...');
+            const lyrics = document.getElementById('lyricsInput');
             
             try {
                 const response = await fetch('/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        prompt: `Generate a ${state.genre} chord progression in the key of ${state.key}. 
-                                 Type: ${type}. Current progression: ${state.progression.join(', ')}.
-                                 Return ONLY a JSON array of chord names like ["C", "G", "Am", "F"].`
+                        prompt: `Write short song lyrics for a ${state.genre} song. 
+                                 Chord progression: ${state.progression.join(' - ')}
+                                 Key: ${state.key}
+                                 Format each line with the chord name first, like:
+                                 ${state.progression[0]} - First line of lyrics
+                                 ${state.progression[1]} - Second line of lyrics
+                                 
+                                 Write a verse (4 lines) and chorus (4 lines). Keep it simple and catchy.`
                     })
                 });
                 
                 const data = await response.json();
-                if (data.chords) {
-                    state.progression = data.chords;
-                    renderChords();
-                    renderTimeline();
-                    showToast('✨ AI progression generated!');
+                if (data.result) {
+                    lyrics.value = data.result;
+                    showToast('✨ AI lyrics generated!');
+                } else {
+                    throw new Error('No lyrics generated');
                 }
             } catch (err) {
-                // Fallback to random
-                generateProgression();
-                showToast('🎲 Random progression generated!');
+                // Fallback to placeholder lyrics
+                lyrics.value = `Verse 1:
+${state.progression[0]} - Walking down the road today
+${state.progression[1]} - Feeling like I've found my way
+${state.progression[2]} - Everything is falling into place
+${state.progression[3]} - I can see the smile on your face
+
+Chorus:
+${state.progression[0]} - This is where I want to be
+${state.progression[1]} - You and me, finally free
+${state.progression[2]} - Nothing else matters now
+${state.progression[3]} - We made it here somehow`;
+                showToast('📝 Default lyrics added');
             }
-            
-            btn.classList.remove('loading');
-            btn.innerHTML = btn.dataset.original || '✨ AI Generate';
         }
 
-        async function aiGenerateLyrics() {
-            showToast('✨ Generating lyrics...');
-            const lyrics = document.getElementById('lyricsInput');
-            lyrics.value = `Verse 1:\n${state.progression[0]} - Walking down the road today\n${state.progression[1]} - Feeling like I've found my way\n\nChorus:\n${state.progression[2]} - This is where I want to be\n${state.progression[3]} - You and me, finally free`;
-        }
-
-        function syncLyrics() {
             showToast('Lyrics synced to chords!');
         }
 
