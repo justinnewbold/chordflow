@@ -1,85 +1,100 @@
-# 🎵 ChordFlow v10.0 - Full Band Mode
+# 🎵 ChordFlow v11.0 - Song Arrangement & Recording Studio
 
-> AI-powered chord progression generator with 40+ instruments, drums, bass, and full band arrangements
+> **AI-powered chord progression generator and complete songwriting suite**
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-chords.newbold.cloud-blue)](https://chords.newbold.cloud)
-[![Version](https://img.shields.io/badge/version-10.0-green)](https://github.com/justinnewbold/chordflow)
+[![Live Demo](https://img.shields.io/badge/Live-chords.newbold.cloud-667eea?style=for-the-badge)](https://chords.newbold.cloud)
+[![Version](https://img.shields.io/badge/Version-11.0-10b981?style=for-the-badge)](https://github.com/justinnewbold/chordflow)
 
-## 🎸 What's New in v10.0
+## ✨ What's New in v11.0
 
-### 🎹 40+ Instruments
-| Category | Instruments |
-|----------|-------------|
-| **Keys** | Grand Piano, Electric Piano, Organ, Synth Pad, Clavinet, Harpsichord, Music Box |
-| **Guitars** | Acoustic, Electric Clean, Overdrive, Distorted, Nylon, 12-String |
-| **Bass** | Electric Bass, Synth Bass, Upright, Slap Bass, Sub Bass |
-| **Drums** | Acoustic Kit, Electronic, Lo-Fi, 808 Trap, Jazz Brushes |
-| **Strings** | Violin, Cello, Full Orchestra, Pizzicato |
-| **Brass** | Trumpet, Saxophone, Trombone, Full Brass |
-| **World** | Ukulele, Steel Drums, Kalimba, Sitar |
-| **Synth** | Lead Synth, Wobble Bass, Chiptune, Arpeggiator |
+### 🎬 Song Arrangement Mode
+Build complete songs with Intro, Verse, Chorus, Bridge, and Outro sections. Each section has its own chord progression that you can customize.
 
-### 🥁 Drum Patterns
-- **Rock** - Classic 4/4 kick-snare pattern
-- **Pop** - Modern pop beat with hi-hats
-- **Jazz Swing** - Swung ride cymbal pattern
-- **Hip-Hop** - Boom-bap with 808s
-- **EDM** - Four-on-the-floor electronic
+### 🎙️ Recording Studio
+- Record your sessions in real-time
+- Visual waveform display
+- Export to MP3, WAV, or MIDI
+- Share directly to social media
 
-### 🎸 Bass Lines
-- **Root Notes** - Simple root note bass
-- **Octave Jump** - Root + octave pattern
-- **Walking Bass** - Jazz walking line
-- **Arpeggiate** - Arpeggiated bass
-- **Syncopated** - Funky syncopated groove
+### 📊 Chord Timeline Editor
+- Visual timeline of your progression
+- Drag and drop to reorder chords
+- Zoom in/out for detail view
 
-### 🎚️ Mixer
-- Multi-track mixing with volume faders
-- Mute/Solo for each instrument
-- Visual level meters
-- Pan control
+### 🔄 Smart Key Modulation
+- AI-suggested key changes
+- Related key recommendations
+- Smooth transition helpers
 
-### 🎼 Band Modes
-- **Solo** - Single instrument
-- **Duo** - Piano + Bass
-- **Full Band** - Keys, Bass, Drums
-- **Orchestra** - Full orchestral arrangement
+### 📚 Practice Mode
+- Slow down playback (25%-100% speed)
+- Track your accuracy and streaks
+- Perfect for learning new progressions
 
-## 🚀 Features
+### 🎨 Theme Engine
+- Dark mode (default)
+- Light mode
+- Midnight, Ocean, Forest themes
 
-- ✅ 40+ Synthesized Instruments
-- ✅ Real-time Drum Machine
-- ✅ Auto Bass Line Generation
-- ✅ Multi-track Mixer
-- ✅ 10+ Genre Presets
-- ✅ AI Chord Continuation
-- ✅ Learning Mode & Theory Lessons
-- ✅ Achievements & XP System
-- ✅ PWA with Offline Support
-- ✅ Mobile-First Touch UI
+## 🎹 Core Features
 
-## 📱 Try It Now
+| Category | Features |
+|----------|----------|
+| **AI Generation** | Smart progressions, Variations, Continuation, Key modulation |
+| **Instruments** | 14+ synth instruments (Piano, Guitar, Strings, Brass, etc.) |
+| **Band Modes** | Solo, Duo, Band, Orchestra |
+| **Export** | MP3, WAV, MIDI, Share link |
+| **Sections** | Intro, Verse, Chorus, Bridge, Outro |
+| **Practice** | Speed control, Accuracy tracking, Streaks |
 
-**Live App:** [https://chords.newbold.cloud](https://chords.newbold.cloud)
+## 🚀 Quick Start
+
+1. Visit [chords.newbold.cloud](https://chords.newbold.cloud)
+2. Choose a key and genre
+3. Click **AI Generate** or 🎲 for random
+4. Press ▶️ to play
+5. Switch tabs to Arrange, Studio, or Practice
+
+## 🎵 Tabs
+
+### Compose Tab
+- AI-powered chord generation
+- Instrument selection
+- Key and genre controls
+- Key modulation helper
+
+### Arrange Tab
+- Song section editor
+- Chord timeline
+- Lyrics integration
+
+### Studio Tab
+- Recording controls
+- Waveform visualizer
+- Export options
+
+### Practice Tab
+- Speed slider (25%-100%)
+- Practice statistics
+- Chord learning mode
 
 ## 🛠️ Tech Stack
 
-- **Audio:** Tone.js (Web Audio API)
-- **Hosting:** Vercel
-- **AI:** Gemini API (serverless)
-- **PWA:** Service Worker + Manifest
+- **Audio**: [Tone.js](https://tonejs.github.io/)
+- **AI**: Gemini API
+- **Hosting**: Vercel
+- **Domain**: chords.newbold.cloud
 
-## 📄 Version History
+## 📱 PWA Support
 
-| Version | Features |
-|---------|----------|
-| **v10.0** | Full Band Mode, 40+ Instruments, Drums, Bass, Mixer |
-| v9.0 | Learning Mode, Achievements, Mic Detection |
-| v8.0 | MIDI, Collaboration, Voicings |
-| v7.0 | Sound Design Studio, AI Deep Features |
-| v6.0 | Mobile-First UI, Touch Targets |
-| v5.0 | PWA Support, Song Structure |
+ChordFlow works as a Progressive Web App. Add it to your home screen for a native app experience!
+
+## 📄 License
+
+MIT License - Feel free to use and modify!
 
 ---
 
-Made with 🎵 by Justin Newbold
+**Made with ❤️ by Justin Newbold**
+
+[🌐 Live App](https://chords.newbold.cloud) • [📦 GitHub](https://github.com/justinnewbold/chordflow)
