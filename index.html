@@ -1785,10 +1785,10 @@
         // AI FUNCTIONS
         // =============================================
         async function aiGenerate(type) {
-            const btn = event.target.closest('.ai-btn');
-            const originalText = btn.innerHTML;
-            btn.classList.add('loading');
-            btn.innerHTML = '<div class="spinner"></div> Generating...';
+            const btn = event?.target?.closest('.ai-btn') || event?.target?.closest('.big-generate-btn');
+            const originalText = btn ? btn.innerHTML : "";
+            if (btn) btn.classList.add('loading');
+            if (btn) btn.innerHTML = '<div class="spinner"></div> Generating...';
             
             try {
                 const prompts = {
@@ -1842,8 +1842,8 @@
                 showToast('🎲 Random progression generated!');
             }
             
-            btn.classList.remove('loading');
-            btn.innerHTML = originalText;
+            if (btn) btn.classList.remove('loading');
+            if (btn) btn.innerHTML = originalText;
         }
 
         async function aiGenerateLyrics() {
