@@ -132,8 +132,8 @@
             align-items: center;
             gap: 6px;
             padding: 10px 14px;
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
-            border: 1px solid rgba(168, 85, 247, 0.3);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(236, 72, 153, 0.8));
+            border: 2px solid rgba(168, 85, 247, 0.6);
             border-radius: 10px;
             color: var(--text-primary);
             font-size: 12px;
@@ -143,6 +143,27 @@
         }
         .ai-btn:active { transform: scale(0.98); }
         .ai-btn.loading { opacity: 0.7; pointer-events: none; }
+        .generate-section { margin-bottom: 12px; }
+        .big-generate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .big-generate-btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3); }
+        .gen-icon { font-size: 20px; }
+        .gen-text { letter-spacing: 0.5px; }
         
         /* Song Arrangement */
         .arrangement-header {
@@ -728,6 +749,12 @@
 
     <!-- COMPOSE TAB -->
     <div class="tab-content active" id="compose-tab">
+        <div class="generate-section">
+            <button class="big-generate-btn" onclick="aiGenerate('progression')">
+                <span class="gen-icon">🎵</span>
+                <span class="gen-text">Generate AI Progression</span>
+            </button>
+        </div>
         <div class="ai-actions">
             <button class="ai-btn" onclick="aiGenerate('progression')">✨ AI Generate</button>
             <button class="ai-btn" onclick="aiGenerate('continue')">🔮 Continue</button>
