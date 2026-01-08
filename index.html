@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.2 - AI Studio</title>
+    <title>ChordFlow v12.3 - Beats Studio</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -250,6 +250,66 @@
         .structure-result .section-label { display: inline-block; background: var(--warning); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; margin-right: 8px; }
         .analysis-result .analysis-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .analysis-result .analysis-label { color: var(--accent); font-weight: 600; }
+        
+        /* Beats Tab - Melody & Drum Sequencer */
+        .sequencer-panel, .drum-panel { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .sequencer-controls, .drum-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center; }
+        .seq-btn { padding: 8px 12px; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .seq-btn:hover { background: var(--accent); }
+        .seq-btn:active { transform: scale(0.95); }
+        .ai-melody-btn, .ai-drum-btn { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; border: none; }
+        .ai-melody-btn:hover, .ai-drum-btn:hover { opacity: 0.9; }
+        
+        /* Melody Grid */
+        .melody-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; background: var(--bg-secondary); padding: 8px; border-radius: 10px; margin-bottom: 12px; overflow-x: auto; }
+        .melody-column { display: flex; flex-direction: column; gap: 2px; }
+        .melody-cell { width: 100%; min-width: 20px; aspect-ratio: 1; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+        .melody-cell:hover { background: rgba(34, 197, 94, 0.3); border-color: var(--success); }
+        .melody-cell.active { background: var(--success); box-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
+        .melody-cell.playing { background: #fbbf24; transform: scale(1.1); }
+        .melody-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; }
+        .melody-label { height: 20px; display: flex; align-items: center; font-size: 9px; color: var(--text-secondary); padding-right: 4px; }
+        .melody-playback { display: flex; gap: 8px; flex-wrap: wrap; }
+        .play-seq-btn { flex: 1; min-width: 120px; padding: 12px; background: var(--success); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .play-seq-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
+        .play-seq-btn:active { transform: scale(0.98); }
+        .stop-btn { background: var(--error); }
+        .stop-btn:hover { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        
+        /* Drum Grid */
+        .drum-grid { background: var(--bg-secondary); padding: 10px; border-radius: 10px; margin-bottom: 12px; overflow-x: auto; }
+        .drum-row { display: flex; align-items: center; margin-bottom: 6px; }
+        .drum-row:last-child { margin-bottom: 0; }
+        .drum-label { min-width: 70px; font-size: 11px; color: var(--text-secondary); padding-right: 8px; white-space: nowrap; }
+        .drum-steps { display: flex; gap: 3px; flex: 1; }
+        .drum-step { width: 100%; min-width: 18px; height: 28px; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+        .drum-step:nth-child(4n+1) { background: rgba(255,255,255,0.08); }
+        .drum-step:hover { background: rgba(239, 68, 68, 0.3); border-color: var(--error); }
+        .drum-step.active { background: var(--error); box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+        .drum-step.kick.active { background: #ef4444; }
+        .drum-step.snare.active { background: #f97316; }
+        .drum-step.hihat.active { background: #eab308; }
+        .drum-step.openhat.active { background: #84cc16; }
+        .drum-step.clap.active { background: #22c55e; }
+        .drum-step.tom.active { background: #06b6d4; }
+        .drum-step.crash.active { background: #8b5cf6; }
+        .drum-step.rim.active { background: #ec4899; }
+        .drum-step.playing { transform: scale(1.15); filter: brightness(1.3); }
+        .drum-playback { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        /* Combined Panel */
+        .combined-panel { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(239, 68, 68, 0.1)); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .arrangement-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 12px; }
+        .tempo-section { display: flex; align-items: center; gap: 8px; }
+        .tempo-section button { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-size: 16px; }
+        .tempo-section button:hover { background: var(--accent); }
+        #beatTempoDisplay { font-size: 18px; font-weight: 700; color: var(--accent); min-width: 40px; text-align: center; }
+        .loop-toggle { display: flex; align-items: center; gap: 8px; }
+        .loop-toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+        .play-all-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; }
+        .play-all-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
+        .play-all-btn:active { transform: scale(0.98); }
+        .play-all-btn .icon { font-size: 24px; }
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .export-card { padding: 16px; background: var(--bg-card); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .export-card:active { border-color: var(--accent); transform: scale(0.98); }
@@ -328,7 +388,8 @@
 
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('compose')"><span class="icon">🎹</span><span>Compose</span></button>
-        <button class="tab-btn" onclick="switchTab('ai')"><span class="icon">🤖</span><span>AI Studio</span></button>
+        <button class="tab-btn" onclick="switchTab('ai')"><span class="icon">🤖</span><span>AI</span></button>
+        <button class="tab-btn" onclick="switchTab('beats')"><span class="icon">🥁</span><span>Beats</span></button>
         <button class="tab-btn" onclick="switchTab('piano')"><span class="icon">🎼</span><span>Piano</span></button>
         <button class="tab-btn" onclick="switchTab('mixer')"><span class="icon">🎚️</span><span>Mixer</span></button>
         <button class="tab-btn" onclick="switchTab('sheet')"><span class="icon">📜</span><span>Sheet</span></button>
@@ -585,6 +646,115 @@
                 <span class="icon">🎰</span> Generate Random Creation
             </button>
             <div class="ai-result" id="surpriseResult"></div>
+        </div>
+    </div>
+
+    <!-- BEATS TAB - Melody & Drums -->
+    <div class="tab-content" id="beats-tab">
+        <!-- Melody Sequencer -->
+        <div class="panel sequencer-panel">
+            <div class="section-title">🎵 Melody Sequencer</div>
+            <div class="sequencer-controls">
+                <select class="control-select" id="melodyScale" onchange="updateMelodyScale()">
+                    <option value="major">Major Scale</option>
+                    <option value="minor">Minor Scale</option>
+                    <option value="pentatonic">Pentatonic</option>
+                    <option value="blues">Blues Scale</option>
+                    <option value="dorian">Dorian Mode</option>
+                    <option value="chromatic">Chromatic</option>
+                </select>
+                <select class="control-select" id="melodyOctave">
+                    <option value="3">Octave 3</option>
+                    <option value="4" selected>Octave 4</option>
+                    <option value="5">Octave 5</option>
+                </select>
+                <button class="seq-btn" onclick="clearMelody()">🗑️ Clear</button>
+                <button class="seq-btn" onclick="randomMelody()">🎲 Random</button>
+                <button class="seq-btn ai-melody-btn" onclick="aiGenerateMelodyPattern(this)">✨ AI</button>
+            </div>
+            <div class="melody-grid" id="melodyGrid"></div>
+            <div class="melody-playback">
+                <button class="play-seq-btn" onclick="playMelodySequence()">▶️ Play Melody</button>
+                <button class="play-seq-btn" onclick="playMelodyWithChords()">🎹 Play with Chords</button>
+            </div>
+        </div>
+
+        <!-- Drum Machine -->
+        <div class="panel drum-panel">
+            <div class="section-title">🥁 Drum Machine</div>
+            <div class="drum-controls">
+                <select class="control-select" id="drumKit" onchange="changeDrumKit()">
+                    <option value="acoustic">Acoustic Kit</option>
+                    <option value="electronic">Electronic</option>
+                    <option value="808">808 Hip Hop</option>
+                    <option value="jazz">Jazz Brushes</option>
+                </select>
+                <button class="seq-btn" onclick="clearDrums()">🗑️ Clear</button>
+                <button class="seq-btn" onclick="loadDrumPreset('rock')">🎸 Rock</button>
+                <button class="seq-btn" onclick="loadDrumPreset('hiphop')">🎤 Hip Hop</button>
+                <button class="seq-btn" onclick="loadDrumPreset('edm')">🎧 EDM</button>
+                <button class="seq-btn ai-drum-btn" onclick="aiGenerateDrumPattern(this)">✨ AI</button>
+            </div>
+            <div class="drum-grid" id="drumGrid">
+                <div class="drum-row" data-drum="kick">
+                    <div class="drum-label">🔊 Kick</div>
+                    <div class="drum-steps" id="kick-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="snare">
+                    <div class="drum-label">🥁 Snare</div>
+                    <div class="drum-steps" id="snare-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="hihat">
+                    <div class="drum-label">🎩 Hi-Hat</div>
+                    <div class="drum-steps" id="hihat-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="openhat">
+                    <div class="drum-label">💨 Open HH</div>
+                    <div class="drum-steps" id="openhat-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="clap">
+                    <div class="drum-label">👏 Clap</div>
+                    <div class="drum-steps" id="clap-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="tom">
+                    <div class="drum-label">🪘 Tom</div>
+                    <div class="drum-steps" id="tom-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="crash">
+                    <div class="drum-label">💥 Crash</div>
+                    <div class="drum-steps" id="crash-steps"></div>
+                </div>
+                <div class="drum-row" data-drum="rim">
+                    <div class="drum-label">🔔 Rim</div>
+                    <div class="drum-steps" id="rim-steps"></div>
+                </div>
+            </div>
+            <div class="drum-playback">
+                <button class="play-seq-btn" onclick="playDrumSequence()">▶️ Play Drums</button>
+                <button class="play-seq-btn" onclick="playFullBeat()">🎶 Play Full Beat</button>
+                <button class="play-seq-btn stop-btn" onclick="stopAllSequences()">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <!-- Combined Playback -->
+        <div class="panel combined-panel">
+            <div class="section-title">🎼 Full Arrangement</div>
+            <div class="arrangement-controls">
+                <div class="tempo-section">
+                    <span>Tempo:</span>
+                    <button onclick="adjustBeatTempo(-5)">−</button>
+                    <span id="beatTempoDisplay">120</span>
+                    <button onclick="adjustBeatTempo(5)">+</button>
+                    <span>BPM</span>
+                </div>
+                <div class="loop-toggle">
+                    <label><input type="checkbox" id="loopBeats" checked> Loop</label>
+                </div>
+            </div>
+            <button class="play-all-btn" onclick="playEverything()">
+                <span class="icon">🎵</span>
+                <span>Play Chords + Melody + Drums</span>
+            </button>
         </div>
     </div>
 
@@ -1184,6 +1354,7 @@
             event.target.closest('.tab-btn').classList.add('active');
             document.getElementById(`${tabId}-tab`).classList.add('active');
             if (tabId === 'sheet') setTimeout(renderSheetMusic, 50);
+            if (tabId === 'beats') setTimeout(initBeatsTab, 50);
         }
         function setMode(mode, btn) {
             state.mode = mode;
@@ -1666,6 +1837,416 @@ Provide analysis in this JSON format:
             btn.classList.remove('loading');
         }
 
+        // BEATS - MELODY SEQUENCER & DRUM MACHINE
+        const scales = {
+            major: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+            minor: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'],
+            pentatonic: ['C', 'D', 'E', 'G', 'A'],
+            blues: ['C', 'Eb', 'F', 'Gb', 'G', 'Bb'],
+            dorian: ['C', 'D', 'Eb', 'F', 'G', 'A', 'Bb'],
+            chromatic: ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+        };
+        
+        const melodyState = { grid: Array(16).fill(null), scale: 'major', octave: 4 };
+        const drumState = {
+            kick: Array(16).fill(false),
+            snare: Array(16).fill(false),
+            hihat: Array(16).fill(false),
+            openhat: Array(16).fill(false),
+            clap: Array(16).fill(false),
+            tom: Array(16).fill(false),
+            crash: Array(16).fill(false),
+            rim: Array(16).fill(false)
+        };
+        let beatTempo = 120;
+        let sequenceInterval = null;
+        let isPlaying = false;
+
+        function initMelodyGrid() {
+            const grid = document.getElementById('melodyGrid');
+            if (!grid) return;
+            const scale = scales[melodyState.scale];
+            const octave = parseInt(document.getElementById('melodyOctave')?.value || 4);
+            const rows = scale.length;
+            
+            let html = '<div class="melody-labels">';
+            for (let r = rows - 1; r >= 0; r--) {
+                html += `<div class="melody-label">${scale[r]}${octave}</div>`;
+            }
+            html += '</div>';
+            
+            for (let col = 0; col < 16; col++) {
+                html += `<div class="melody-column" data-col="${col}">`;
+                for (let row = rows - 1; row >= 0; row--) {
+                    const note = scale[row] + octave;
+                    const isActive = melodyState.grid[col] === note;
+                    html += `<div class="melody-cell ${isActive ? 'active' : ''}" data-col="${col}" data-row="${row}" data-note="${note}" onclick="toggleMelodyCell(this, ${col}, '${note}')"></div>`;
+                }
+                html += '</div>';
+            }
+            grid.innerHTML = html;
+        }
+
+        function toggleMelodyCell(cell, col, note) {
+            const wasActive = cell.classList.contains('active');
+            // Clear other cells in same column
+            document.querySelectorAll(`.melody-cell[data-col="${col}"]`).forEach(c => c.classList.remove('active'));
+            
+            if (wasActive) {
+                melodyState.grid[col] = null;
+            } else {
+                cell.classList.add('active');
+                melodyState.grid[col] = note;
+                // Play preview
+                playNotePreview(note);
+            }
+        }
+
+        async function playNotePreview(note) {
+            await initAudio();
+            mainSynth.triggerAttackRelease(note, '16n');
+        }
+
+        function updateMelodyScale() {
+            melodyState.scale = document.getElementById('melodyScale').value;
+            melodyState.grid = Array(16).fill(null);
+            initMelodyGrid();
+        }
+
+        function clearMelody() {
+            melodyState.grid = Array(16).fill(null);
+            initMelodyGrid();
+            showToast('🗑️ Melody cleared');
+        }
+
+        function randomMelody() {
+            const scale = scales[melodyState.scale];
+            const octave = parseInt(document.getElementById('melodyOctave')?.value || 4);
+            melodyState.grid = Array(16).fill(null).map(() => 
+                Math.random() > 0.3 ? scale[Math.floor(Math.random() * scale.length)] + octave : null
+            );
+            initMelodyGrid();
+            showToast('🎲 Random melody!');
+        }
+
+        async function aiGenerateMelodyPattern(btn) {
+            btn.classList.add('loading');
+            const prompt = `Generate a catchy 16-step melody pattern for ${state.genre} music in ${melodyState.scale} scale.
+Return ONLY a JSON array of 16 elements, each being a note name with octave (like "C4", "E4") or null for rest.
+Example: ["C4", "E4", null, "G4", "E4", "C4", null, "D4", "F4", "E4", null, "G4", "A4", "G4", "E4", "C4"]
+Use notes from ${melodyState.scale} scale. Make it musical and memorable.`;
+            
+            const result = await callGeminiAI(prompt);
+            if (result) {
+                try {
+                    const match = result.match(/\[[\s\S]*?\]/);
+                    if (match) {
+                        const pattern = JSON.parse(match[0]);
+                        melodyState.grid = pattern.slice(0, 16);
+                        initMelodyGrid();
+                        showToast('✨ AI melody generated!');
+                    }
+                } catch (e) { randomMelody(); }
+            } else { randomMelody(); }
+            btn.classList.remove('loading');
+        }
+
+        async function playMelodySequence() {
+            await initAudio();
+            stopAllSequences();
+            isPlaying = true;
+            const stepTime = (60 / beatTempo) / 4 * 1000; // 16th notes
+            let step = 0;
+            
+            sequenceInterval = setInterval(() => {
+                // Clear previous highlights
+                document.querySelectorAll('.melody-cell.playing').forEach(c => c.classList.remove('playing'));
+                
+                // Highlight current column
+                document.querySelectorAll(`.melody-cell[data-col="${step}"]`).forEach(c => c.classList.add('playing'));
+                
+                // Play note
+                const note = melodyState.grid[step];
+                if (note) mainSynth.triggerAttackRelease(note, '16n');
+                
+                step = (step + 1) % 16;
+                if (step === 0 && !document.getElementById('loopBeats')?.checked) {
+                    stopAllSequences();
+                }
+            }, stepTime);
+        }
+
+        // Drum Machine
+        function initDrumGrid() {
+            Object.keys(drumState).forEach(drum => {
+                const container = document.getElementById(`${drum}-steps`);
+                if (!container) return;
+                let html = '';
+                for (let i = 0; i < 16; i++) {
+                    html += `<div class="drum-step ${drum} ${drumState[drum][i] ? 'active' : ''}" data-drum="${drum}" data-step="${i}" onclick="toggleDrumStep('${drum}', ${i}, this)"></div>`;
+                }
+                container.innerHTML = html;
+            });
+        }
+
+        function toggleDrumStep(drum, step, el) {
+            drumState[drum][step] = !drumState[drum][step];
+            el.classList.toggle('active');
+            if (drumState[drum][step]) playDrumSound(drum);
+        }
+
+        let drumSynths = {};
+        async function initDrumSynths() {
+            await initAudio();
+            if (drumSynths.kick) return;
+            
+            drumSynths = {
+                kick: new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 6, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.4 } }).toDestination(),
+                snare: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.2 } }).toDestination(),
+                hihat: new Tone.MetalSynth({ frequency: 400, envelope: { attack: 0.001, decay: 0.05, release: 0.01 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(),
+                openhat: new Tone.MetalSynth({ frequency: 400, envelope: { attack: 0.001, decay: 0.3, release: 0.1 }, harmonicity: 5.1, modulationIndex: 32, resonance: 4000, octaves: 1.5 }).toDestination(),
+                clap: new Tone.NoiseSynth({ noise: { type: 'pink' }, envelope: { attack: 0.005, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination(),
+                tom: new Tone.MembraneSynth({ pitchDecay: 0.1, octaves: 4, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.3 } }).toDestination(),
+                crash: new Tone.MetalSynth({ frequency: 300, envelope: { attack: 0.001, decay: 1, release: 0.5 }, harmonicity: 5.1, modulationIndex: 40, resonance: 5000, octaves: 2 }).toDestination(),
+                rim: new Tone.MetalSynth({ frequency: 800, envelope: { attack: 0.001, decay: 0.05, release: 0.01 }, harmonicity: 3, modulationIndex: 10, resonance: 8000, octaves: 0.5 }).toDestination()
+            };
+            // Set volumes
+            drumSynths.kick.volume.value = 0;
+            drumSynths.snare.volume.value = -5;
+            drumSynths.hihat.volume.value = -10;
+            drumSynths.openhat.volume.value = -8;
+            drumSynths.clap.volume.value = -8;
+            drumSynths.tom.volume.value = -3;
+            drumSynths.crash.volume.value = -12;
+            drumSynths.rim.volume.value = -10;
+        }
+
+        async function playDrumSound(drum) {
+            await initDrumSynths();
+            const synth = drumSynths[drum];
+            if (!synth) return;
+            
+            if (drum === 'kick') synth.triggerAttackRelease('C1', '8n');
+            else if (drum === 'tom') synth.triggerAttackRelease('G2', '8n');
+            else if (drum === 'snare' || drum === 'clap') synth.triggerAttackRelease('8n');
+            else synth.triggerAttackRelease('32n');
+        }
+
+        function clearDrums() {
+            Object.keys(drumState).forEach(drum => drumState[drum] = Array(16).fill(false));
+            initDrumGrid();
+            showToast('🗑️ Drums cleared');
+        }
+
+        function loadDrumPreset(preset) {
+            const presets = {
+                rock: {
+                    kick: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+                    snare: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+                    hihat: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],
+                    crash: [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                },
+                hiphop: {
+                    kick: [1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0],
+                    snare: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1],
+                    hihat: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                    openhat: [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+                    clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]
+                },
+                edm: {
+                    kick: [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+                    snare: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],
+                    hihat: [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+                    openhat: [0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0],
+                    clap: [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]
+                }
+            };
+            
+            Object.keys(drumState).forEach(drum => drumState[drum] = Array(16).fill(false));
+            const p = presets[preset];
+            if (p) {
+                Object.keys(p).forEach(drum => {
+                    drumState[drum] = p[drum].map(v => !!v);
+                });
+            }
+            initDrumGrid();
+            showToast(`🥁 ${preset.charAt(0).toUpperCase() + preset.slice(1)} beat loaded!`);
+        }
+
+        async function aiGenerateDrumPattern(btn) {
+            btn.classList.add('loading');
+            const prompt = `Generate a ${state.genre} drum pattern for 16 steps.
+Return ONLY a JSON object with arrays of 1s and 0s:
+{"kick":[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],"snare":[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0],"hihat":[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0],"clap":[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]}
+Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and optionally clap, openhat, tom, crash, rim.`;
+            
+            const result = await callGeminiAI(prompt);
+            if (result) {
+                try {
+                    const match = result.match(/\{[\s\S]*\}/);
+                    if (match) {
+                        const pattern = JSON.parse(match[0]);
+                        Object.keys(drumState).forEach(drum => drumState[drum] = Array(16).fill(false));
+                        Object.keys(pattern).forEach(drum => {
+                            if (drumState[drum]) drumState[drum] = pattern[drum].map(v => !!v);
+                        });
+                        initDrumGrid();
+                        showToast('✨ AI drums generated!');
+                    }
+                } catch (e) { loadDrumPreset('rock'); }
+            } else { loadDrumPreset('rock'); }
+            btn.classList.remove('loading');
+        }
+
+        async function playDrumSequence() {
+            await initDrumSynths();
+            stopAllSequences();
+            isPlaying = true;
+            const stepTime = (60 / beatTempo) / 4 * 1000;
+            let step = 0;
+            
+            sequenceInterval = setInterval(() => {
+                document.querySelectorAll('.drum-step.playing').forEach(s => s.classList.remove('playing'));
+                document.querySelectorAll(`.drum-step[data-step="${step}"]`).forEach(s => s.classList.add('playing'));
+                
+                Object.keys(drumState).forEach(drum => {
+                    if (drumState[drum][step]) playDrumSound(drum);
+                });
+                
+                step = (step + 1) % 16;
+                if (step === 0 && !document.getElementById('loopBeats')?.checked) stopAllSequences();
+            }, stepTime);
+        }
+
+        async function playFullBeat() {
+            await initDrumSynths();
+            await initAudio();
+            stopAllSequences();
+            isPlaying = true;
+            const stepTime = (60 / beatTempo) / 4 * 1000;
+            let step = 0;
+            
+            sequenceInterval = setInterval(() => {
+                document.querySelectorAll('.drum-step.playing, .melody-cell.playing').forEach(s => s.classList.remove('playing'));
+                document.querySelectorAll(`.drum-step[data-step="${step}"], .melody-cell[data-col="${step}"]`).forEach(s => s.classList.add('playing'));
+                
+                // Drums
+                Object.keys(drumState).forEach(drum => {
+                    if (drumState[drum][step]) playDrumSound(drum);
+                });
+                
+                // Melody
+                const note = melodyState.grid[step];
+                if (note) mainSynth.triggerAttackRelease(note, '16n');
+                
+                step = (step + 1) % 16;
+                if (step === 0 && !document.getElementById('loopBeats')?.checked) stopAllSequences();
+            }, stepTime);
+        }
+
+        function stopAllSequences() {
+            if (sequenceInterval) {
+                clearInterval(sequenceInterval);
+                sequenceInterval = null;
+            }
+            isPlaying = false;
+            document.querySelectorAll('.drum-step.playing, .melody-cell.playing').forEach(s => s.classList.remove('playing'));
+        }
+
+        function adjustBeatTempo(delta) {
+            beatTempo = Math.max(60, Math.min(200, beatTempo + delta));
+            document.getElementById('beatTempoDisplay').textContent = beatTempo;
+            state.tempo = beatTempo;
+            document.getElementById('tempoDisplay').textContent = beatTempo;
+        }
+
+        async function playMelodyWithChords() {
+            await initAudio();
+            stopAllSequences();
+            isPlaying = true;
+            const stepTime = (60 / beatTempo) / 4 * 1000;
+            let step = 0;
+            let chordIndex = 0;
+            
+            sequenceInterval = setInterval(() => {
+                document.querySelectorAll('.melody-cell.playing').forEach(c => c.classList.remove('playing'));
+                document.querySelectorAll(`.melody-cell[data-col="${step}"]`).forEach(c => c.classList.add('playing'));
+                
+                // Play chord on beat 1 of every 4 steps
+                if (step % 4 === 0) {
+                    const chord = state.progression[chordIndex % state.progression.length];
+                    const notes = chordNotes[chord];
+                    if (notes && mainSynth.releaseAll) mainSynth.releaseAll();
+                    if (notes) mainSynth.triggerAttack(notes.map(n => n.replace(/\d/, '3')));
+                    if (step % 4 === 0 && step > 0) chordIndex++;
+                }
+                
+                // Play melody note
+                const note = melodyState.grid[step];
+                if (note) mainSynth.triggerAttackRelease(note, '16n', Tone.now(), 0.7);
+                
+                step++;
+                if (step >= 16) {
+                    step = 0;
+                    chordIndex++;
+                    if (!document.getElementById('loopBeats')?.checked) {
+                        if (mainSynth.releaseAll) mainSynth.releaseAll();
+                        stopAllSequences();
+                    }
+                }
+            }, stepTime);
+        }
+
+        async function playEverything() {
+            await initDrumSynths();
+            await initAudio();
+            stopAllSequences();
+            isPlaying = true;
+            showToast('🎵 Playing full arrangement!');
+            
+            const stepTime = (60 / beatTempo) / 4 * 1000;
+            let step = 0;
+            let chordIndex = 0;
+            
+            sequenceInterval = setInterval(() => {
+                document.querySelectorAll('.drum-step.playing, .melody-cell.playing').forEach(s => s.classList.remove('playing'));
+                document.querySelectorAll(`.drum-step[data-step="${step}"], .melody-cell[data-col="${step}"]`).forEach(s => s.classList.add('playing'));
+                
+                // Play chord on beat 1 of every 4 steps
+                if (step % 4 === 0) {
+                    const chord = state.progression[chordIndex % state.progression.length];
+                    const notes = chordNotes[chord];
+                    if (notes && mainSynth.releaseAll) mainSynth.releaseAll();
+                    if (notes) mainSynth.triggerAttack(notes.map(n => n.replace(/\d/, '3')));
+                    if (step === 0 && chordIndex > 0) chordIndex = 0;
+                }
+                if (step % 4 === 3) chordIndex++;
+                
+                // Drums
+                Object.keys(drumState).forEach(drum => {
+                    if (drumState[drum][step]) playDrumSound(drum);
+                });
+                
+                // Melody (slightly louder)
+                const note = melodyState.grid[step];
+                if (note) {
+                    const melodySynth = new Tone.Synth().toDestination();
+                    melodySynth.triggerAttackRelease(note, '16n');
+                }
+                
+                step = (step + 1) % 16;
+                if (step === 0 && !document.getElementById('loopBeats')?.checked) {
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
+                    stopAllSequences();
+                }
+            }, stepTime);
+        }
+
+        function initBeatsTab() {
+            initMelodyGrid();
+            initDrumGrid();
+        }
+
         // MODALS & TOAST
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -1678,7 +2259,7 @@ Provide analysis in this JSON format:
             if (savedTheme && savedTheme !== 'dark') document.body.classList.add(`theme-${savedTheme}`);
             const savedColors = localStorage.getItem('chordflow-custom-colors');
             if (savedColors) { state.customColors = JSON.parse(savedColors); document.getElementById('customBg').value = state.customColors.bg; document.getElementById('customAccent').value = state.customColors.accent; document.getElementById('customCard').value = state.customColors.card; document.getElementById('customText').value = state.customColors.text; }
-            console.log('🎵 ChordFlow v12.2 AI Studio initialized');
+            console.log('🎵 ChordFlow v12.3 Beats Studio initialized');
         }
         init();
     </script>
