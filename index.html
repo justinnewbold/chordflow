@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.3 - Beats Studio</title>
+    <title>ChordFlow v12.4 - UX Optimized</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -68,9 +68,11 @@
         
         .tab-nav { display: flex; background: var(--bg-secondary); margin: 12px 16px; border-radius: 12px; padding: 4px; gap: 4px; overflow-x: auto; }
         .tab-nav::-webkit-scrollbar { display: none; }
-        .tab-btn { flex: 1; min-width: 65px; padding: 10px 6px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 10px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s; white-space: nowrap; }
+        .tab-btn { flex: 0 0 auto; min-width: 52px; padding: 8px 6px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 9px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: all 0.2s; white-space: nowrap; }
         .tab-btn.active { background: var(--accent); color: white; }
-        .tab-btn .icon { font-size: 16px; }
+        .tab-btn .icon { font-size: 18px; }
+        .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 4px; }
+        .tabs::-webkit-scrollbar { display: none; }
         
         .tab-content { display: none; padding: 0 16px; }
         .tab-content.active { display: block; }
@@ -310,6 +312,94 @@
         .play-all-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
         .play-all-btn:active { transform: scale(0.98); }
         .play-all-btn .icon { font-size: 24px; }
+        
+        /* RESPONSIVE & SCREEN OPTIMIZATION */
+        /* Collapsible Header */
+        .header { transition: all 0.3s ease; }
+        .header.collapsed { padding: 8px 16px; }
+        .header.collapsed .logo { font-size: 18px; }
+        .header.collapsed .tagline { display: none; }
+        .header-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: var(--text-secondary); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 12px; }
+        
+        /* Collapsible Panels */
+        .panel { position: relative; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .panel-toggle { background: none; border: none; color: var(--text-secondary); font-size: 16px; cursor: pointer; padding: 4px; transition: transform 0.3s; }
+        .panel.collapsed .panel-toggle { transform: rotate(-90deg); }
+        .panel.collapsed .panel-content { display: none; }
+        .panel.collapsed { padding: 12px 16px; }
+        .section-title { display: flex; align-items: center; gap: 8px; flex: 1; }
+        
+        /* Floating Transport Bar */
+        .transport-bar { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, var(--bg-primary) 90%, transparent); padding: 12px 16px 20px; display: flex; gap: 8px; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(10px); }
+        .transport-bar.hidden { transform: translateY(100%); }
+        .transport-btn { width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .transport-play { background: var(--success); color: white; }
+        .transport-play.playing { background: var(--warning); }
+        .transport-stop { background: var(--error); color: white; }
+        .transport-btn:hover { transform: scale(1.1); }
+        .transport-btn:active { transform: scale(0.95); }
+        .transport-info { text-align: center; min-width: 80px; }
+        .transport-tempo { font-size: 18px; font-weight: 700; color: var(--accent); }
+        .transport-status { font-size: 10px; color: var(--text-secondary); }
+        .main-content { padding-bottom: 90px; }
+        
+        /* Quick Actions FAB */
+        .fab-container { position: fixed; right: 16px; bottom: 90px; z-index: 99; }
+        .fab { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #ec4899); border: none; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s; }
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+        .fab-menu { position: absolute; bottom: 65px; right: 0; display: flex; flex-direction: column; gap: 8px; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .fab-container.open .fab-menu { opacity: 1; visibility: visible; }
+        .fab-container.open .fab { transform: rotate(45deg); background: var(--error); }
+        .fab-item { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); color: var(--text-primary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: all 0.2s; }
+        .fab-item:hover { background: var(--accent); transform: scale(1.1); }
+        
+        /* Full Screen Mode */
+        .fullscreen-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); border: none; color: white; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 14px; z-index: 10; }
+        body.fullscreen-mode .header, body.fullscreen-mode .tabs, body.fullscreen-mode .transport-bar, body.fullscreen-mode .fab-container { display: none; }
+        body.fullscreen-mode .main-content { padding: 0; }
+        body.fullscreen-mode .tab-content.active { position: fixed; inset: 0; z-index: 1000; background: var(--bg-primary); overflow-y: auto; padding: 16px; }
+        .exit-fullscreen { position: fixed; top: 16px; right: 16px; background: var(--error); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; z-index: 1001; display: none; }
+        body.fullscreen-mode .exit-fullscreen { display: block; }
+        
+        /* Desktop/Tablet Layout */
+        @media (min-width: 768px) {
+            .container { max-width: 1200px; margin: 0 auto; }
+            .tabs { justify-content: center; }
+            .tab-btn { min-width: 80px; padding: 10px 12px; font-size: 11px; }
+            .tab-btn .icon { font-size: 20px; }
+            .panel { margin-bottom: 20px; }
+            
+            /* Two-column layout for some tabs */
+            .compose-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+            .ai-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .ai-grid .panel { margin-bottom: 0; }
+            
+            /* Larger controls */
+            .chord-btn { min-width: 70px; height: 70px; font-size: 18px; }
+            .drum-step { height: 36px; min-width: 24px; }
+            .melody-cell { min-width: 28px; }
+            
+            /* Side transport on desktop */
+            .transport-bar { left: auto; right: 20px; bottom: 20px; width: auto; padding: 12px 20px; border-radius: 30px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); }
+        }
+        
+        @media (min-width: 1024px) {
+            .ai-grid { grid-template-columns: repeat(3, 1fr); }
+            .style-grid { grid-template-columns: repeat(4, 1fr); }
+            .enhance-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        
+        /* Compact Mode */
+        body.compact-mode .panel { padding: 10px 12px; margin-bottom: 10px; }
+        body.compact-mode .section-title { font-size: 13px; margin-bottom: 8px; }
+        body.compact-mode .chord-btn { min-width: 50px; height: 50px; font-size: 13px; }
+        body.compact-mode .control-select { padding: 6px 8px; font-size: 11px; }
+        body.compact-mode .ai-generate-btn { padding: 10px; font-size: 12px; }
+        
+        /* Swipe indicator */
+        .swipe-hint { text-align: center; font-size: 10px; color: var(--text-secondary); padding: 4px; opacity: 0.7; }
+        .swipe-hint::before { content: '← swipe tabs →'; }
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .export-card { padding: 16px; background: var(--bg-card); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .export-card:active { border-color: var(--accent); transform: scale(0.98); }
@@ -386,7 +476,7 @@
         </div>
     </header>
 
-    <div class="tab-nav">
+    <div class="tab-nav tabs">
         <button class="tab-btn active" onclick="switchTab('compose')"><span class="icon">🎹</span><span>Compose</span></button>
         <button class="tab-btn" onclick="switchTab('ai')"><span class="icon">🤖</span><span>AI</span></button>
         <button class="tab-btn" onclick="switchTab('beats')"><span class="icon">🥁</span><span>Beats</span></button>
@@ -396,6 +486,7 @@
         <button class="tab-btn" onclick="switchTab('export')"><span class="icon">💾</span><span>Export</span></button>
     </div>
 
+    <div class="main-content">
     <!-- COMPOSE TAB -->
     <div class="tab-content active" id="compose-tab">
         <button class="big-generate-btn" onclick="aiGenerate('progression')">🎵 Generate AI Progression</button>
@@ -985,8 +1076,36 @@
             </div>
         </div>
     </div>
+    </div><!-- end main-content -->
 
     <div class="toast" id="toast"></div>
+    
+    <!-- Floating Transport Bar -->
+    <div class="transport-bar" id="transportBar">
+        <button class="transport-btn transport-stop" onclick="stopAllPlayback()" title="Stop">⏹️</button>
+        <div class="transport-info">
+            <div class="transport-tempo" id="transportTempo">120</div>
+            <div class="transport-status" id="transportStatus">Ready</div>
+        </div>
+        <button class="transport-btn transport-play" id="transportPlay" onclick="toggleGlobalPlayback()" title="Play/Pause">▶️</button>
+    </div>
+    
+    <!-- Quick Actions FAB -->
+    <div class="fab-container" id="fabContainer">
+        <div class="fab-menu">
+            <button class="fab-item" onclick="toggleCompactMode()" title="Compact Mode">📐</button>
+            <button class="fab-item" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+            <button class="fab-item" onclick="quickRandomize()" title="Randomize">🎲</button>
+            <button class="fab-item" onclick="quickAI()" title="AI Generate">✨</button>
+        </div>
+        <button class="fab" onclick="toggleFab()">+</button>
+    </div>
+    
+    <!-- Exit Fullscreen Button -->
+    <button class="exit-fullscreen" onclick="exitFullscreen()">✕ Exit Fullscreen</button>
+    
+    <!-- Swipe hint for tabs -->
+    <div class="swipe-hint" id="swipeHint"></div>
 
     <script>
         // STATE
@@ -2252,6 +2371,196 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
         function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
 
+        // UI OPTIMIZATION FUNCTIONS
+        let globalPlaying = false;
+        
+        function toggleFab() {
+            document.getElementById('fabContainer').classList.toggle('open');
+        }
+        
+        function toggleCompactMode() {
+            document.body.classList.toggle('compact-mode');
+            const isCompact = document.body.classList.contains('compact-mode');
+            localStorage.setItem('chordflow-compact', isCompact);
+            showToast(isCompact ? '📐 Compact mode ON' : '📐 Compact mode OFF');
+            toggleFab();
+        }
+        
+        function toggleFullscreen() {
+            document.body.classList.add('fullscreen-mode');
+            toggleFab();
+            showToast('⛶ Fullscreen - tap X to exit');
+        }
+        
+        function exitFullscreen() {
+            document.body.classList.remove('fullscreen-mode');
+        }
+        
+        function quickRandomize() {
+            generateProgression();
+            if (typeof randomMelody === 'function') randomMelody();
+            if (typeof loadDrumPreset === 'function') {
+                const presets = ['rock', 'hiphop', 'edm'];
+                loadDrumPreset(presets[Math.floor(Math.random() * presets.length)]);
+            }
+            showToast('🎲 Randomized everything!');
+            toggleFab();
+        }
+        
+        async function quickAI() {
+            toggleFab();
+            showToast('✨ AI generating...');
+            await aiGenerate('smart');
+        }
+        
+        function updateTransportDisplay() {
+            const tempoEl = document.getElementById('transportTempo');
+            const statusEl = document.getElementById('transportStatus');
+            const playBtn = document.getElementById('transportPlay');
+            
+            if (tempoEl) tempoEl.textContent = state.tempo || beatTempo || 120;
+            if (statusEl) statusEl.textContent = globalPlaying ? 'Playing...' : 'Ready';
+            if (playBtn) {
+                playBtn.textContent = globalPlaying ? '⏸️' : '▶️';
+                playBtn.classList.toggle('playing', globalPlaying);
+            }
+        }
+        
+        async function toggleGlobalPlayback() {
+            if (globalPlaying) {
+                stopAllPlayback();
+            } else {
+                globalPlaying = true;
+                updateTransportDisplay();
+                // Play based on current tab
+                const activeTab = document.querySelector('.tab-content.active')?.id;
+                if (activeTab === 'beats-tab') {
+                    await playFullBeat();
+                } else if (activeTab === 'piano-tab') {
+                    playProgression();
+                } else {
+                    playProgression();
+                }
+            }
+        }
+        
+        function stopAllPlayback() {
+            globalPlaying = false;
+            if (typeof stopAllSequences === 'function') stopAllSequences();
+            if (typeof stopPlayback === 'function') stopPlayback();
+            if (mainSynth?.releaseAll) mainSynth.releaseAll();
+            updateTransportDisplay();
+        }
+        
+        // Swipe navigation for tabs
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const tabOrder = ['compose', 'ai', 'beats', 'piano', 'mixer', 'sheet', 'export'];
+        
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) < 50) return; // Minimum swipe distance
+            
+            const activeTab = document.querySelector('.tab-content.active')?.id?.replace('-tab', '');
+            const currentIndex = tabOrder.indexOf(activeTab);
+            
+            if (diff > 0 && currentIndex < tabOrder.length - 1) {
+                // Swipe left - next tab
+                switchTab(tabOrder[currentIndex + 1]);
+                document.querySelectorAll('.tab-btn')[currentIndex + 1]?.classList.add('active');
+            } else if (diff < 0 && currentIndex > 0) {
+                // Swipe right - previous tab
+                switchTab(tabOrder[currentIndex - 1]);
+                document.querySelectorAll('.tab-btn')[currentIndex - 1]?.classList.add('active');
+            }
+        }
+        
+        function initSwipeNavigation() {
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) return;
+            
+            mainContent.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            mainContent.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+        }
+        
+        // Collapsible panels
+        function togglePanel(panel) {
+            panel.classList.toggle('collapsed');
+            const isCollapsed = panel.classList.contains('collapsed');
+            localStorage.setItem(`panel-${panel.dataset.panel}`, isCollapsed);
+        }
+        
+        function initCollapsiblePanels() {
+            document.querySelectorAll('.panel[data-panel]').forEach(panel => {
+                const isCollapsed = localStorage.getItem(`panel-${panel.dataset.panel}`) === 'true';
+                if (isCollapsed) panel.classList.add('collapsed');
+            });
+        }
+        
+        // Header collapse on scroll
+        let lastScrollY = 0;
+        function handleHeaderScroll() {
+            const header = document.querySelector('.header');
+            if (!header) return;
+            
+            const currentScrollY = window.scrollY;
+            if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+                header.classList.add('collapsed');
+            } else if (currentScrollY < lastScrollY || currentScrollY < 50) {
+                header.classList.remove('collapsed');
+            }
+            lastScrollY = currentScrollY;
+        }
+        
+        // Keyboard shortcuts
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', e => {
+                // Space = play/pause (when not in input)
+                if (e.code === 'Space' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+                    e.preventDefault();
+                    toggleGlobalPlayback();
+                }
+                // Escape = exit fullscreen
+                if (e.code === 'Escape') {
+                    exitFullscreen();
+                    document.getElementById('fabContainer')?.classList.remove('open');
+                }
+                // Number keys 1-7 for tabs
+                if (e.key >= '1' && e.key <= '7' && !e.ctrlKey && !e.metaKey) {
+                    const tabIndex = parseInt(e.key) - 1;
+                    if (tabOrder[tabIndex]) {
+                        switchTab(tabOrder[tabIndex]);
+                    }
+                }
+            });
+        }
+        
+        function initUIOptimizations() {
+            initSwipeNavigation();
+            initCollapsiblePanels();
+            initKeyboardShortcuts();
+            window.addEventListener('scroll', handleHeaderScroll, { passive: true });
+            
+            // Restore compact mode
+            if (localStorage.getItem('chordflow-compact') === 'true') {
+                document.body.classList.add('compact-mode');
+            }
+            
+            // Hide swipe hint after first use
+            setTimeout(() => {
+                const hint = document.getElementById('swipeHint');
+                if (hint) hint.style.display = 'none';
+            }, 5000);
+            
+            updateTransportDisplay();
+        }
+
         // INIT
         function init() {
             renderInstruments(); generateProgression(); renderMixer(); renderPianoRoll(); renderQuickPianoKeys(); setTimeout(renderSheetMusic, 100);
@@ -2259,7 +2568,8 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
             if (savedTheme && savedTheme !== 'dark') document.body.classList.add(`theme-${savedTheme}`);
             const savedColors = localStorage.getItem('chordflow-custom-colors');
             if (savedColors) { state.customColors = JSON.parse(savedColors); document.getElementById('customBg').value = state.customColors.bg; document.getElementById('customAccent').value = state.customColors.accent; document.getElementById('customCard').value = state.customColors.card; document.getElementById('customText').value = state.customColors.text; }
-            console.log('🎵 ChordFlow v12.3 Beats Studio initialized');
+            initUIOptimizations();
+            console.log('🎵 ChordFlow v12.4 UX Optimized initialized');
         }
         init();
     </script>
