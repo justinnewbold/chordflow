@@ -1,5 +1,5 @@
-// ChordFlow Service Worker v11.4 - Network First
-const CACHE_NAME = 'chordflow-v114';
+// ChordFlow Service Worker v12.0 - Network First
+const CACHE_NAME = 'chordflow-v120';
 
 // Only cache external libraries, not our own HTML
 const ASSETS_TO_CACHE = [
@@ -9,7 +9,7 @@ const ASSETS_TO_CACHE = [
 
 // Install - cache only external assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v11.4...');
+  console.log('[SW] Installing v12.0...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS_TO_CACHE))
@@ -19,7 +19,7 @@ self.addEventListener('install', (event) => {
 
 // Activate - delete ALL old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v11.4, clearing old caches...');
+  console.log('[SW] Activating v12.0, clearing old caches...');
   event.waitUntil(
     caches.keys()
       .then((names) => Promise.all(
