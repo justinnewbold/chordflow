@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.5 - Pro UX</title>
+    <title>ChordFlow v12.5.1 - Pro UX</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -66,12 +66,12 @@
         .icon-btn.metronome-active { background: var(--metronome); animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         
-        .tab-nav { display: flex; background: var(--bg-secondary); margin: 12px 16px; border-radius: 12px; padding: 4px; gap: 4px; overflow-x: auto; }
+        .tab-nav { display: flex; background: var(--bg-secondary); margin: 12px 16px; border-radius: 12px; padding: 4px; gap: 4px; overflow: visible; position: relative; z-index: 100; }
         .tab-nav::-webkit-scrollbar { display: none; }
         .tab-btn { flex: 0 0 auto; min-width: 52px; padding: 8px 6px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 9px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: all 0.2s; white-space: nowrap; }
         .tab-btn.active { background: var(--accent); color: white; }
         .tab-btn .icon { font-size: 18px; }
-        .tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 4px; }
+        .tabs { display: flex; gap: 4px; overflow: visible; scrollbar-width: none; -ms-overflow-style: none; padding: 4px; }
         .tabs::-webkit-scrollbar { display: none; }
         
         .tab-content { display: none; padding: 0 16px; }
@@ -416,14 +416,16 @@
         .accordion-badge { background: var(--accent); color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; }
         
         /* 2. TAB GROUPS - Dropdown/Mega Menu Style */
-        .tab-group { position: relative; }
-        .tab-group-btn { flex: 0 0 auto; min-width: 52px; padding: 8px 6px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 9px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: all 0.2s; }
+        .tab-group { position: relative; z-index: 150; }
+        .tab-group-btn { flex: 0 0 auto; min-width: 70px; padding: 8px 10px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 11px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: all 0.2s; }
+        .tab-group-btn:hover { background: rgba(255,255,255,0.1); }
         .tab-group-btn.active { background: var(--accent); color: white; }
         .tab-group-btn .icon { font-size: 18px; }
         .tab-group-btn .chevron { font-size: 8px; margin-left: 2px; transition: transform 0.2s; }
         .tab-group.open .tab-group-btn .chevron { transform: rotate(180deg); }
-        .tab-group-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px; min-width: 140px; opacity: 0; visibility: hidden; transition: all 0.2s; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
-        .tab-group.open .tab-group-menu { opacity: 1; visibility: visible; }
+        .tab-group.open .tab-group-btn { background: rgba(255,255,255,0.15); }
+        .tab-group-menu { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 8px; min-width: 150px; opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.2s; z-index: 300; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .tab-group.open .tab-group-menu { opacity: 1; visibility: visible; pointer-events: auto; }
         .tab-group-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; font-size: 13px; white-space: nowrap; }
         .tab-group-item:hover { background: rgba(255,255,255,0.1); }
         .tab-group-item.active { background: var(--accent); color: white; }
@@ -555,7 +557,7 @@
         
         <!-- Group: Create (AI features) -->
         <div class="tab-group" id="createGroup">
-            <button class="tab-group-btn" onclick="toggleTabGroup('createGroup')">
+            <button class="tab-group-btn" onclick="toggleTabGroup('createGroup', event)">
                 <span class="icon">✨</span><span>Create<span class="chevron">▼</span></span>
             </button>
             <div class="tab-group-menu">
@@ -566,7 +568,7 @@
         
         <!-- Group: Studio (Production tools) -->
         <div class="tab-group" id="studioGroup">
-            <button class="tab-group-btn" onclick="toggleTabGroup('studioGroup')">
+            <button class="tab-group-btn" onclick="toggleTabGroup('studioGroup', event)">
                 <span class="icon">🎚️</span><span>Studio<span class="chevron">▼</span></span>
             </button>
             <div class="tab-group-menu">
@@ -577,7 +579,7 @@
         
         <!-- Group: Output (Export features) -->
         <div class="tab-group" id="outputGroup">
-            <button class="tab-group-btn" onclick="toggleTabGroup('outputGroup')">
+            <button class="tab-group-btn" onclick="toggleTabGroup('outputGroup', event)">
                 <span class="icon">💾</span><span>Output<span class="chevron">▼</span></span>
             </button>
             <div class="tab-group-menu">
@@ -2782,7 +2784,8 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
         }
         
         // TAB GROUPS
-        function toggleTabGroup(groupId) {
+        function toggleTabGroup(groupId, event) {
+            if (event) event.stopPropagation();
             const group = document.getElementById(groupId);
             const wasOpen = group.classList.contains('open');
             closeTabGroups();
@@ -3043,7 +3046,7 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
             const savedColors = localStorage.getItem('chordflow-custom-colors');
             if (savedColors) { state.customColors = JSON.parse(savedColors); document.getElementById('customBg').value = state.customColors.bg; document.getElementById('customAccent').value = state.customColors.accent; document.getElementById('customCard').value = state.customColors.card; document.getElementById('customText').value = state.customColors.text; }
             initUIOptimizations();
-            console.log('🎵 ChordFlow v12.5 Pro UX initialized');
+            console.log('🎵 ChordFlow v12.5.1 Pro UX initialized');
         }
         init();
     </script>
