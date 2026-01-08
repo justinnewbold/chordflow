@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.4 - UX Optimized</title>
+    <title>ChordFlow v12.5 - Pro UX</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -400,6 +400,79 @@
         /* Swipe indicator */
         .swipe-hint { text-align: center; font-size: 10px; color: var(--text-secondary); padding: 4px; opacity: 0.7; }
         .swipe-hint::before { content: '← swipe tabs →'; }
+        
+        /* 1. COLLAPSIBLE ACCORDION PANELS */
+        .accordion-panel { border-radius: 12px; overflow: hidden; margin-bottom: 10px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); }
+        .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; background: rgba(255,255,255,0.03); transition: background 0.2s; }
+        .accordion-header:hover { background: rgba(255,255,255,0.06); }
+        .accordion-header:active { background: rgba(255,255,255,0.1); }
+        .accordion-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+        .accordion-title .icon { font-size: 18px; }
+        .accordion-chevron { font-size: 12px; color: var(--text-secondary); transition: transform 0.3s ease; }
+        .accordion-panel.open .accordion-chevron { transform: rotate(180deg); }
+        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
+        .accordion-panel.open .accordion-body { max-height: 2000px; }
+        .accordion-content { padding: 16px; }
+        .accordion-badge { background: var(--accent); color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+        
+        /* 2. TAB GROUPS - Dropdown/Mega Menu Style */
+        .tab-group { position: relative; }
+        .tab-group-btn { flex: 0 0 auto; min-width: 52px; padding: 8px 6px; border: none; border-radius: 8px; background: transparent; color: var(--text-secondary); font-size: 9px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: all 0.2s; }
+        .tab-group-btn.active { background: var(--accent); color: white; }
+        .tab-group-btn .icon { font-size: 18px; }
+        .tab-group-btn .chevron { font-size: 8px; margin-left: 2px; transition: transform 0.2s; }
+        .tab-group.open .tab-group-btn .chevron { transform: rotate(180deg); }
+        .tab-group-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px; min-width: 140px; opacity: 0; visibility: hidden; transition: all 0.2s; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        .tab-group.open .tab-group-menu { opacity: 1; visibility: visible; }
+        .tab-group-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; font-size: 13px; white-space: nowrap; }
+        .tab-group-item:hover { background: rgba(255,255,255,0.1); }
+        .tab-group-item.active { background: var(--accent); color: white; }
+        .tab-group-item .icon { font-size: 16px; }
+        
+        /* 3. BOTTOM SHEET MODALS */
+        .bottom-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 500; backdrop-filter: blur(4px); }
+        .bottom-sheet-overlay.active { opacity: 1; visibility: visible; }
+        .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-card); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); z-index: 501; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+        .bottom-sheet.active { transform: translateY(0); }
+        .bottom-sheet-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px; margin: 10px auto; flex-shrink: 0; }
+        .bottom-sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .bottom-sheet-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .bottom-sheet-close { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .bottom-sheet-close:hover { background: var(--error); color: white; }
+        .bottom-sheet-body { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        .bottom-sheet-actions { display: flex; gap: 10px; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; background: var(--bg-secondary); }
+        .bottom-sheet-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .bottom-sheet-btn.primary { background: var(--accent); color: white; }
+        .bottom-sheet-btn.secondary { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        
+        /* 4. CUSTOMIZABLE QUICK TOOLBAR */
+        .quick-toolbar { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 8px; display: flex; gap: 4px; z-index: 90; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .quick-toolbar.visible { opacity: 1; visibility: visible; }
+        .quick-toolbar.editing { animation: toolbar-shake 0.5s ease; }
+        @keyframes toolbar-shake { 0%, 100% { transform: translateX(-50%) rotate(0); } 25% { transform: translateX(-50%) rotate(-1deg); } 75% { transform: translateX(-50%) rotate(1deg); } }
+        .toolbar-item { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: var(--text-primary); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; }
+        .toolbar-item:hover { background: rgba(255,255,255,0.1); }
+        .toolbar-item:active { transform: scale(0.9); }
+        .toolbar-item.active { background: var(--accent); color: white; }
+        .toolbar-item .remove-btn { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border-radius: 50%; background: var(--error); color: white; font-size: 12px; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        .quick-toolbar.editing .toolbar-item .remove-btn { display: flex; }
+        .toolbar-add { border: 2px dashed rgba(255,255,255,0.3); background: transparent; }
+        .toolbar-add:hover { border-color: var(--accent); background: rgba(139, 92, 246, 0.1); }
+        .toolbar-divider { width: 1px; height: 30px; background: rgba(255,255,255,0.1); margin: 7px 4px; }
+        
+        /* Toolbar Customization Bottom Sheet */
+        .toolbar-option { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .toolbar-option:hover { background: rgba(255,255,255,0.1); }
+        .toolbar-option.selected { background: var(--accent); }
+        .toolbar-option .icon { font-size: 24px; width: 40px; text-align: center; }
+        .toolbar-option-info { flex: 1; }
+        .toolbar-option-name { font-weight: 600; font-size: 14px; }
+        .toolbar-option-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+        .toolbar-option.selected .toolbar-option-desc { color: rgba(255,255,255,0.7); }
+        
+        /* Mini player in toolbar */
+        .toolbar-mini-player { display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+        .mini-tempo { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 35px; text-align: center; }
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .export-card { padding: 16px; background: var(--bg-card); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .export-card:active { border-color: var(--accent); transform: scale(0.98); }
@@ -477,13 +550,44 @@
     </header>
 
     <div class="tab-nav tabs">
+        <!-- Main Tab: Compose -->
         <button class="tab-btn active" onclick="switchTab('compose')"><span class="icon">🎹</span><span>Compose</span></button>
-        <button class="tab-btn" onclick="switchTab('ai')"><span class="icon">🤖</span><span>AI</span></button>
-        <button class="tab-btn" onclick="switchTab('beats')"><span class="icon">🥁</span><span>Beats</span></button>
-        <button class="tab-btn" onclick="switchTab('piano')"><span class="icon">🎼</span><span>Piano</span></button>
-        <button class="tab-btn" onclick="switchTab('mixer')"><span class="icon">🎚️</span><span>Mixer</span></button>
-        <button class="tab-btn" onclick="switchTab('sheet')"><span class="icon">📜</span><span>Sheet</span></button>
-        <button class="tab-btn" onclick="switchTab('export')"><span class="icon">💾</span><span>Export</span></button>
+        
+        <!-- Group: Create (AI features) -->
+        <div class="tab-group" id="createGroup">
+            <button class="tab-group-btn" onclick="toggleTabGroup('createGroup')">
+                <span class="icon">✨</span><span>Create<span class="chevron">▼</span></span>
+            </button>
+            <div class="tab-group-menu">
+                <div class="tab-group-item" onclick="switchTab('ai'); closeTabGroups();"><span class="icon">🤖</span>AI Studio</div>
+                <div class="tab-group-item" onclick="switchTab('beats'); closeTabGroups();"><span class="icon">🥁</span>Beats</div>
+            </div>
+        </div>
+        
+        <!-- Group: Studio (Production tools) -->
+        <div class="tab-group" id="studioGroup">
+            <button class="tab-group-btn" onclick="toggleTabGroup('studioGroup')">
+                <span class="icon">🎚️</span><span>Studio<span class="chevron">▼</span></span>
+            </button>
+            <div class="tab-group-menu">
+                <div class="tab-group-item" onclick="switchTab('piano'); closeTabGroups();"><span class="icon">🎼</span>Piano Roll</div>
+                <div class="tab-group-item" onclick="switchTab('mixer'); closeTabGroups();"><span class="icon">🎚️</span>Mixer</div>
+            </div>
+        </div>
+        
+        <!-- Group: Output (Export features) -->
+        <div class="tab-group" id="outputGroup">
+            <button class="tab-group-btn" onclick="toggleTabGroup('outputGroup')">
+                <span class="icon">💾</span><span>Output<span class="chevron">▼</span></span>
+            </button>
+            <div class="tab-group-menu">
+                <div class="tab-group-item" onclick="switchTab('sheet'); closeTabGroups();"><span class="icon">📜</span>Sheet Music</div>
+                <div class="tab-group-item" onclick="switchTab('export'); closeTabGroups();"><span class="icon">💾</span>Export</div>
+            </div>
+        </div>
+        
+        <!-- Settings Button -->
+        <button class="tab-btn" onclick="openBottomSheet('settings')"><span class="icon">⚙️</span><span>More</span></button>
     </div>
 
     <div class="main-content">
@@ -1106,6 +1210,142 @@
     
     <!-- Swipe hint for tabs -->
     <div class="swipe-hint" id="swipeHint"></div>
+    
+    <!-- Quick Toolbar -->
+    <div class="quick-toolbar visible" id="quickToolbar">
+        <button class="toolbar-item" onclick="toggleGlobalPlayback()" id="toolbarPlay" title="Play/Stop">▶️</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-item" onclick="generateProgression()" title="New Progression">🎲</button>
+        <button class="toolbar-item" onclick="aiGenerate('smart')" title="AI Generate">✨</button>
+        <button class="toolbar-item" onclick="openBottomSheet('instruments')" title="Instruments">🎸</button>
+        <div class="toolbar-divider"></div>
+        <button class="toolbar-item toolbar-add" onclick="openBottomSheet('toolbar-customize')" title="Customize">+</button>
+    </div>
+    
+    <!-- Bottom Sheet Overlay -->
+    <div class="bottom-sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
+    
+    <!-- Settings Bottom Sheet -->
+    <div class="bottom-sheet" id="settingsSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-header">
+            <div class="bottom-sheet-title">⚙️ Settings & More</div>
+            <button class="bottom-sheet-close" onclick="closeBottomSheet()">✕</button>
+        </div>
+        <div class="bottom-sheet-body">
+            <div class="accordion-panel open" data-accordion="display">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="accordion-title"><span class="icon">🎨</span>Display</div>
+                    <span class="accordion-chevron">▼</span>
+                </div>
+                <div class="accordion-body"><div class="accordion-content">
+                    <div class="toolbar-option" onclick="toggleCompactMode(); closeBottomSheet();">
+                        <span class="icon">📐</span>
+                        <div class="toolbar-option-info">
+                            <div class="toolbar-option-name">Compact Mode</div>
+                            <div class="toolbar-option-desc">Smaller controls & panels</div>
+                        </div>
+                    </div>
+                    <div class="toolbar-option" onclick="toggleFullscreen(); closeBottomSheet();">
+                        <span class="icon">⛶</span>
+                        <div class="toolbar-option-info">
+                            <div class="toolbar-option-name">Fullscreen</div>
+                            <div class="toolbar-option-desc">Hide header & navigation</div>
+                        </div>
+                    </div>
+                    <div class="toolbar-option" onclick="openBottomSheet('themes');">
+                        <span class="icon">🌈</span>
+                        <div class="toolbar-option-info">
+                            <div class="toolbar-option-name">Themes</div>
+                            <div class="toolbar-option-desc">Change app colors</div>
+                        </div>
+                    </div>
+                </div></div>
+            </div>
+            <div class="accordion-panel" data-accordion="quick-nav">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="accordion-title"><span class="icon">🧭</span>Quick Navigation</div>
+                    <span class="accordion-chevron">▼</span>
+                </div>
+                <div class="accordion-body"><div class="accordion-content">
+                    <div class="toolbar-option" onclick="switchTab('ai'); closeBottomSheet();"><span class="icon">🤖</span><div class="toolbar-option-info"><div class="toolbar-option-name">AI Studio</div><div class="toolbar-option-desc">7 AI-powered tools</div></div></div>
+                    <div class="toolbar-option" onclick="switchTab('beats'); closeBottomSheet();"><span class="icon">🥁</span><div class="toolbar-option-info"><div class="toolbar-option-name">Beats</div><div class="toolbar-option-desc">Melody & drum sequencer</div></div></div>
+                    <div class="toolbar-option" onclick="switchTab('piano'); closeBottomSheet();"><span class="icon">🎼</span><div class="toolbar-option-info"><div class="toolbar-option-name">Piano Roll</div><div class="toolbar-option-desc">Visual note editor</div></div></div>
+                    <div class="toolbar-option" onclick="switchTab('mixer'); closeBottomSheet();"><span class="icon">🎚️</span><div class="toolbar-option-info"><div class="toolbar-option-name">Mixer</div><div class="toolbar-option-desc">EQ, compressor & effects</div></div></div>
+                    <div class="toolbar-option" onclick="switchTab('sheet'); closeBottomSheet();"><span class="icon">📜</span><div class="toolbar-option-info"><div class="toolbar-option-name">Sheet Music</div><div class="toolbar-option-desc">Staff notation view</div></div></div>
+                    <div class="toolbar-option" onclick="switchTab('export'); closeBottomSheet();"><span class="icon">💾</span><div class="toolbar-option-info"><div class="toolbar-option-name">Export</div><div class="toolbar-option-desc">MIDI, WAV, MP3, PDF</div></div></div>
+                </div></div>
+            </div>
+            <div class="accordion-panel" data-accordion="keyboard">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="accordion-title"><span class="icon">⌨️</span>Keyboard Shortcuts</div>
+                    <span class="accordion-chevron">▼</span>
+                </div>
+                <div class="accordion-body"><div class="accordion-content" style="font-size:13px; line-height:2;">
+                    <div><b>Space</b> — Play/Pause</div>
+                    <div><b>Escape</b> — Exit fullscreen</div>
+                    <div><b>1-7</b> — Switch tabs</div>
+                    <div><b>G</b> — Generate new progression</div>
+                    <div><b>R</b> — Randomize everything</div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Instruments Bottom Sheet -->
+    <div class="bottom-sheet" id="instrumentsSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-header">
+            <div class="bottom-sheet-title">🎸 Instruments</div>
+            <button class="bottom-sheet-close" onclick="closeBottomSheet()">✕</button>
+        </div>
+        <div class="bottom-sheet-body" id="instrumentsSheetBody">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+    
+    <!-- Themes Bottom Sheet -->
+    <div class="bottom-sheet" id="themesSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-header">
+            <div class="bottom-sheet-title">🌈 Themes</div>
+            <button class="bottom-sheet-close" onclick="closeBottomSheet()">✕</button>
+        </div>
+        <div class="bottom-sheet-body">
+            <div class="toolbar-option" onclick="setTheme('dark'); closeBottomSheet();"><span class="icon">🌙</span><div class="toolbar-option-info"><div class="toolbar-option-name">Dark</div><div class="toolbar-option-desc">Default dark theme</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('midnight'); closeBottomSheet();"><span class="icon">🌌</span><div class="toolbar-option-info"><div class="toolbar-option-name">Midnight</div><div class="toolbar-option-desc">Deep blue tones</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('sunset'); closeBottomSheet();"><span class="icon">🌅</span><div class="toolbar-option-info"><div class="toolbar-option-name">Sunset</div><div class="toolbar-option-desc">Warm orange & purple</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('forest'); closeBottomSheet();"><span class="icon">🌲</span><div class="toolbar-option-info"><div class="toolbar-option-name">Forest</div><div class="toolbar-option-desc">Natural greens</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('ocean'); closeBottomSheet();"><span class="icon">🌊</span><div class="toolbar-option-info"><div class="toolbar-option-name">Ocean</div><div class="toolbar-option-desc">Cool blue waves</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('candy'); closeBottomSheet();"><span class="icon">🍬</span><div class="toolbar-option-info"><div class="toolbar-option-name">Candy</div><div class="toolbar-option-desc">Pink & purple pastels</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('monochrome'); closeBottomSheet();"><span class="icon">⬛</span><div class="toolbar-option-info"><div class="toolbar-option-name">Monochrome</div><div class="toolbar-option-desc">Black & white</div></div></div>
+            <div class="toolbar-option" onclick="setTheme('light'); closeBottomSheet();"><span class="icon">☀️</span><div class="toolbar-option-info"><div class="toolbar-option-name">Light</div><div class="toolbar-option-desc">Bright light mode</div></div></div>
+        </div>
+    </div>
+    
+    <!-- Toolbar Customize Bottom Sheet -->
+    <div class="bottom-sheet" id="toolbar-customizeSheet">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-header">
+            <div class="bottom-sheet-title">🔧 Customize Toolbar</div>
+            <button class="bottom-sheet-close" onclick="closeBottomSheet()">✕</button>
+        </div>
+        <div class="bottom-sheet-body">
+            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:16px;">Select actions to show in your quick toolbar:</p>
+            <div class="toolbar-option" onclick="toggleToolbarItem('play', this)"><span class="icon">▶️</span><div class="toolbar-option-info"><div class="toolbar-option-name">Play/Stop</div><div class="toolbar-option-desc">Playback controls</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('random', this)"><span class="icon">🎲</span><div class="toolbar-option-info"><div class="toolbar-option-name">Randomize</div><div class="toolbar-option-desc">New random progression</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('ai', this)"><span class="icon">✨</span><div class="toolbar-option-info"><div class="toolbar-option-name">AI Generate</div><div class="toolbar-option-desc">Smart AI creation</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('instrument', this)"><span class="icon">🎸</span><div class="toolbar-option-info"><div class="toolbar-option-name">Instruments</div><div class="toolbar-option-desc">Quick instrument picker</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('tempo', this)"><span class="icon">⏱️</span><div class="toolbar-option-info"><div class="toolbar-option-name">Tempo</div><div class="toolbar-option-desc">Quick tempo adjust</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('record', this)"><span class="icon">🔴</span><div class="toolbar-option-info"><div class="toolbar-option-name">Record</div><div class="toolbar-option-desc">Start recording</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('metronome', this)"><span class="icon">🎵</span><div class="toolbar-option-info"><div class="toolbar-option-name">Metronome</div><div class="toolbar-option-desc">Toggle click track</div></div></div>
+            <div class="toolbar-option" onclick="toggleToolbarItem('fullscreen', this)"><span class="icon">⛶</span><div class="toolbar-option-info"><div class="toolbar-option-name">Fullscreen</div><div class="toolbar-option-desc">Toggle fullscreen mode</div></div></div>
+        </div>
+        <div class="bottom-sheet-actions">
+            <button class="bottom-sheet-btn secondary" onclick="resetToolbar()">Reset Default</button>
+            <button class="bottom-sheet-btn primary" onclick="closeBottomSheet()">Done</button>
+        </div>
+    </div>
 
     <script>
         // STATE
@@ -2541,6 +2781,239 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
             });
         }
         
+        // TAB GROUPS
+        function toggleTabGroup(groupId) {
+            const group = document.getElementById(groupId);
+            const wasOpen = group.classList.contains('open');
+            closeTabGroups();
+            if (!wasOpen) group.classList.add('open');
+        }
+        
+        function closeTabGroups() {
+            document.querySelectorAll('.tab-group').forEach(g => g.classList.remove('open'));
+        }
+        
+        // Close tab groups when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.tab-group')) closeTabGroups();
+        });
+
+        // ACCORDION PANELS
+        function toggleAccordion(header) {
+            const panel = header.closest('.accordion-panel');
+            const wasOpen = panel.classList.contains('open');
+            
+            // Close all accordions in same container (optional - remove for multi-open)
+            // panel.parentElement.querySelectorAll('.accordion-panel').forEach(p => p.classList.remove('open'));
+            
+            if (!wasOpen) {
+                panel.classList.add('open');
+            } else {
+                panel.classList.remove('open');
+            }
+        }
+
+        // BOTTOM SHEETS
+        let currentBottomSheet = null;
+        
+        function openBottomSheet(sheetId) {
+            closeTabGroups();
+            document.getElementById('fabContainer')?.classList.remove('open');
+            
+            const overlay = document.getElementById('bottomSheetOverlay');
+            const sheet = document.getElementById(sheetId + 'Sheet');
+            
+            if (!sheet) return;
+            
+            // Populate instruments sheet dynamically
+            if (sheetId === 'instruments') {
+                populateInstrumentsSheet();
+            }
+            
+            overlay.classList.add('active');
+            sheet.classList.add('active');
+            currentBottomSheet = sheet;
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeBottomSheet() {
+            const overlay = document.getElementById('bottomSheetOverlay');
+            overlay.classList.remove('active');
+            
+            document.querySelectorAll('.bottom-sheet').forEach(sheet => {
+                sheet.classList.remove('active');
+            });
+            
+            currentBottomSheet = null;
+            document.body.style.overflow = '';
+        }
+        
+        function populateInstrumentsSheet() {
+            const body = document.getElementById('instrumentsSheetBody');
+            if (!body) return;
+            
+            const categories = {
+                '🎹 Keys': ['Grand Piano', 'Electric Piano', 'Organ', 'Synth Lead', 'Synth Pad', 'Clavinet'],
+                '🎸 Guitars': ['Acoustic Guitar', 'Electric Clean', 'Electric Distorted', 'Nylon Guitar'],
+                '🎻 Strings': ['Violin', 'Cello', 'String Ensemble', 'Harp'],
+                '🎺 Brass': ['Trumpet', 'Trombone', 'French Horn', 'Brass Section'],
+                '🎷 Winds': ['Flute', 'Clarinet', 'Saxophone', 'Oboe'],
+                '🥁 Percussion': ['Vibraphone', 'Marimba', 'Steel Drums', 'Bells']
+            };
+            
+            let html = '';
+            for (const [category, instruments] of Object.entries(categories)) {
+                html += `<div class="accordion-panel open" data-accordion="${category}">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <div class="accordion-title">${category}</div>
+                        <span class="accordion-chevron">▼</span>
+                    </div>
+                    <div class="accordion-body"><div class="accordion-content">`;
+                instruments.forEach(inst => {
+                    const isSelected = state.instrument === inst;
+                    html += `<div class="toolbar-option ${isSelected ? 'selected' : ''}" onclick="selectInstrumentFromSheet('${inst}', this)">
+                        <span class="icon">🎵</span>
+                        <div class="toolbar-option-info">
+                            <div class="toolbar-option-name">${inst}</div>
+                        </div>
+                    </div>`;
+                });
+                html += '</div></div></div>';
+            }
+            body.innerHTML = html;
+        }
+        
+        function selectInstrumentFromSheet(inst, el) {
+            state.instrument = inst;
+            setupInstrument(inst);
+            
+            // Update selection UI
+            el.closest('.bottom-sheet-body').querySelectorAll('.toolbar-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            
+            showToast(`🎸 ${inst} selected`);
+        }
+
+        // CUSTOMIZABLE TOOLBAR
+        let toolbarItems = JSON.parse(localStorage.getItem('chordflow-toolbar') || '["play","random","ai","instrument"]');
+        
+        function renderToolbar() {
+            const toolbar = document.getElementById('quickToolbar');
+            if (!toolbar) return;
+            
+            const itemConfigs = {
+                play: { icon: '▶️', action: 'toggleGlobalPlayback()', title: 'Play/Stop', id: 'toolbarPlay' },
+                random: { icon: '🎲', action: 'generateProgression()', title: 'New Progression' },
+                ai: { icon: '✨', action: "aiGenerate('smart')", title: 'AI Generate' },
+                instrument: { icon: '🎸', action: "openBottomSheet('instruments')", title: 'Instruments' },
+                tempo: { icon: '⏱️', action: 'showTempoControl()', title: 'Tempo' },
+                record: { icon: '🔴', action: 'toggleRecording()', title: 'Record' },
+                metronome: { icon: '🎵', action: 'toggleMetronome()', title: 'Metronome' },
+                fullscreen: { icon: '⛶', action: 'toggleFullscreen()', title: 'Fullscreen' }
+            };
+            
+            let html = '';
+            toolbarItems.forEach((itemId, index) => {
+                const config = itemConfigs[itemId];
+                if (!config) return;
+                html += `<button class="toolbar-item" onclick="${config.action}" ${config.id ? `id="${config.id}"` : ''} title="${config.title}">${config.icon}<span class="remove-btn" onclick="event.stopPropagation(); removeToolbarItem(${index})">✕</span></button>`;
+                if (index === 0 && toolbarItems.length > 1) html += '<div class="toolbar-divider"></div>';
+            });
+            html += '<div class="toolbar-divider"></div>';
+            html += `<button class="toolbar-item toolbar-add" onclick="openBottomSheet('toolbar-customize')" title="Customize">+</button>`;
+            
+            toolbar.innerHTML = html;
+            updateToolbarCustomizeUI();
+        }
+        
+        function toggleToolbarItem(itemId, el) {
+            const index = toolbarItems.indexOf(itemId);
+            if (index > -1) {
+                toolbarItems.splice(index, 1);
+                el.classList.remove('selected');
+            } else {
+                if (toolbarItems.length < 6) {
+                    toolbarItems.push(itemId);
+                    el.classList.add('selected');
+                } else {
+                    showToast('⚠️ Max 6 toolbar items');
+                    return;
+                }
+            }
+            localStorage.setItem('chordflow-toolbar', JSON.stringify(toolbarItems));
+            renderToolbar();
+        }
+        
+        function removeToolbarItem(index) {
+            toolbarItems.splice(index, 1);
+            localStorage.setItem('chordflow-toolbar', JSON.stringify(toolbarItems));
+            renderToolbar();
+            showToast('🗑️ Item removed');
+        }
+        
+        function resetToolbar() {
+            toolbarItems = ['play', 'random', 'ai', 'instrument'];
+            localStorage.setItem('chordflow-toolbar', JSON.stringify(toolbarItems));
+            renderToolbar();
+            showToast('🔄 Toolbar reset');
+        }
+        
+        function updateToolbarCustomizeUI() {
+            document.querySelectorAll('#toolbar-customizeSheet .toolbar-option').forEach(opt => {
+                const itemId = opt.querySelector('.toolbar-option-name')?.textContent.toLowerCase().replace(/[^a-z]/g, '');
+                const mappings = {
+                    'playstop': 'play', 'randomize': 'random', 'aigenerate': 'ai',
+                    'instruments': 'instrument', 'tempo': 'tempo', 'record': 'record',
+                    'metronome': 'metronome', 'fullscreen': 'fullscreen'
+                };
+                const mapped = mappings[itemId];
+                if (mapped && toolbarItems.includes(mapped)) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+        
+        function showTempoControl() {
+            const newTempo = prompt('Enter tempo (60-200 BPM):', state.tempo);
+            if (newTempo && !isNaN(newTempo)) {
+                state.tempo = Math.max(60, Math.min(200, parseInt(newTempo)));
+                beatTempo = state.tempo;
+                document.getElementById('tempoDisplay').textContent = state.tempo;
+                updateTransportDisplay();
+                showToast(`⏱️ Tempo: ${state.tempo} BPM`);
+            }
+        }
+        
+        function toggleRecording() {
+            showToast('🔴 Recording feature coming soon!');
+        }
+        
+        function toggleMetronome() {
+            showToast('🎵 Metronome toggled!');
+        }
+        
+        // Swipe to close bottom sheet
+        let sheetTouchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            if (currentBottomSheet && e.target.closest('.bottom-sheet-handle')) {
+                sheetTouchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (currentBottomSheet && sheetTouchStartY) {
+                const diff = e.touches[0].clientY - sheetTouchStartY;
+                if (diff > 100) {
+                    closeBottomSheet();
+                    sheetTouchStartY = 0;
+                }
+            }
+        }, { passive: true });
+
         function initUIOptimizations() {
             initSwipeNavigation();
             initCollapsiblePanels();
@@ -2559,6 +3032,7 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
             }, 5000);
             
             updateTransportDisplay();
+            renderToolbar();
         }
 
         // INIT
@@ -2569,7 +3043,7 @@ Make it groovy and suitable for ${state.genre}. Include kick, snare, hihat, and 
             const savedColors = localStorage.getItem('chordflow-custom-colors');
             if (savedColors) { state.customColors = JSON.parse(savedColors); document.getElementById('customBg').value = state.customColors.bg; document.getElementById('customAccent').value = state.customColors.accent; document.getElementById('customCard').value = state.customColors.card; document.getElementById('customText').value = state.customColors.text; }
             initUIOptimizations();
-            console.log('🎵 ChordFlow v12.4 UX Optimized initialized');
+            console.log('🎵 ChordFlow v12.5 Pro UX initialized');
         }
         init();
     </script>
