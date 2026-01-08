@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.53</title>
+    <title>ChordFlow v0.54</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,8 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════════════════════════════
-           CHORDFLOW v0.53 - MULTI-UI SYSTEM
-           Dual Mode (Default) + Sheet Flow
+           CHORDFLOW v0.54 - TRIPLE UI SYSTEM
+           Dual Mode + Sheet Flow + Card Stack
            ═══════════════════════════════════════════════════════════════ */
         
         :root {
@@ -50,24 +50,20 @@
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
         html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: -webkit-fill-available; overflow: hidden; overscroll-behavior: none; }
 
-        /* ═══════════════════════════════════════════════════════════════
-           UI MODE CONTAINERS
-           ═══════════════════════════════════════════════════════════════ */
-        
+        /* UI Containers */
         .ui-container { display: none; min-height: 100vh; min-height: -webkit-fill-available; }
         .ui-container.active { display: flex; flex-direction: column; }
 
         /* ═══════════════════════════════════════════════════════════════
-           DUAL MODE UI (Default)
+           DUAL MODE UI
            ═══════════════════════════════════════════════════════════════ */
         
         #dualModeUI { padding-top: var(--safe-top); padding-bottom: calc(var(--safe-bottom) + 80px); }
-        
-        .header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
         .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: var(--spacing-sm); }
         .header-actions { display: flex; gap: var(--spacing-sm); }
-        .header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s, background 0.2s; }
-        .header-btn:active { transform: scale(0.92); background: var(--bg-elevated); }
+        .header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+        .header-btn:active { transform: scale(0.92); }
 
         .mode-toggle { position: fixed; top: calc(var(--safe-top) + 70px); left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border-radius: var(--radius-full); padding: 4px; display: flex; z-index: 200; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
         .mode-btn { padding: 10px 24px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); font-size: 15px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
@@ -79,18 +75,15 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .settings-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
-        .setting-chip { flex: 1; padding: 14px var(--spacing-md); background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 15px; font-weight: 500; font-family: var(--font); display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.2s; }
-        .setting-chip:active { background: var(--bg-tertiary); }
+        .setting-chip { flex: 1; padding: 14px var(--spacing-md); background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 15px; font-weight: 500; font-family: var(--font); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
         .setting-chip .label { color: var(--text-secondary); font-size: 13px; }
 
-        .chord-section { margin-bottom: var(--spacing-xl); }
         .section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-md); }
-        .chord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
-        .chord-card { aspect-ratio: 1; background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary)); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; position: relative; overflow: hidden; }
-        .chord-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(255,255,255,0.05), transparent); pointer-events: none; }
+        .chord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-xl); }
+        .chord-card { aspect-ratio: 1; background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary)); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; position: relative; }
         .chord-card:active { transform: scale(0.96); }
         .chord-card.playing { border-color: var(--accent); box-shadow: 0 0 30px rgba(10,132,255,0.3); }
-        .chord-name { font-size: 42px; font-weight: 800; letter-spacing: -1px; }
+        .chord-name { font-size: 42px; font-weight: 800; }
         .chord-type { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
         .chord-index { position: absolute; top: 12px; left: 12px; width: 24px; height: 24px; background: rgba(255,255,255,0.1); border-radius: var(--radius-full); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
 
@@ -98,131 +91,175 @@
         .action-btn { padding: 18px; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); transition: all 0.2s; }
         .action-btn.primary { background: var(--accent); color: white; }
         .action-btn.secondary { background: var(--bg-secondary); color: var(--text-primary); }
-        .action-btn:active { transform: scale(0.97); opacity: 0.9; }
+        .action-btn:active { transform: scale(0.97); }
 
         .ai-section { background: linear-gradient(135deg, rgba(191,90,242,0.15), rgba(10,132,255,0.15)); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); }
         .ai-header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
         .ai-badge { background: linear-gradient(135deg, var(--accent-purple), var(--accent)); padding: 4px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; }
         .ai-title { font-size: 18px; font-weight: 700; }
         .ai-options { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
-        .ai-chip { padding: 10px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: var(--radius-full); color: white; font-size: 14px; font-weight: 500; font-family: var(--font); cursor: pointer; transition: all 0.2s; }
-        .ai-chip:active { background: rgba(255,255,255,0.2); transform: scale(0.96); }
+        .ai-chip { padding: 10px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: var(--radius-full); color: white; font-size: 14px; font-weight: 500; font-family: var(--font); cursor: pointer; }
         .ai-chip.featured { background: linear-gradient(135deg, var(--accent-purple), var(--accent)); }
 
         .produce-tabs { display: flex; gap: 4px; background: var(--bg-secondary); padding: 4px; border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); }
-        .produce-tab { flex: 1; padding: 12px; border: none; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .produce-tab { flex: 1; padding: 12px; border: none; border-radius: var(--radius-sm); background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 600; font-family: var(--font); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .produce-tab .icon { font-size: 20px; }
         .produce-tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
-        .produce-panel { display: none; animation: fadeIn 0.2s ease; }
+        .produce-panel { display: none; }
         .produce-panel.active { display: block; }
 
         .mixer-channel { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md); }
-        .channel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-md); }
-        .channel-name { font-weight: 600; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .channel-name { font-weight: 600; margin-bottom: var(--spacing-md); }
         .fader-container { display: flex; align-items: center; gap: var(--spacing-md); }
-        .fader { flex: 1; height: 6px; -webkit-appearance: none; background: var(--bg-tertiary); border-radius: var(--radius-full); outline: none; }
-        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: var(--radius-full); background: white; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .fader { flex: 1; height: 6px; -webkit-appearance: none; background: var(--bg-tertiary); border-radius: var(--radius-full); }
+        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: var(--radius-full); background: white; cursor: pointer; }
         .fader-value { font-size: 14px; font-weight: 600; color: var(--text-secondary); min-width: 40px; text-align: right; }
 
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
-        .export-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
-        .export-card:active { transform: scale(0.97); border-color: var(--accent); }
+        .export-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-lg); text-align: center; cursor: pointer; border: 2px solid transparent; }
+        .export-card:active { border-color: var(--accent); }
         .export-icon { font-size: 36px; margin-bottom: var(--spacing-sm); }
-        .export-title { font-weight: 600; margin-bottom: 4px; }
+        .export-title { font-weight: 600; }
         .export-desc { font-size: 12px; color: var(--text-secondary); }
 
         /* Transport */
-        .transport { position: fixed; bottom: var(--safe-bottom); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid var(--separator); }
+        .transport { position: fixed; bottom: var(--safe-bottom); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
         .transport-left, .transport-right { display: flex; align-items: center; gap: var(--spacing-sm); }
         .transport-center { display: flex; align-items: center; gap: var(--spacing-md); }
-        .play-btn { width: 56px; height: 56px; border-radius: var(--radius-full); background: var(--accent); border: none; color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(10,132,255,0.4); }
-        .play-btn:active { transform: scale(0.92); }
-        .play-btn.playing { background: var(--accent-orange); box-shadow: 0 4px 16px rgba(255,159,10,0.4); }
-        .transport-btn { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-        .transport-btn:active { background: var(--bg-elevated); transform: scale(0.92); }
+        .play-btn { width: 56px; height: 56px; border-radius: var(--radius-full); background: var(--accent); border: none; color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 16px rgba(10,132,255,0.4); }
+        .play-btn.playing { background: var(--accent-orange); }
+        .transport-btn { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .transport-btn.active { background: var(--accent); }
-        .tempo-display { background: var(--bg-tertiary); padding: 8px 14px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .bpm-label { color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+        .tempo-display { background: var(--bg-tertiary); padding: 8px 14px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; }
+        .bpm-label { color: var(--text-secondary); font-size: 11px; }
 
         /* ═══════════════════════════════════════════════════════════════
            SHEET FLOW UI
            ═══════════════════════════════════════════════════════════════ */
         
         #sheetFlowUI { position: relative; overflow: hidden; }
-        
-        /* Main Canvas */
-        .sf-canvas { flex: 1; display: flex; flex-direction: column; padding: var(--spacing-lg); padding-top: calc(var(--safe-top) + var(--spacing-lg)); padding-bottom: calc(var(--safe-bottom) + 100px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        
-        /* Minimal Header */
-        .sf-header { position: fixed; top: var(--safe-top); left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) var(--spacing-lg); z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
+        .sf-canvas { flex: 1; display: flex; flex-direction: column; padding: var(--spacing-lg); padding-top: calc(var(--safe-top) + var(--spacing-lg)); padding-bottom: calc(var(--safe-bottom) + 100px); overflow-y: auto; }
+        .sf-header { position: fixed; top: var(--safe-top); left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) var(--spacing-lg); z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
         .sf-logo { font-size: 18px; font-weight: 700; opacity: 0.7; }
-        .sf-header-btn { width: 32px; height: 32px; border-radius: var(--radius-full); background: rgba(255,255,255,0.1); border: none; color: white; font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .sf-header-btn { width: 32px; height: 32px; border-radius: var(--radius-full); background: rgba(255,255,255,0.1); border: none; color: white; font-size: 16px; cursor: pointer; }
 
-        /* Big Chord Display */
         .sf-chord-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; }
-        .sf-current-chord { font-size: 120px; font-weight: 900; letter-spacing: -4px; text-align: center; line-height: 1; margin-bottom: var(--spacing-md); text-shadow: 0 0 60px rgba(10,132,255,0.3); transition: all 0.3s; }
+        .sf-current-chord { font-size: 120px; font-weight: 900; letter-spacing: -4px; text-shadow: 0 0 60px rgba(10,132,255,0.3); transition: all 0.3s; }
         .sf-current-chord.playing { text-shadow: 0 0 80px rgba(10,132,255,0.6); transform: scale(1.05); }
-        .sf-chord-label { font-size: 18px; color: var(--text-secondary); font-weight: 500; }
+        .sf-chord-label { font-size: 18px; color: var(--text-secondary); }
 
-        /* Chord Strip */
-        .sf-chord-strip { display: flex; gap: var(--spacing-md); padding: var(--spacing-lg) 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
+        .sf-chord-strip { display: flex; gap: var(--spacing-md); padding: var(--spacing-lg) 0; overflow-x: auto; scroll-snap-type: x mandatory; }
         .sf-chord-strip::-webkit-scrollbar { display: none; }
-        .sf-strip-chord { flex-shrink: 0; width: 80px; height: 80px; background: var(--bg-secondary); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; scroll-snap-align: center; transition: all 0.2s; border: 2px solid transparent; }
+        .sf-strip-chord { flex-shrink: 0; width: 80px; height: 80px; background: var(--bg-secondary); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; scroll-snap-align: center; border: 2px solid transparent; }
         .sf-strip-chord.active { border-color: var(--accent); background: rgba(10,132,255,0.2); transform: scale(1.1); }
-        .sf-strip-chord:active { transform: scale(0.95); }
         .sf-strip-name { font-size: 24px; font-weight: 700; }
         .sf-strip-num { font-size: 11px; color: var(--text-secondary); }
 
-        /* Gesture Hint */
         .sf-gesture-hint { position: fixed; bottom: calc(var(--safe-bottom) + 90px); left: 50%; transform: translateX(-50%); display: flex; gap: var(--spacing-xl); opacity: 0.4; font-size: 12px; color: var(--text-secondary); }
-        .sf-gesture-hint span { display: flex; align-items: center; gap: 4px; }
 
-        /* Side Panels */
         .sf-panel { position: fixed; top: 0; bottom: 0; width: 85%; max-width: 320px; background: var(--bg-secondary); z-index: 500; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; }
         .sf-panel-left { left: 0; transform: translateX(-100%); border-radius: 0 var(--radius-xl) var(--radius-xl) 0; }
         .sf-panel-left.open { transform: translateX(0); }
         .sf-panel-right { right: 0; transform: translateX(100%); border-radius: var(--radius-xl) 0 0 var(--radius-xl); }
         .sf-panel-right.open { transform: translateX(0); }
-        
         .sf-panel-header { padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--separator); }
         .sf-panel-title { font-size: 20px; font-weight: 700; }
-        .sf-panel-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); -webkit-overflow-scrolling: touch; }
+        .sf-panel-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; }
+        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); }
 
-        /* Tool Drawer (Bottom) */
-        .sf-drawer { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 500; transform: translateY(calc(100% - 70px)); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); max-height: 70vh; display: flex; flex-direction: column; }
+        .sf-drawer { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 500; transform: translateY(calc(100% - 70px)); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); max-height: 70vh; }
         .sf-drawer.open { transform: translateY(0); }
         .sf-drawer-handle { width: 36px; height: 5px; background: var(--bg-elevated); border-radius: var(--radius-full); margin: 10px auto; cursor: grab; }
         .sf-drawer-peek { display: flex; align-items: center; justify-content: space-around; padding: var(--spacing-sm) var(--spacing-lg); }
-        .sf-drawer-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--spacing-sm); cursor: pointer; }
+        .sf-drawer-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
         .sf-drawer-btn .icon { font-size: 24px; }
         .sf-drawer-btn .label { font-size: 10px; color: var(--text-secondary); }
         .sf-drawer-content { flex: 1; overflow-y: auto; padding: 0 var(--spacing-lg) var(--spacing-lg); display: none; }
         .sf-drawer.open .sf-drawer-content { display: block; }
 
-        /* Panel Overlay */
-        .sf-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 400; backdrop-filter: blur(4px); }
+        .sf-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 400; }
         .sf-overlay.active { opacity: 1; visibility: visible; }
 
-        /* Instrument List */
-        .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all 0.2s; }
-        .sf-instrument-item:active { background: var(--bg-elevated); }
+        .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; }
         .sf-instrument-item.selected { background: var(--accent); }
         .sf-instrument-icon { font-size: 28px; }
         .sf-instrument-name { flex: 1; font-weight: 500; }
-        .sf-instrument-check { opacity: 0; color: white; }
+        .sf-instrument-check { opacity: 0; }
         .sf-instrument-item.selected .sf-instrument-check { opacity: 1; }
 
-        /* Quick Actions */
         .sf-quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
-        .sf-quick-btn { padding: var(--spacing-lg); background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm); transition: all 0.2s; }
-        .sf-quick-btn:active { transform: scale(0.96); background: var(--bg-elevated); }
+        .sf-quick-btn { padding: var(--spacing-lg); background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm); }
         .sf-quick-btn .icon { font-size: 32px; }
         .sf-quick-btn .label { font-size: 14px; font-weight: 600; color: var(--text-primary); }
         .sf-quick-btn.primary { background: linear-gradient(135deg, var(--accent-purple), var(--accent)); }
 
         /* ═══════════════════════════════════════════════════════════════
-           SHARED BOTTOM SHEETS
+           CARD STACK UI
+           ═══════════════════════════════════════════════════════════════ */
+        
+        #cardStackUI { position: relative; overflow: hidden; }
+        
+        .cs-header { position: fixed; top: var(--safe-top); left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); z-index: 100; }
+        .cs-logo { font-size: 20px; font-weight: 700; }
+        .cs-header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 18px; cursor: pointer; }
+
+        .cs-stack-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: calc(var(--safe-top) + 60px) var(--spacing-lg) calc(var(--safe-bottom) + 100px); perspective: 1000px; }
+
+        .cs-card-stack { position: relative; width: 100%; max-width: 350px; height: 450px; }
+
+        .cs-card { position: absolute; width: 100%; height: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); display: flex; flex-direction: column; cursor: pointer; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); transform-origin: center bottom; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--separator); overflow: hidden; }
+        .cs-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(255,255,255,0.05), transparent); pointer-events: none; }
+
+        .cs-card.main { z-index: 10; transform: translateY(0) scale(1); }
+        .cs-card.peek-1 { z-index: 9; transform: translateY(20px) scale(0.95); opacity: 0.7; }
+        .cs-card.peek-2 { z-index: 8; transform: translateY(40px) scale(0.9); opacity: 0.4; }
+        .cs-card.peek-3 { z-index: 7; transform: translateY(60px) scale(0.85); opacity: 0.2; }
+        .cs-card.expanded { z-index: 100; position: fixed; top: var(--safe-top); left: var(--spacing-md); right: var(--spacing-md); bottom: calc(var(--safe-bottom) + 80px); height: auto; max-width: none; transform: none; }
+
+        .cs-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-lg); }
+        .cs-card-icon { font-size: 32px; }
+        .cs-card-label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+        .cs-card-close { display: none; width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 16px; cursor: pointer; }
+        .cs-card.expanded .cs-card-close { display: flex; align-items: center; justify-content: center; }
+
+        .cs-card-body { flex: 1; display: flex; flex-direction: column; }
+
+        /* Main Progression Card */
+        .cs-progression-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .cs-big-chord { font-size: 80px; font-weight: 900; margin-bottom: var(--spacing-sm); }
+        .cs-chord-info { font-size: 16px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .cs-mini-chords { display: flex; gap: var(--spacing-sm); }
+        .cs-mini-chord { width: 50px; height: 50px; background: var(--bg-tertiary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .cs-mini-chord.active { border-color: var(--accent); background: rgba(10,132,255,0.2); }
+
+        /* Tool Cards */
+        .cs-tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); flex: 1; }
+        .cs-tool-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-sm); cursor: pointer; transition: all 0.2s; }
+        .cs-tool-item:active { transform: scale(0.95); }
+        .cs-tool-item .icon { font-size: 28px; }
+        .cs-tool-item .label { font-size: 13px; font-weight: 600; }
+
+        /* Card colors */
+        .cs-card[data-type="progression"] { background: linear-gradient(145deg, #1a1a2e, #16213e); }
+        .cs-card[data-type="ai"] { background: linear-gradient(145deg, #2d1b4e, #1a1a2e); }
+        .cs-card[data-type="mixer"] { background: linear-gradient(145deg, #1b3a4b, #1a1a2e); }
+        .cs-card[data-type="export"] { background: linear-gradient(145deg, #2e1a1a, #1a1a2e); }
+
+        /* Card Stack Transport */
+        .cs-transport { position: fixed; bottom: var(--safe-bottom); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-md); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        .cs-transport-btn { width: 50px; height: 50px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 20px; cursor: pointer; transition: all 0.2s; }
+        .cs-transport-btn:active { transform: scale(0.92); }
+        .cs-transport-btn.play { width: 60px; height: 60px; background: var(--accent); font-size: 24px; box-shadow: 0 4px 16px rgba(10,132,255,0.4); }
+        .cs-transport-btn.play.playing { background: var(--accent-orange); }
+
+        /* Fan out animation */
+        .cs-card-stack.fanned .cs-card.main { transform: translateY(-80px) rotateX(10deg); }
+        .cs-card-stack.fanned .cs-card.peek-1 { transform: translateY(-20px) rotateX(5deg) scale(0.95); opacity: 1; }
+        .cs-card-stack.fanned .cs-card.peek-2 { transform: translateY(40px) rotateX(0deg) scale(0.9); opacity: 1; }
+        .cs-card-stack.fanned .cs-card.peek-3 { transform: translateY(100px) rotateX(-5deg) scale(0.85); opacity: 1; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           SHARED SHEETS
            ═══════════════════════════════════════════════════════════════ */
         
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 400; backdrop-filter: blur(4px); }
@@ -233,19 +270,18 @@
         .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-md); }
         .sheet-title { font-size: 18px; font-weight: 700; }
         .sheet-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; }
-        .sheet-body { flex: 1; overflow-y: auto; padding: 0 var(--spacing-lg) var(--spacing-lg); -webkit-overflow-scrolling: touch; }
+        .sheet-body { flex: 1; overflow-y: auto; padding: 0 var(--spacing-lg) var(--spacing-lg); }
 
         .option-list { display: flex; flex-direction: column; gap: var(--spacing-xs); }
-        .option-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s; }
-        .option-item:active { background: var(--bg-elevated); }
+        .option-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; }
         .option-item.selected { background: var(--accent); }
         .option-icon { font-size: 24px; width: 40px; text-align: center; }
         .option-text { flex: 1; }
         .option-title { font-weight: 600; }
         .option-desc { font-size: 13px; color: var(--text-secondary); }
         .option-item.selected .option-desc { color: rgba(255,255,255,0.7); }
-        .option-check { color: var(--accent-green); font-size: 20px; opacity: 0; }
-        .option-item.selected .option-check { opacity: 1; color: white; }
+        .option-check { opacity: 0; }
+        .option-item.selected .option-check { opacity: 1; }
 
         .settings-group { margin-bottom: var(--spacing-lg); }
         .settings-group-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-md); }
@@ -255,23 +291,19 @@
         .settings-label { display: flex; align-items: center; gap: var(--spacing-md); }
         .settings-icon { font-size: 22px; }
 
-        .toast { position: fixed; top: calc(var(--safe-top) + 60px); left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--bg-elevated); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-full); font-size: 15px; font-weight: 500; z-index: 600; opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .toast { position: fixed; top: calc(var(--safe-top) + 60px); left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--bg-elevated); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-full); font-size: 15px; font-weight: 500; z-index: 600; opacity: 0; transition: all 0.4s; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* Responsive */
         @media (min-width: 768px) {
             .chord-grid { grid-template-columns: repeat(4, 1fr); }
-            .export-grid { grid-template-columns: repeat(4, 1fr); }
-            .transport { left: 50%; right: auto; transform: translateX(-50%); width: 500px; }
-            .main-content { max-width: 800px; margin: 0 auto; }
+            .transport, .cs-transport { left: 50%; right: auto; transform: translateX(-50%); width: 500px; }
             .sf-current-chord { font-size: 180px; }
+            .cs-card-stack { max-width: 400px; height: 500px; }
         }
     </style>
 </head>
 <body>
-    <!-- ═══════════════════════════════════════════════════════════════
-         DUAL MODE UI (Default)
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- DUAL MODE UI -->
     <div id="dualModeUI" class="ui-container active">
         <header class="header">
             <div class="logo">🎵 ChordFlow</div>
@@ -280,163 +312,84 @@
                 <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
         </header>
-
         <div class="mode-toggle">
             <button class="mode-btn active" onclick="setMode('create')" id="createModeBtn">✨ Create</button>
             <button class="mode-btn" onclick="setMode('produce')" id="produceModeBtn">🎚️ Produce</button>
         </div>
-
         <main class="main-content">
             <div class="mode-view active" id="createView">
                 <div class="settings-row">
-                    <button class="setting-chip" onclick="openSheet('key')">
-                        <span class="label">Key</span>
-                        <span id="keyDisplay">C Major</span>
-                    </button>
-                    <button class="setting-chip" onclick="openSheet('genre')">
-                        <span class="label">Style</span>
-                        <span id="genreDisplay">Pop</span>
-                    </button>
+                    <button class="setting-chip" onclick="openSheet('key')"><span class="label">Key</span><span id="keyDisplay">C Major</span></button>
+                    <button class="setting-chip" onclick="openSheet('genre')"><span class="label">Style</span><span id="genreDisplay">Pop</span></button>
                 </div>
-
-                <section class="chord-section">
-                    <div class="section-title">Your Progression</div>
-                    <div class="chord-grid" id="chordGrid"></div>
-                </section>
-
+                <div class="section-title">Your Progression</div>
+                <div class="chord-grid" id="chordGrid"></div>
                 <div class="action-row">
                     <button class="action-btn secondary" onclick="generateProgression()">🎲 Random</button>
                     <button class="action-btn primary" onclick="aiGenerate('smart')">✨ AI Magic</button>
                 </div>
-
                 <section class="ai-section">
-                    <div class="ai-header">
-                        <span class="ai-badge">AI</span>
-                        <span class="ai-title">Smart Tools</span>
-                    </div>
+                    <div class="ai-header"><span class="ai-badge">AI</span><span class="ai-title">Smart Tools</span></div>
                     <div class="ai-options">
                         <button class="ai-chip featured" onclick="aiGenerate('surprise')">🎁 Surprise Me</button>
-                        <button class="ai-chip" onclick="aiGenerate('melody')">🎵 Melody</button>
-                        <button class="ai-chip" onclick="aiGenerate('lyrics')">📝 Lyrics</button>
                         <button class="ai-chip" onclick="aiGenerate('enhance')">💎 Enhance</button>
                     </div>
                 </section>
             </div>
-
             <div class="mode-view" id="produceView">
                 <div class="produce-tabs">
                     <button class="produce-tab active" onclick="setProduceTab('mixer')"><span class="icon">🎚️</span><span>Mixer</span></button>
-                    <button class="produce-tab" onclick="setProduceTab('piano')"><span class="icon">🎹</span><span>Keys</span></button>
                     <button class="produce-tab" onclick="setProduceTab('export')"><span class="icon">💾</span><span>Export</span></button>
                 </div>
-
                 <div class="produce-panel active" id="mixerPanel">
-                    <div class="mixer-channel">
-                        <div class="channel-header"><div class="channel-name">🎹 Chords</div></div>
-                        <div class="fader-container">
-                            <input type="range" class="fader" min="0" max="100" value="80">
-                            <span class="fader-value">80%</span>
-                        </div>
-                    </div>
-                    <div class="mixer-channel">
-                        <div class="channel-header"><div class="channel-name">🎸 Bass</div></div>
-                        <div class="fader-container">
-                            <input type="range" class="fader" min="0" max="100" value="70">
-                            <span class="fader-value">70%</span>
-                        </div>
-                    </div>
+                    <div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="80"><span class="fader-value">80%</span></div></div>
+                    <div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="70"><span class="fader-value">70%</span></div></div>
                 </div>
-
-                <div class="produce-panel" id="pianoPanel">
-                    <p style="color: var(--text-secondary); text-align: center; padding: 40px;">🎹 Piano coming in v0.54</p>
-                </div>
-
                 <div class="produce-panel" id="exportPanel">
                     <div class="export-grid">
-                        <div class="export-card" onclick="showToast('🎹 MIDI export coming soon!')"><div class="export-icon">🎹</div><div class="export-title">MIDI</div><div class="export-desc">Universal</div></div>
-                        <div class="export-card" onclick="showToast('🎵 WAV export coming soon!')"><div class="export-icon">🎵</div><div class="export-title">WAV</div><div class="export-desc">Lossless</div></div>
-                        <div class="export-card" onclick="showToast('📀 MP3 export coming soon!')"><div class="export-icon">📀</div><div class="export-title">MP3</div><div class="export-desc">Compressed</div></div>
-                        <div class="export-card" onclick="showToast('📄 PDF export coming soon!')"><div class="export-icon">📄</div><div class="export-title">PDF</div><div class="export-desc">Sheet</div></div>
+                        <div class="export-card" onclick="showToast('🎹 MIDI coming soon!')"><div class="export-icon">🎹</div><div class="export-title">MIDI</div><div class="export-desc">Universal</div></div>
+                        <div class="export-card" onclick="showToast('🎵 WAV coming soon!')"><div class="export-icon">🎵</div><div class="export-title">WAV</div><div class="export-desc">Lossless</div></div>
                     </div>
                 </div>
             </div>
         </main>
-
         <div class="transport">
-            <div class="transport-left">
-                <button class="transport-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
-            </div>
+            <div class="transport-left"><button class="transport-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button></div>
             <div class="transport-center">
                 <button class="transport-btn" onclick="stopPlayback()">⏹️</button>
                 <button class="play-btn" onclick="togglePlay()" id="playBtn">▶️</button>
-                <div class="tempo-display" onclick="openSheet('tempo')">
-                    <span id="tempoValue">120</span>
-                    <span class="bpm-label">BPM</span>
-                </div>
+                <div class="tempo-display" onclick="openSheet('tempo')"><span id="tempoValue">120</span><span class="bpm-label">BPM</span></div>
             </div>
-            <div class="transport-right">
-                <button class="transport-btn" onclick="toggleLoop()" id="loopBtn">🔁</button>
-            </div>
+            <div class="transport-right"><button class="transport-btn" onclick="toggleLoop()" id="loopBtn">🔁</button></div>
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         SHEET FLOW UI
-         ═══════════════════════════════════════════════════════════════ -->
+    <!-- SHEET FLOW UI -->
     <div id="sheetFlowUI" class="ui-container">
-        <!-- Minimal Header -->
-        <div class="sf-header">
-            <div class="sf-logo">🎵 ChordFlow</div>
-            <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
-        </div>
-
-        <!-- Main Canvas -->
+        <div class="sf-header"><div class="sf-logo">🎵 ChordFlow</div><button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button></div>
         <div class="sf-canvas" id="sfCanvas">
-            <!-- Big Chord Display -->
             <div class="sf-chord-display">
                 <div class="sf-current-chord" id="sfCurrentChord">Am</div>
                 <div class="sf-chord-label" id="sfChordLabel">A minor • Chord 1 of 4</div>
             </div>
-
-            <!-- Chord Strip -->
             <div class="sf-chord-strip" id="sfChordStrip"></div>
         </div>
-
-        <!-- Gesture Hints -->
-        <div class="sf-gesture-hint">
-            <span>← Instruments</span>
-            <span>↑ Tools</span>
-            <span>Sections →</span>
-        </div>
-
-        <!-- Left Panel: Instruments -->
+        <div class="sf-gesture-hint"><span>← Instruments</span><span>↑ Tools</span><span>Sections →</span></div>
         <div class="sf-panel sf-panel-left" id="sfLeftPanel">
-            <div class="sf-panel-header">
-                <div class="sf-panel-title">🎹 Instruments</div>
-                <button class="sf-panel-close" onclick="closeSFPanel('left')">✕</button>
-            </div>
+            <div class="sf-panel-header"><div class="sf-panel-title">🎹 Instruments</div><button class="sf-panel-close" onclick="closeSFPanel('left')">✕</button></div>
             <div class="sf-panel-body" id="sfInstrumentList"></div>
         </div>
-
-        <!-- Right Panel: Sections -->
         <div class="sf-panel sf-panel-right" id="sfRightPanel">
-            <div class="sf-panel-header">
-                <div class="sf-panel-title">📑 Sections</div>
-                <button class="sf-panel-close" onclick="closeSFPanel('right')">✕</button>
-            </div>
+            <div class="sf-panel-header"><div class="sf-panel-title">📑 Sections</div><button class="sf-panel-close" onclick="closeSFPanel('right')">✕</button></div>
             <div class="sf-panel-body">
                 <div class="option-list">
-                    <div class="option-item selected"><span class="option-icon">🎵</span><div class="option-text"><div class="option-title">Verse</div><div class="option-desc">Am - F - C - G</div></div></div>
-                    <div class="option-item"><span class="option-icon">🎤</span><div class="option-text"><div class="option-title">Chorus</div><div class="option-desc">C - G - Am - F</div></div></div>
-                    <div class="option-item"><span class="option-icon">🌉</span><div class="option-text"><div class="option-title">Bridge</div><div class="option-desc">F - G - Am</div></div></div>
+                    <div class="option-item selected"><span class="option-icon">🎵</span><div class="option-text"><div class="option-title">Verse</div></div></div>
+                    <div class="option-item"><span class="option-icon">🎤</span><div class="option-text"><div class="option-title">Chorus</div></div></div>
                 </div>
-                <button class="action-btn secondary" style="width: 100%; margin-top: var(--spacing-lg);">+ Add Section</button>
             </div>
         </div>
-
-        <!-- Bottom Drawer: Tools -->
         <div class="sf-drawer" id="sfDrawer">
-            <div class="sf-drawer-handle" id="sfDrawerHandle"></div>
+            <div class="sf-drawer-handle" onclick="toggleSFDrawer()"></div>
             <div class="sf-drawer-peek">
                 <div class="sf-drawer-btn" onclick="togglePlay()"><span class="icon" id="sfPlayIcon">▶️</span><span class="label">Play</span></div>
                 <div class="sf-drawer-btn" onclick="generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div>
@@ -446,28 +399,98 @@
             <div class="sf-drawer-content">
                 <div class="section-title">Quick Actions</div>
                 <div class="sf-quick-actions">
-                    <button class="sf-quick-btn primary" onclick="aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise Me</span></button>
+                    <button class="sf-quick-btn primary" onclick="aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></button>
                     <button class="sf-quick-btn" onclick="aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></button>
-                    <button class="sf-quick-btn" onclick="openSheet('key')"><span class="icon">🎵</span><span class="label">Change Key</span></button>
-                    <button class="sf-quick-btn" onclick="openSheet('genre')"><span class="icon">🎨</span><span class="label">Change Style</span></button>
-                </div>
-                <div class="section-title">Tempo</div>
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md);">
-                    <input type="range" class="fader" min="60" max="200" value="120" id="sfTempoSlider" style="flex:1;">
-                    <span id="sfTempoValue" style="font-size: 18px; font-weight: 700; min-width: 60px;">120 BPM</span>
                 </div>
             </div>
         </div>
-
-        <!-- Panel Overlay -->
         <div class="sf-overlay" id="sfOverlay" onclick="closeAllSFPanels()"></div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════
-         SHARED SHEETS
-         ═══════════════════════════════════════════════════════════════ -->
-    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    <!-- CARD STACK UI -->
+    <div id="cardStackUI" class="ui-container">
+        <div class="cs-header">
+            <div class="cs-logo">🎵 ChordFlow</div>
+            <button class="cs-header-btn" onclick="openSheet('settings')">⚙️</button>
+        </div>
+        <div class="cs-stack-container">
+            <div class="cs-card-stack" id="csCardStack">
+                <!-- Main Card: Progression -->
+                <div class="cs-card main" data-type="progression" onclick="csExpandCard(this)">
+                    <div class="cs-card-header">
+                        <span class="cs-card-icon">🎵</span>
+                        <span class="cs-card-label">Progression</span>
+                        <button class="cs-card-close" onclick="event.stopPropagation(); csCollapseCard()">✕</button>
+                    </div>
+                    <div class="cs-card-body">
+                        <div class="cs-progression-display">
+                            <div class="cs-big-chord" id="csBigChord">Am</div>
+                            <div class="cs-chord-info" id="csChordInfo">A minor • 1 of 4</div>
+                            <div class="cs-mini-chords" id="csMiniChords"></div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Peek Card 1: AI -->
+                <div class="cs-card peek-1" data-type="ai" onclick="csExpandCard(this)">
+                    <div class="cs-card-header">
+                        <span class="cs-card-icon">✨</span>
+                        <span class="cs-card-label">AI Tools</span>
+                        <button class="cs-card-close" onclick="event.stopPropagation(); csCollapseCard()">✕</button>
+                    </div>
+                    <div class="cs-card-body">
+                        <div class="cs-tool-grid">
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); aiGenerate('smart')"><span class="icon">✨</span><span class="label">AI Magic</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peek Card 2: Mixer -->
+                <div class="cs-card peek-2" data-type="mixer" onclick="csExpandCard(this)">
+                    <div class="cs-card-header">
+                        <span class="cs-card-icon">🎚️</span>
+                        <span class="cs-card-label">Mixer</span>
+                        <button class="cs-card-close" onclick="event.stopPropagation(); csCollapseCard()">✕</button>
+                    </div>
+                    <div class="cs-card-body">
+                        <div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="80"><span class="fader-value">80%</span></div></div>
+                        <div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="70"><span class="fader-value">70%</span></div></div>
+                    </div>
+                </div>
+
+                <!-- Peek Card 3: Export -->
+                <div class="cs-card peek-3" data-type="export" onclick="csExpandCard(this)">
+                    <div class="cs-card-header">
+                        <span class="cs-card-icon">💾</span>
+                        <span class="cs-card-label">Export</span>
+                        <button class="cs-card-close" onclick="event.stopPropagation(); csCollapseCard()">✕</button>
+                    </div>
+                    <div class="cs-card-body">
+                        <div class="cs-tool-grid">
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); showToast('🎹 MIDI coming!')"><span class="icon">🎹</span><span class="label">MIDI</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); showToast('🎵 WAV coming!')"><span class="icon">🎵</span><span class="label">WAV</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); showToast('📀 MP3 coming!')"><span class="icon">📀</span><span class="label">MP3</span></div>
+                            <div class="cs-tool-item" onclick="event.stopPropagation(); showToast('📄 PDF coming!')"><span class="icon">📄</span><span class="label">PDF</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cs-transport">
+            <button class="cs-transport-btn" onclick="openSheet('instrument')">🎹</button>
+            <button class="cs-transport-btn" onclick="stopPlayback()">⏹️</button>
+            <button class="cs-transport-btn play" onclick="togglePlay()" id="csPlayBtn">▶️</button>
+            <button class="cs-transport-btn" onclick="toggleLoop()" id="csLoopBtn">🔁</button>
+            <button class="cs-transport-btn" onclick="openSheet('tempo')">⏱️</button>
+        </div>
+    </div>
+
+    <!-- SHARED SHEETS -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    
     <div class="bottom-sheet" id="instrumentSheet">
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
@@ -490,10 +513,7 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">⏱️ Tempo</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
-            <div style="text-align: center; padding: 20px 0;">
-                <div style="font-size: 64px; font-weight: 800;" id="tempoLarge">120</div>
-                <div style="color: var(--text-secondary);">BPM</div>
-            </div>
+            <div style="text-align: center; padding: 20px 0;"><div style="font-size: 64px; font-weight: 800;" id="tempoLarge">120</div><div style="color: var(--text-secondary);">BPM</div></div>
             <input type="range" class="fader" min="60" max="200" value="120" id="tempoSlider" style="width: 100%; margin: 20px 0;">
             <div style="display: flex; gap: 10px;">
                 <button class="action-btn secondary" onclick="setTempo(80)" style="flex:1;">Slow</button>
@@ -510,16 +530,13 @@
             <div class="settings-group">
                 <div class="settings-group-title">Interface</div>
                 <div class="settings-card">
-                    <div class="settings-item" onclick="openSheet('uiMode')">
-                        <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
-                        <span style="color: var(--text-secondary);" id="currentUILabel">Dual Mode ›</span>
-                    </div>
+                    <div class="settings-item" onclick="openSheet('uiMode')"><div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div><span style="color: var(--text-secondary);" id="currentUILabel">Dual Mode ›</span></div>
                 </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">About</div>
                 <div class="settings-card">
-                    <div class="settings-item"><div class="settings-label"><span class="settings-icon">ℹ️</span><span>Version</span></div><span style="color: var(--text-secondary);">0.53</span></div>
+                    <div class="settings-item"><div class="settings-label"><span class="settings-icon">ℹ️</span><span>Version</span></div><span style="color: var(--text-secondary);">0.54</span></div>
                 </div>
             </div>
         </div>
@@ -530,30 +547,9 @@
         <div class="sheet-header"><div class="sheet-title">🎨 UI Mode</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
             <div class="option-list">
-                <div class="option-item" id="uiModeDual" onclick="switchUIMode('dual')">
-                    <span class="option-icon">📱</span>
-                    <div class="option-text">
-                        <div class="option-title">Dual Mode</div>
-                        <div class="option-desc">Create & Produce toggle (Default)</div>
-                    </div>
-                    <span class="option-check">✓</span>
-                </div>
-                <div class="option-item" id="uiModeSheet" onclick="switchUIMode('sheet')">
-                    <span class="option-icon">📄</span>
-                    <div class="option-text">
-                        <div class="option-title">Sheet Flow</div>
-                        <div class="option-desc">Gesture-based, sliding panels</div>
-                    </div>
-                    <span class="option-check">✓</span>
-                </div>
-                <div class="option-item" style="opacity: 0.5; cursor: not-allowed;">
-                    <span class="option-icon">🃏</span>
-                    <div class="option-text">
-                        <div class="option-title">Card Stack</div>
-                        <div class="option-desc">Coming in v0.54</div>
-                    </div>
-                    <span class="option-check">✓</span>
-                </div>
+                <div class="option-item" id="uiModeDual" onclick="switchUIMode('dual')"><span class="option-icon">📱</span><div class="option-text"><div class="option-title">Dual Mode</div><div class="option-desc">Create & Produce toggle</div></div><span class="option-check">✓</span></div>
+                <div class="option-item" id="uiModeSheet" onclick="switchUIMode('sheet')"><span class="option-icon">📄</span><div class="option-text"><div class="option-title">Sheet Flow</div><div class="option-desc">Gesture-based panels</div></div><span class="option-check">✓</span></div>
+                <div class="option-item" id="uiModeCards" onclick="switchUIMode('cards')"><span class="option-icon">🃏</span><div class="option-text"><div class="option-title">Card Stack</div><div class="option-desc">Tinder-style cards</div></div><span class="option-check">✓</span></div>
             </div>
         </div>
     </div>
@@ -562,106 +558,65 @@
 
     <script>
         // ═══════════════════════════════════════════════════════════════
-        // CHORDFLOW v0.53 - MULTI-UI SYSTEM
+        // CHORDFLOW v0.54 - TRIPLE UI SYSTEM
         // ═══════════════════════════════════════════════════════════════
 
-        // STATE
         const state = {
             uiMode: localStorage.getItem('chordflow-ui') || 'dual',
-            mode: 'create',
-            produceTab: 'mixer',
-            tempo: 120,
-            key: 'C',
-            genre: 'pop',
-            isPlaying: false,
-            isLooping: true,
-            progression: ['Am', 'F', 'C', 'G'],
-            currentChordIndex: 0,
-            instrument: 'grand-piano',
-            playInterval: null
+            mode: 'create', produceTab: 'mixer', tempo: 120, key: 'C', genre: 'pop',
+            isPlaying: false, isLooping: true, progression: ['Am', 'F', 'C', 'G'],
+            currentChordIndex: 0, instrument: 'grand-piano', playInterval: null
         };
 
         const keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const genres = [
-            { id: 'pop', name: 'Pop', icon: '🎤' },
-            { id: 'rock', name: 'Rock', icon: '🎸' },
-            { id: 'jazz', name: 'Jazz', icon: '🎷' },
-            { id: 'electronic', name: 'Electronic', icon: '🎧' },
-            { id: 'classical', name: 'Classical', icon: '🎻' },
-            { id: 'rnb', name: 'R&B', icon: '🎹' }
-        ];
-        const instruments = [
-            { id: 'grand-piano', name: 'Grand Piano', icon: '🎹' },
-            { id: 'electric-piano', name: 'Electric Piano', icon: '🎹' },
-            { id: 'organ', name: 'Organ', icon: '🎛️' },
-            { id: 'synth-pad', name: 'Synth Pad', icon: '🎧' },
-            { id: 'acoustic-guitar', name: 'Acoustic Guitar', icon: '🎸' },
-            { id: 'strings', name: 'Strings', icon: '🎻' }
-        ];
+        const genres = [{ id: 'pop', name: 'Pop', icon: '🎤' }, { id: 'rock', name: 'Rock', icon: '🎸' }, { id: 'jazz', name: 'Jazz', icon: '🎷' }, { id: 'electronic', name: 'Electronic', icon: '🎧' }];
+        const instruments = [{ id: 'grand-piano', name: 'Grand Piano', icon: '🎹' }, { id: 'electric-piano', name: 'Electric Piano', icon: '🎹' }, { id: 'synth-pad', name: 'Synth Pad', icon: '🎧' }, { id: 'acoustic-guitar', name: 'Acoustic Guitar', icon: '🎸' }, { id: 'strings', name: 'Strings', icon: '🎻' }];
 
         // AUDIO
         let audioInit = false, mainSynth = null;
         async function initAudio() {
             if (audioInit) return;
             await Tone.start();
-            mainSynth = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: 'triangle8' },
-                envelope: { attack: 0.02, decay: 0.8, sustain: 0.4, release: 1.2 }
-            }).toDestination();
+            mainSynth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'triangle8' }, envelope: { attack: 0.02, decay: 0.8, sustain: 0.4, release: 1.2 } }).toDestination();
             mainSynth.volume.value = -6;
             audioInit = true;
         }
 
-        const chordNotes = {
-            'C': ['C4', 'E4', 'G4'], 'Cm': ['C4', 'Eb4', 'G4'],
-            'D': ['D4', 'F#4', 'A4'], 'Dm': ['D4', 'F4', 'A4'],
-            'E': ['E4', 'G#4', 'B4'], 'Em': ['E4', 'G4', 'B4'],
-            'F': ['F4', 'A4', 'C5'], 'Fm': ['F4', 'Ab4', 'C5'],
-            'G': ['G4', 'B4', 'D5'], 'Gm': ['G4', 'Bb4', 'D5'],
-            'A': ['A4', 'C#5', 'E5'], 'Am': ['A4', 'C5', 'E5'],
-            'B': ['B4', 'D#5', 'F#5'], 'Bm': ['B4', 'D5', 'F#5']
-        };
+        const chordNotes = { 'C': ['C4','E4','G4'], 'Cm': ['C4','Eb4','G4'], 'D': ['D4','F#4','A4'], 'Dm': ['D4','F4','A4'], 'E': ['E4','G#4','B4'], 'Em': ['E4','G4','B4'], 'F': ['F4','A4','C5'], 'Fm': ['F4','Ab4','C5'], 'G': ['G4','B4','D5'], 'Gm': ['G4','Bb4','D5'], 'A': ['A4','C#5','E5'], 'Am': ['A4','C5','E5'], 'B': ['B4','D#5','F#5'], 'Bm': ['B4','D5','F#5'] };
 
         async function playChord(chord, duration = '2n') {
             await initAudio();
-            const notes = chordNotes[chord] || chordNotes['C'];
-            mainSynth.triggerAttackRelease(notes, duration);
-            haptic();
+            mainSynth.triggerAttackRelease(chordNotes[chord] || chordNotes['C'], duration);
+            if (navigator.vibrate) navigator.vibrate(10);
         }
 
-        function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
-
-        // ═══════════════════════════════════════════════════════════════
         // UI MODE SWITCHING
-        // ═══════════════════════════════════════════════════════════════
-
         function switchUIMode(mode) {
             state.uiMode = mode;
             localStorage.setItem('chordflow-ui', mode);
-            
             document.querySelectorAll('.ui-container').forEach(c => c.classList.remove('active'));
-            document.getElementById(mode === 'dual' ? 'dualModeUI' : 'sheetFlowUI').classList.add('active');
+            const uiMap = { dual: 'dualModeUI', sheet: 'sheetFlowUI', cards: 'cardStackUI' };
+            document.getElementById(uiMap[mode]).classList.add('active');
             
             document.getElementById('uiModeDual').classList.toggle('selected', mode === 'dual');
             document.getElementById('uiModeSheet').classList.toggle('selected', mode === 'sheet');
-            document.getElementById('currentUILabel').textContent = mode === 'dual' ? 'Dual Mode ›' : 'Sheet Flow ›';
+            document.getElementById('uiModeCards').classList.toggle('selected', mode === 'cards');
             
-            if (mode === 'sheet') renderSheetFlowUI();
+            const labels = { dual: 'Dual Mode ›', sheet: 'Sheet Flow ›', cards: 'Card Stack ›' };
+            document.getElementById('currentUILabel').textContent = labels[mode];
+            
+            renderAll();
             closeSheet();
-            showToast(mode === 'dual' ? '📱 Dual Mode' : '📄 Sheet Flow');
+            showToast({ dual: '📱 Dual Mode', sheet: '📄 Sheet Flow', cards: '🃏 Card Stack' }[mode]);
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // DUAL MODE UI
-        // ═══════════════════════════════════════════════════════════════
-
+        // DUAL MODE
         function setMode(mode) {
             state.mode = mode;
             document.getElementById('createModeBtn').classList.toggle('active', mode === 'create');
             document.getElementById('produceModeBtn').classList.toggle('active', mode === 'produce');
             document.getElementById('createView').classList.toggle('active', mode === 'create');
             document.getElementById('produceView').classList.toggle('active', mode === 'produce');
-            haptic();
         }
 
         function setProduceTab(tab) {
@@ -670,7 +625,6 @@
             document.querySelectorAll('.produce-panel').forEach(p => p.classList.remove('active'));
             document.querySelector(`.produce-tab[onclick*="${tab}"]`).classList.add('active');
             document.getElementById(`${tab}Panel`).classList.add('active');
-            haptic();
         }
 
         function renderChords() {
@@ -685,144 +639,76 @@
             `).join('');
         }
 
-        async function playChordAtIndex(index) {
-            state.currentChordIndex = index;
-            renderAll();
-            await playChord(state.progression[index], '4n');
-        }
+        async function playChordAtIndex(i) { state.currentChordIndex = i; renderAll(); await playChord(state.progression[i], '4n'); }
 
-        // ═══════════════════════════════════════════════════════════════
-        // SHEET FLOW UI
-        // ═══════════════════════════════════════════════════════════════
-
+        // SHEET FLOW
         function renderSheetFlowUI() {
-            renderSFChordDisplay();
-            renderSFChordStrip();
-            renderSFInstruments();
-        }
-
-        function renderSFChordDisplay() {
             const chord = state.progression[state.currentChordIndex] || 'C';
             const el = document.getElementById('sfCurrentChord');
+            if (el) { el.textContent = chord; el.classList.toggle('playing', state.isPlaying); }
             const label = document.getElementById('sfChordLabel');
-            if (el) {
-                el.textContent = chord;
-                el.classList.toggle('playing', state.isPlaying);
-            }
-            if (label) {
-                const type = chord.includes('m') ? 'minor' : 'major';
-                const root = chord.replace('m', '');
-                label.textContent = `${root} ${type} • Chord ${state.currentChordIndex + 1} of ${state.progression.length}`;
-            }
-        }
-
-        function renderSFChordStrip() {
-            const strip = document.getElementById('sfChordStrip');
-            if (!strip) return;
-            strip.innerHTML = state.progression.map((chord, i) => `
-                <div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})">
-                    <div class="sf-strip-name">${chord}</div>
-                    <div class="sf-strip-num">${i + 1}</div>
-                </div>
-            `).join('');
-        }
-
-        function sfSelectChord(index) {
-            state.currentChordIndex = index;
-            renderSFChordDisplay();
-            renderSFChordStrip();
-            playChord(state.progression[index], '4n');
-        }
-
-        function renderSFInstruments() {
-            const list = document.getElementById('sfInstrumentList');
-            if (!list) return;
-            list.innerHTML = instruments.map(inst => `
-                <div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')">
-                    <span class="sf-instrument-icon">${inst.icon}</span>
-                    <span class="sf-instrument-name">${inst.name}</span>
-                    <span class="sf-instrument-check">✓</span>
-                </div>
-            `).join('');
-        }
-
-        function sfSelectInstrument(id) {
-            state.instrument = id;
-            renderSFInstruments();
-            const inst = instruments.find(i => i.id === id);
-            showToast(`${inst.icon} ${inst.name}`);
-            closeSFPanel('left');
-        }
-
-        // Sheet Flow Panels
-        function openSFPanel(side) {
-            document.getElementById('sfOverlay').classList.add('active');
-            document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel').classList.add('open');
-            haptic();
-        }
-
-        function closeSFPanel(side) {
-            document.getElementById('sfOverlay').classList.remove('active');
-            document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel').classList.remove('open');
-        }
-
-        function closeAllSFPanels() {
-            document.getElementById('sfOverlay').classList.remove('active');
-            document.getElementById('sfLeftPanel').classList.remove('open');
-            document.getElementById('sfRightPanel').classList.remove('open');
-            document.getElementById('sfDrawer').classList.remove('open');
-        }
-
-        function toggleSFDrawer() {
-            document.getElementById('sfDrawer').classList.toggle('open');
-            haptic();
-        }
-
-        // Sheet Flow Gestures
-        let sfTouchStartX = 0, sfTouchStartY = 0;
-        function initSFGestures() {
-            const canvas = document.getElementById('sfCanvas');
-            if (!canvas) return;
+            if (label) label.textContent = `${chord.replace('m','')} ${chord.includes('m')?'minor':'major'} • Chord ${state.currentChordIndex+1} of ${state.progression.length}`;
             
-            canvas.addEventListener('touchstart', e => {
-                sfTouchStartX = e.touches[0].clientX;
-                sfTouchStartY = e.touches[0].clientY;
-            }, { passive: true });
-
-            canvas.addEventListener('touchend', e => {
-                const dx = e.changedTouches[0].clientX - sfTouchStartX;
-                const dy = e.changedTouches[0].clientY - sfTouchStartY;
-                
-                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 80) {
-                    if (dx > 0) openSFPanel('left');
-                    else openSFPanel('right');
-                }
-            }, { passive: true });
-
-            // Drawer handle
-            const handle = document.getElementById('sfDrawerHandle');
-            if (handle) {
-                handle.addEventListener('click', toggleSFDrawer);
-            }
+            const strip = document.getElementById('sfChordStrip');
+            if (strip) strip.innerHTML = state.progression.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${c}</div><div class="sf-strip-num">${i+1}</div></div>`).join('');
+            
+            const list = document.getElementById('sfInstrumentList');
+            if (list) list.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // SHARED FUNCTIONS
-        // ═══════════════════════════════════════════════════════════════
+        function sfSelectChord(i) { state.currentChordIndex = i; renderAll(); playChord(state.progression[i], '4n'); }
+        function sfSelectInstrument(id) { state.instrument = id; renderSheetFlowUI(); closeSFPanel('left'); showToast(`${instruments.find(i=>i.id===id).icon} ${instruments.find(i=>i.id===id).name}`); }
+        function openSFPanel(side) { document.getElementById('sfOverlay').classList.add('active'); document.getElementById(side==='left'?'sfLeftPanel':'sfRightPanel').classList.add('open'); }
+        function closeSFPanel(side) { document.getElementById('sfOverlay').classList.remove('active'); document.getElementById(side==='left'?'sfLeftPanel':'sfRightPanel').classList.remove('open'); }
+        function closeAllSFPanels() { document.getElementById('sfOverlay').classList.remove('active'); document.querySelectorAll('.sf-panel').forEach(p => p.classList.remove('open')); document.getElementById('sfDrawer').classList.remove('open'); }
+        function toggleSFDrawer() { document.getElementById('sfDrawer').classList.toggle('open'); }
 
+        // CARD STACK
+        function renderCardStackUI() {
+            const chord = state.progression[state.currentChordIndex] || 'C';
+            document.getElementById('csBigChord').textContent = chord;
+            document.getElementById('csChordInfo').textContent = `${chord.replace('m','')} ${chord.includes('m')?'minor':'major'} • ${state.currentChordIndex+1} of ${state.progression.length}`;
+            document.getElementById('csMiniChords').innerHTML = state.progression.map((c, i) => `<div class="cs-mini-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="csSelectChord(${i})">${c}</div>`).join('');
+        }
+
+        function csSelectChord(i) { state.currentChordIndex = i; renderAll(); playChord(state.progression[i], '4n'); }
+
+        let csExpandedCard = null;
+        function csExpandCard(card) {
+            if (csExpandedCard) return;
+            csExpandedCard = card;
+            card.classList.add('expanded');
+        }
+        function csCollapseCard() {
+            if (csExpandedCard) { csExpandedCard.classList.remove('expanded'); csExpandedCard = null; }
+        }
+
+        // Pull down to fan cards
+        let csTouchStartY = 0;
+        function initCSGestures() {
+            const stack = document.getElementById('csCardStack');
+            if (!stack) return;
+            stack.addEventListener('touchstart', e => { csTouchStartY = e.touches[0].clientY; }, { passive: true });
+            stack.addEventListener('touchmove', e => {
+                const dy = e.touches[0].clientY - csTouchStartY;
+                if (dy > 50 && !csExpandedCard) stack.classList.add('fanned');
+            }, { passive: true });
+            stack.addEventListener('touchend', () => { document.getElementById('csCardStack').classList.remove('fanned'); }, { passive: true });
+        }
+
+        // SHARED
         async function togglePlay() {
             await initAudio();
             state.isPlaying = !state.isPlaying;
-            
-            // Update both UIs
-            const btn = document.getElementById('playBtn');
-            const sfIcon = document.getElementById('sfPlayIcon');
-            if (btn) { btn.textContent = state.isPlaying ? '⏸️' : '▶️'; btn.classList.toggle('playing', state.isPlaying); }
-            if (sfIcon) sfIcon.textContent = state.isPlaying ? '⏸️' : '▶️';
-            
-            if (state.isPlaying) startPlayback();
-            else stopPlayback();
-            haptic();
+            updatePlayButtons();
+            if (state.isPlaying) startPlayback(); else stopPlayback();
+        }
+
+        function updatePlayButtons() {
+            const icon = state.isPlaying ? '⏸️' : '▶️';
+            ['playBtn', 'sfPlayIcon', 'csPlayBtn'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = icon; });
+            document.getElementById('playBtn')?.classList.toggle('playing', state.isPlaying);
+            document.getElementById('csPlayBtn')?.classList.toggle('playing', state.isPlaying);
         }
 
         function startPlayback() {
@@ -835,68 +721,44 @@
             }, interval);
         }
 
-        function playCurrentChord() {
-            renderAll();
-            playChord(state.progression[state.currentChordIndex], '2n');
-        }
+        function playCurrentChord() { renderAll(); playChord(state.progression[state.currentChordIndex], '2n'); }
 
         function stopPlayback() {
             state.isPlaying = false;
             clearInterval(state.playInterval);
-            const btn = document.getElementById('playBtn');
-            const sfIcon = document.getElementById('sfPlayIcon');
-            if (btn) { btn.textContent = '▶️'; btn.classList.remove('playing'); }
-            if (sfIcon) sfIcon.textContent = '▶️';
+            updatePlayButtons();
             renderAll();
         }
 
         function toggleLoop() {
             state.isLooping = !state.isLooping;
             document.getElementById('loopBtn')?.classList.toggle('active', state.isLooping);
+            document.getElementById('csLoopBtn')?.classList.toggle('active', state.isLooping);
             showToast(state.isLooping ? '🔁 Loop ON' : '🔁 Loop OFF');
-            haptic();
         }
 
         function generateProgression() {
-            const progressions = {
-                pop: [['C', 'G', 'Am', 'F'], ['Am', 'F', 'C', 'G'], ['G', 'D', 'Em', 'C']],
-                rock: [['A', 'D', 'E', 'A'], ['E', 'A', 'D', 'E'], ['G', 'C', 'D', 'G']],
-                jazz: [['Dm', 'G', 'C', 'Am'], ['Am', 'D', 'G', 'C']],
-                electronic: [['Am', 'Em', 'F', 'G'], ['Dm', 'Am', 'Em', 'G']],
-                classical: [['C', 'Am', 'F', 'G'], ['G', 'Em', 'C', 'D']],
-                rnb: [['Cm', 'Ab', 'Bb', 'Gm'], ['Dm', 'G', 'C', 'Am']]
-            };
-            const options = progressions[state.genre] || progressions.pop;
-            state.progression = options[Math.floor(Math.random() * options.length)];
+            const progs = { pop: [['C','G','Am','F'],['Am','F','C','G']], rock: [['A','D','E','A'],['G','C','D','G']], jazz: [['Dm','G','C','Am']], electronic: [['Am','Em','F','G']] };
+            const opts = progs[state.genre] || progs.pop;
+            state.progression = opts[Math.floor(Math.random() * opts.length)];
             state.currentChordIndex = 0;
             renderAll();
             showToast('🎲 New progression!');
-            haptic();
         }
 
         async function aiGenerate(type) {
-            showToast(`✨ Generating ${type}...`);
-            haptic();
+            showToast(`✨ Generating...`);
             setTimeout(() => {
-                if (type === 'enhance') {
-                    state.progression = state.progression.map(c => Math.random() > 0.5 ? c + '7' : c);
-                    renderAll();
-                    showToast('💎 Enhanced!');
-                } else {
-                    generateProgression();
-                }
+                if (type === 'enhance') state.progression = state.progression.map(c => Math.random() > 0.5 ? c + '7' : c);
+                else generateProgression();
+                renderAll();
+                showToast(type === 'enhance' ? '💎 Enhanced!' : '✨ Done!');
             }, 500);
         }
 
-        function renderAll() {
-            renderChords();
-            if (state.uiMode === 'sheet') {
-                renderSFChordDisplay();
-                renderSFChordStrip();
-            }
-        }
+        function renderAll() { renderChords(); renderSheetFlowUI(); renderCardStackUI(); }
 
-        // Sheets
+        // SHEETS
         function openSheet(type) {
             closeSheet();
             document.getElementById('sheetOverlay').classList.add('active');
@@ -904,7 +766,6 @@
             if (type === 'instrument') renderInstrumentOptions();
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
-            haptic();
         }
 
         function closeSheet() {
@@ -913,120 +774,54 @@
         }
 
         function renderInstrumentOptions() {
-            document.getElementById('instrumentList').innerHTML = instruments.map(inst => `
-                <div class="option-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="selectInstrument('${inst.id}')">
-                    <span class="option-icon">${inst.icon}</span>
-                    <div class="option-text"><div class="option-title">${inst.name}</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-            `).join('');
+            document.getElementById('instrumentList').innerHTML = instruments.map(inst => `<div class="option-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="selectInstrument('${inst.id}')"><span class="option-icon">${inst.icon}</span><div class="option-text"><div class="option-title">${inst.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-
-        function selectInstrument(id) {
-            state.instrument = id;
-            const inst = instruments.find(i => i.id === id);
-            document.getElementById('instrumentBtn').textContent = inst.icon;
-            showToast(`${inst.icon} ${inst.name}`);
-            closeSheet();
-        }
+        function selectInstrument(id) { state.instrument = id; document.getElementById('instrumentBtn').textContent = instruments.find(i=>i.id===id).icon; closeSheet(); showToast(`${instruments.find(i=>i.id===id).icon} ${instruments.find(i=>i.id===id).name}`); }
 
         function renderKeyOptions() {
-            document.getElementById('keyList').innerHTML = keys.map(key => `
-                <div class="option-item ${state.key === key ? 'selected' : ''}" onclick="selectKey('${key}')">
-                    <span class="option-icon">🎵</span>
-                    <div class="option-text"><div class="option-title">${key} Major</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-            `).join('');
+            document.getElementById('keyList').innerHTML = keys.map(key => `<div class="option-item ${state.key === key ? 'selected' : ''}" onclick="selectKey('${key}')"><span class="option-icon">🎵</span><div class="option-text"><div class="option-title">${key} Major</div></div><span class="option-check">✓</span></div>`).join('');
         }
-
-        function selectKey(key) {
-            state.key = key;
-            document.getElementById('keyDisplay').textContent = `${key} Major`;
-            closeSheet();
-        }
+        function selectKey(key) { state.key = key; document.getElementById('keyDisplay').textContent = `${key} Major`; closeSheet(); }
 
         function renderGenreOptions() {
-            document.getElementById('genreList').innerHTML = genres.map(genre => `
-                <div class="option-item ${state.genre === genre.id ? 'selected' : ''}" onclick="selectGenre('${genre.id}')">
-                    <span class="option-icon">${genre.icon}</span>
-                    <div class="option-text"><div class="option-title">${genre.name}</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-            `).join('');
+            document.getElementById('genreList').innerHTML = genres.map(g => `<div class="option-item ${state.genre === g.id ? 'selected' : ''}" onclick="selectGenre('${g.id}')"><span class="option-icon">${g.icon}</span><div class="option-text"><div class="option-title">${g.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-
-        function selectGenre(id) {
-            state.genre = id;
-            const genre = genres.find(g => g.id === id);
-            document.getElementById('genreDisplay').textContent = genre.name;
-            generateProgression();
-            closeSheet();
-        }
+        function selectGenre(id) { state.genre = id; document.getElementById('genreDisplay').textContent = genres.find(g=>g.id===id).name; generateProgression(); closeSheet(); }
 
         function setTempo(bpm) {
             state.tempo = bpm;
-            document.getElementById('tempoValue').textContent = bpm;
-            document.getElementById('tempoLarge').textContent = bpm;
+            ['tempoValue', 'tempoLarge'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = bpm; });
             document.getElementById('tempoSlider').value = bpm;
-            if (document.getElementById('sfTempoSlider')) {
-                document.getElementById('sfTempoSlider').value = bpm;
-                document.getElementById('sfTempoValue').textContent = bpm + ' BPM';
-            }
-            haptic();
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
-        }
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
 
         // Event Listeners
         document.getElementById('tempoSlider')?.addEventListener('input', e => setTempo(parseInt(e.target.value)));
-        document.getElementById('sfTempoSlider')?.addEventListener('input', e => setTempo(parseInt(e.target.value)));
-        document.querySelectorAll('.fader').forEach(f => f.addEventListener('input', e => {
-            const v = e.target.nextElementSibling;
-            if (v && v.classList.contains('fader-value')) v.textContent = e.target.value + '%';
-        }));
+        document.querySelectorAll('.fader').forEach(f => f.addEventListener('input', e => { const v = e.target.nextElementSibling; if (v?.classList.contains('fader-value')) v.textContent = e.target.value + '%'; }));
+        document.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; if (e.code === 'Space') { e.preventDefault(); togglePlay(); } if (e.code === 'KeyG') generateProgression(); });
 
-        // Keyboard
-        document.addEventListener('keydown', e => {
-            if (e.target.tagName === 'INPUT') return;
-            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-            if (e.code === 'KeyG') generateProgression();
-        });
-
-        // Swipe for Dual Mode
-        let touchStartX = 0;
-        document.addEventListener('touchstart', e => touchStartX = e.touches[0].clientX, { passive: true });
-        document.addEventListener('touchend', e => {
-            if (state.uiMode !== 'dual') return;
-            const diff = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(diff) > 80) {
-                if (state.mode === 'create' && diff < 0) setMode('produce');
-                if (state.mode === 'produce' && diff > 0) setMode('create');
-            }
+        // SF Gestures
+        let sfTouchStartX = 0;
+        document.getElementById('sfCanvas')?.addEventListener('touchstart', e => sfTouchStartX = e.touches[0].clientX, { passive: true });
+        document.getElementById('sfCanvas')?.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - sfTouchStartX;
+            if (Math.abs(dx) > 80) { if (dx > 0) openSFPanel('left'); else openSFPanel('right'); }
         }, { passive: true });
 
         // INIT
         function init() {
-            // Apply saved UI mode
-            if (state.uiMode === 'sheet') {
-                document.getElementById('dualModeUI').classList.remove('active');
-                document.getElementById('sheetFlowUI').classList.add('active');
-                document.getElementById('uiModeDual').classList.remove('selected');
-                document.getElementById('uiModeSheet').classList.add('selected');
-                document.getElementById('currentUILabel').textContent = 'Sheet Flow ›';
-            } else {
-                document.getElementById('uiModeDual').classList.add('selected');
-            }
+            const uiMap = { dual: 'dualModeUI', sheet: 'sheetFlowUI', cards: 'cardStackUI' };
+            document.querySelectorAll('.ui-container').forEach(c => c.classList.remove('active'));
+            document.getElementById(uiMap[state.uiMode]).classList.add('active');
+            document.getElementById('uiModeDual').classList.toggle('selected', state.uiMode === 'dual');
+            document.getElementById('uiModeSheet').classList.toggle('selected', state.uiMode === 'sheet');
+            document.getElementById('uiModeCards').classList.toggle('selected', state.uiMode === 'cards');
+            document.getElementById('currentUILabel').textContent = { dual: 'Dual Mode ›', sheet: 'Sheet Flow ›', cards: 'Card Stack ›' }[state.uiMode];
             
-            renderChords();
-            renderSheetFlowUI();
-            initSFGestures();
-            console.log('🎵 ChordFlow v0.53 - Multi-UI System');
+            renderAll();
+            initCSGestures();
+            console.log('🎵 ChordFlow v0.54 - Triple UI System');
         }
 
         init();
