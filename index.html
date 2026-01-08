@@ -191,7 +191,8 @@
         
         /* SHEET MUSIC */
         .sheet-panel { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(168, 85, 247, 0.1)); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-        .sheet-preview { background: white; border-radius: 8px; padding: 20px; margin-bottom: 12px; min-height: 150px; }
+        .sheet-preview { background: white; border-radius: 8px; padding: 20px; margin-bottom: 12px; min-height: 180px; overflow: hidden; }
+        .sheet-preview canvas { width: 100%; height: 180px; display: block; }
         .staff-line { height: 1px; background: #333; margin: 8px 0; }
         .notation-area { display: flex; align-items: center; gap: 15px; padding: 15px 0; overflow-x: auto; }
         .clef { font-size: 40px; color: #333; }
@@ -471,20 +472,13 @@
     <div class="tab-content" id="sheet-tab">
         <div class="sheet-panel">
             <div class="section-title">📜 Sheet Music Preview</div>
-            <div class="sheet-preview">
-                <div class="notation-area" id="notationArea">
-                    <div class="clef">𝄞</div>
-                    <div class="time-sig-display"><span>4</span><span>4</span></div>
-                </div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
-                <div class="staff-line"></div>
+            <div class="sheet-preview" id="sheetPreview">
+                <canvas id="sheetCanvas" width="600" height="200"></canvas>
             </div>
             
             <div class="sheet-btns">
                 <button class="sheet-btn" onclick="exportSheetPDF()"><span class="icon">📄</span><span>PDF</span></button>
+                <button class="sheet-btn" onclick="exportSheetPNG()"><span class="icon">🖼️</span><span>PNG</span></button>
                 <button class="sheet-btn" onclick="printSheet()"><span class="icon">🖨️</span><span>Print</span></button>
             </div>
         </div>
@@ -494,7 +488,7 @@
             <div class="controls-row">
                 <div class="control-group">
                     <div class="control-label">Display</div>
-                    <select class="control-select" id="notationDisplay" onchange="updateNotation()">
+                    <select class="control-select" id="notationDisplay" onchange="renderSheetMusic()">
                         <option value="chords">Chord Symbols</option>
                         <option value="roman">Roman Numerals</option>
                         <option value="both">Both</option>
@@ -502,7 +496,7 @@
                 </div>
                 <div class="control-group">
                     <div class="control-label">Size</div>
-                    <select class="control-select" id="notationSize" onchange="updateNotation()">
+                    <select class="control-select" id="notationSize" onchange="renderSheetMusic()">
                         <option value="small">Small</option>
                         <option value="medium" selected>Medium</option>
                         <option value="large">Large</option>
@@ -772,17 +766,120 @@
             document.getElementById('quickPianoKeys').innerHTML = quickNotes.map(note => `<div class="instrument-card" onclick="playPianoKey('${note}')"><div class="icon">🎹</div><div class="name">${note}</div></div>`).join('');
         }
 
-        // SHEET MUSIC
-        function updateNotation() {
-            const display = document.getElementById('notationDisplay').value;
-            const size = document.getElementById('notationSize').value;
-            const sizeMap = { small: '14px', medium: '18px', large: '24px' };
-            let html = `<div class="clef">𝄞</div><div class="time-sig-display"><span>${state.timeSignature}</span><span>4</span></div>`;
-            state.progression.forEach(chord => {
+        // SHEET MUSIC - Canvas Rendering
+        function renderSheetMusic() {
+            const canvas = document.getElementById('sheetCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const display = document.getElementById('notationDisplay')?.value || 'chords';
+            const size = document.getElementById('notationSize')?.value || 'medium';
+            const sizeMap = { small: 16, medium: 22, large: 28 };
+            const fontSize = sizeMap[size];
+            
+            // Set canvas size based on container
+            const container = canvas.parentElement;
+            canvas.width = container.offsetWidth - 40 || 560;
+            canvas.height = 180;
+            
+            // Clear canvas
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw staff lines
+            const staffY = 90;
+            const lineSpacing = 10;
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(20, staffY + i * lineSpacing);
+                ctx.lineTo(canvas.width - 20, staffY + i * lineSpacing);
+                ctx.stroke();
+            }
+            
+            // Draw treble clef
+            ctx.fillStyle = '#333333';
+            ctx.font = 'bold 60px serif';
+            ctx.fillText('𝄞', 25, staffY + 38);
+            
+            // Draw time signature
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText(state.timeSignature.toString(), 80, staffY + 15);
+            ctx.fillText('4', 80, staffY + 38);
+            
+            // Draw bar line after time signature
+            ctx.beginPath();
+            ctx.moveTo(105, staffY);
+            ctx.lineTo(105, staffY + 40);
+            ctx.stroke();
+            
+            // Draw chord symbols
+            const startX = 120;
+            const chordSpacing = (canvas.width - startX - 40) / state.progression.length;
+            
+            ctx.font = `bold ${fontSize}px Arial`;
+            state.progression.forEach((chord, i) => {
+                const x = startX + i * chordSpacing + chordSpacing / 2;
                 const roman = numerals[chord] || '';
-                html += `<div class="chord-symbol" style="font-size:${sizeMap[size]}">${display === 'roman' ? roman : chord}${display === 'both' ? `<span class="roman">${roman}</span>` : ''}</div>`;
+                
+                // Draw chord name above staff
+                ctx.fillStyle = '#1a1a2e';
+                if (display === 'chords' || display === 'both') {
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(chord, x, staffY - 20);
+                }
+                
+                // Draw roman numeral
+                if (display === 'roman' || display === 'both') {
+                    ctx.font = `${fontSize - 6}px Arial`;
+                    ctx.fillStyle = '#666666';
+                    const romanY = display === 'both' ? staffY - 5 : staffY - 20;
+                    ctx.fillText(roman, x, romanY);
+                }
+                
+                // Draw whole note on staff
+                ctx.fillStyle = '#333333';
+                ctx.beginPath();
+                ctx.ellipse(x, staffY + 20, 8, 6, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Draw bar line after each chord (except last)
+                if (i < state.progression.length - 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + chordSpacing / 2 - 10, staffY);
+                    ctx.lineTo(x + chordSpacing / 2 - 10, staffY + 40);
+                    ctx.stroke();
+                }
             });
-            document.getElementById('notationArea').innerHTML = html;
+            
+            // Draw final double bar line
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 30, staffY);
+            ctx.lineTo(canvas.width - 30, staffY + 40);
+            ctx.stroke();
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 25, staffY);
+            ctx.lineTo(canvas.width - 25, staffY + 40);
+            ctx.stroke();
+            
+            // Draw title
+            ctx.fillStyle = '#333333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Key: ${state.key} | ${state.genre.charAt(0).toUpperCase() + state.genre.slice(1)} | ${state.tempo} BPM`, 20, 25);
+        }
+        
+        function exportSheetPNG() {
+            const canvas = document.getElementById('sheetCanvas');
+            if (!canvas) { showToast('❌ Canvas not found'); return; }
+            const link = document.createElement('a');
+            link.download = `ChordFlow_${state.key}_${state.genre}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('🖼️ PNG downloaded!');
         }
         async function exportSheetPDF() {
             showToast('Generating PDF...');
@@ -892,7 +989,7 @@
         function generateProgression() {
             const genreProgs = progressions[state.genre] || progressions.pop;
             state.progression = genreProgs[state.key] || genreProgs['C'] || ['C', 'G', 'Am', 'F'];
-            renderChords(); updatePlaybackInfo(); updateNotation();
+            renderChords(); updatePlaybackInfo(); renderSheetMusic();
         }
         function renderChords() { document.getElementById('chordGrid').innerHTML = state.progression.map((chord, i) => `<div class="chord-card" onclick="playChord('${chord}', ${i})"><div class="chord-name">${chord}</div><div class="chord-numeral">${numerals[chord] || ''}</div></div>`).join(''); }
         function renderInstruments() { document.getElementById('instrumentList').innerHTML = instruments.map(inst => `<div class="instrument-card ${inst.id === state.currentInstrument ? 'active' : ''}" onclick="selectInstrument('${inst.id}', '${inst.name}', '${inst.icon}')"><div class="icon">${inst.icon}</div><div class="name">${inst.name}</div></div>`).join(''); }
@@ -963,7 +1060,7 @@
             try {
                 const res = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: `Generate a ${state.genre} chord progression in ${state.key}. Return ONLY a JSON array like ["C", "G", "Am", "F"].`, action: type }) });
                 const data = await res.json();
-                if (data.result) { const m = data.result.match(/\[[\s\S]*?\]/); if (m) { const chords = JSON.parse(m[0]).filter(c => chordNotes[c]); if (chords.length) { state.progression = chords; renderChords(); updateNotation(); showToast('✨ AI generated!'); } } }
+                if (data.result) { const m = data.result.match(/\[[\s\S]*?\]/); if (m) { const chords = JSON.parse(m[0]).filter(c => chordNotes[c]); if (chords.length) { state.progression = chords; renderChords(); renderSheetMusic(); showToast('✨ AI generated!'); } } }
             } catch (err) { generateProgression(); showToast('🎲 Random progression'); }
             if (btn) btn.classList.remove('loading');
         }
@@ -975,7 +1072,7 @@
 
         // INIT
         function init() {
-            renderInstruments(); generateProgression(); renderMixer(); renderPianoRoll(); renderQuickPianoKeys(); updateNotation();
+            renderInstruments(); generateProgression(); renderMixer(); renderPianoRoll(); renderQuickPianoKeys(); setTimeout(renderSheetMusic, 100);
             const savedTheme = localStorage.getItem('chordflow-theme');
             if (savedTheme && savedTheme !== 'dark') document.body.classList.add(`theme-${savedTheme}`);
             const savedColors = localStorage.getItem('chordflow-custom-colors');
