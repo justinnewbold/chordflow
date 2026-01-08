@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.1 - Pro Studio</title>
+    <title>ChordFlow v12.2 - AI Studio</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -206,6 +206,50 @@
         
         /* EXPORT */
         .export-panel { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(34, 197, 94, 0.1)); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        
+        /* AI Studio Styles */
+        .ai-studio-header { text-align: center; margin-bottom: 16px; }
+        .ai-subtitle { color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+        .ai-panel { background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(236, 72, 153, 0.1)); border: 1px solid rgba(168, 85, 247, 0.3); }
+        .ai-feature-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .ai-icon { font-size: 28px; }
+        .ai-feature-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .ai-feature-desc { font-size: 11px; color: var(--text-secondary); }
+        .ai-options { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .ai-options .control-select { flex: 1; min-width: 120px; }
+        .ai-input { width: 100%; padding: 10px 12px; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-primary); font-size: 13px; margin-bottom: 12px; }
+        .ai-input::placeholder { color: var(--text-secondary); }
+        .ai-generate-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #a855f7, #ec4899); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .ai-generate-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); }
+        .ai-generate-btn:active { transform: scale(0.98); }
+        .ai-generate-btn.loading { opacity: 0.7; pointer-events: none; }
+        .ai-generate-btn.loading::after { content: '...'; animation: dots 1s infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
+        .analyze-btn { background: linear-gradient(135deg, #3b82f6, #06b6d4); }
+        .surprise-btn { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+        .surprise-panel { background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1)); border-color: rgba(245, 158, 11, 0.3); }
+        .ai-result { margin-top: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 10px; font-size: 13px; line-height: 1.6; display: none; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .ai-result.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-result .result-title { font-weight: 700; color: var(--accent); margin-bottom: 8px; display: block; }
+        .ai-result .chord-tag { display: inline-block; background: var(--accent); color: white; padding: 4px 10px; border-radius: 6px; margin: 2px; font-weight: 600; cursor: pointer; }
+        .ai-result .chord-tag:hover { background: var(--accent-light); }
+        .ai-result .melody-note { display: inline-block; background: var(--success); color: white; padding: 3px 8px; border-radius: 4px; margin: 2px; font-size: 12px; }
+        .style-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+        .style-btn { padding: 12px 8px; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-primary); font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .style-btn:hover { background: var(--accent); transform: scale(1.05); }
+        .style-btn:active { transform: scale(0.95); }
+        .style-btn.loading { opacity: 0.7; pointer-events: none; }
+        .enhance-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+        .enhance-btn { padding: 14px 10px; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--text-primary); font-size: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .enhance-btn small { display: block; font-size: 10px; color: var(--text-secondary); margin-top: 4px; }
+        .enhance-btn:hover { background: var(--accent); }
+        .enhance-btn:active { transform: scale(0.95); }
+        .enhance-btn.loading { opacity: 0.7; pointer-events: none; }
+        .lyrics-result { font-style: italic; }
+        .structure-result .section-label { display: inline-block; background: var(--warning); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; margin-right: 8px; }
+        .analysis-result .analysis-item { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .analysis-result .analysis-label { color: var(--accent); font-weight: 600; }
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .export-card { padding: 16px; background: var(--bg-card); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .export-card:active { border-color: var(--accent); transform: scale(0.98); }
@@ -284,6 +328,7 @@
 
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('compose')"><span class="icon">🎹</span><span>Compose</span></button>
+        <button class="tab-btn" onclick="switchTab('ai')"><span class="icon">🤖</span><span>AI Studio</span></button>
         <button class="tab-btn" onclick="switchTab('piano')"><span class="icon">🎼</span><span>Piano</span></button>
         <button class="tab-btn" onclick="switchTab('mixer')"><span class="icon">🎚️</span><span>Mixer</span></button>
         <button class="tab-btn" onclick="switchTab('sheet')"><span class="icon">📜</span><span>Sheet</span></button>
@@ -372,6 +417,175 @@
         
         <div class="section-title">🎶 Progression</div>
         <div class="chord-grid" id="chordGrid"></div>
+    </div>
+
+    <!-- AI STUDIO TAB -->
+    <div class="tab-content" id="ai-tab">
+        <div class="ai-studio-header">
+            <div class="section-title">🤖 AI Studio <span class="ai-badge">Powered by Gemini</span></div>
+            <p class="ai-subtitle">Advanced AI tools for music creation</p>
+        </div>
+
+        <!-- AI Melody Generator -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🎵</span>
+                <div>
+                    <div class="ai-feature-title">Melody Generator</div>
+                    <div class="ai-feature-desc">Create melodies that fit your chord progression</div>
+                </div>
+            </div>
+            <div class="ai-options">
+                <select class="control-select" id="melodyStyle">
+                    <option value="simple">Simple & Singable</option>
+                    <option value="complex">Complex & Intricate</option>
+                    <option value="jazzy">Jazzy Improv</option>
+                    <option value="classical">Classical Motif</option>
+                    <option value="catchy">Catchy Hook</option>
+                </select>
+                <select class="control-select" id="melodyRange">
+                    <option value="low">Low Range</option>
+                    <option value="mid" selected>Mid Range</option>
+                    <option value="high">High Range</option>
+                    <option value="wide">Wide Range</option>
+                </select>
+            </div>
+            <button class="ai-generate-btn" onclick="generateMelody(this)">
+                <span class="icon">✨</span> Generate Melody
+            </button>
+            <div class="ai-result" id="melodyResult"></div>
+        </div>
+
+        <!-- AI Lyrics Writer -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">✍️</span>
+                <div>
+                    <div class="ai-feature-title">Lyrics Writer</div>
+                    <div class="ai-feature-desc">Generate lyrics with themes and emotions</div>
+                </div>
+            </div>
+            <div class="ai-options">
+                <select class="control-select" id="lyricsTheme">
+                    <option value="love">Love & Romance</option>
+                    <option value="heartbreak">Heartbreak</option>
+                    <option value="party">Party & Fun</option>
+                    <option value="inspiration">Inspiration</option>
+                    <option value="nostalgia">Nostalgia</option>
+                    <option value="nature">Nature & Peace</option>
+                    <option value="rebellion">Rebellion</option>
+                    <option value="journey">Life Journey</option>
+                </select>
+                <select class="control-select" id="lyricsMood">
+                    <option value="happy">Happy</option>
+                    <option value="sad">Sad</option>
+                    <option value="energetic">Energetic</option>
+                    <option value="chill">Chill</option>
+                    <option value="dark">Dark</option>
+                    <option value="hopeful">Hopeful</option>
+                </select>
+            </div>
+            <input type="text" class="ai-input" id="lyricsKeywords" placeholder="Optional keywords (e.g., sunset, dreams, city)">
+            <button class="ai-generate-btn" onclick="generateLyrics(this)">
+                <span class="icon">✨</span> Write Lyrics
+            </button>
+            <div class="ai-result lyrics-result" id="lyricsResult"></div>
+        </div>
+
+        <!-- AI Style Transfer -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🎭</span>
+                <div>
+                    <div class="ai-feature-title">Style Transfer</div>
+                    <div class="ai-feature-desc">Transform your progression to a new genre</div>
+                </div>
+            </div>
+            <div class="style-grid">
+                <button class="style-btn" onclick="transferStyle('jazz', this)">🎷 Jazz</button>
+                <button class="style-btn" onclick="transferStyle('classical', this)">🎻 Classical</button>
+                <button class="style-btn" onclick="transferStyle('edm', this)">🎧 EDM</button>
+                <button class="style-btn" onclick="transferStyle('rnb', this)">🎤 R&B</button>
+                <button class="style-btn" onclick="transferStyle('country', this)">🤠 Country</button>
+                <button class="style-btn" onclick="transferStyle('metal', this)">🤘 Metal</button>
+                <button class="style-btn" onclick="transferStyle('bossa', this)">🌴 Bossa Nova</button>
+                <button class="style-btn" onclick="transferStyle('gospel', this)">⛪ Gospel</button>
+            </div>
+            <div class="ai-result" id="styleResult"></div>
+        </div>
+
+        <!-- AI Chord Enhancer -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🎹</span>
+                <div>
+                    <div class="ai-feature-title">Chord Enhancer</div>
+                    <div class="ai-feature-desc">Add extensions, substitutions, and color</div>
+                </div>
+            </div>
+            <div class="enhance-grid">
+                <button class="enhance-btn" onclick="enhanceChords('extensions', this)">➕ Add Extensions<br><small>7ths, 9ths, 11ths</small></button>
+                <button class="enhance-btn" onclick="enhanceChords('substitutions', this)">🔄 Substitutions<br><small>Tritone, relative</small></button>
+                <button class="enhance-btn" onclick="enhanceChords('passing', this)">🚶 Passing Chords<br><small>Chromatic movement</small></button>
+                <button class="enhance-btn" onclick="enhanceChords('reharmonize', this)">🎨 Reharmonize<br><small>New harmonic approach</small></button>
+            </div>
+            <div class="ai-result" id="enhanceResult"></div>
+        </div>
+
+        <!-- AI Song Structure -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🎬</span>
+                <div>
+                    <div class="ai-feature-title">Song Structure Generator</div>
+                    <div class="ai-feature-desc">Create full song arrangements</div>
+                </div>
+            </div>
+            <div class="ai-options">
+                <select class="control-select" id="structureType">
+                    <option value="pop">Pop (Verse-Chorus-Verse)</option>
+                    <option value="aaba">AABA (Jazz Standard)</option>
+                    <option value="blues">12-Bar Blues</option>
+                    <option value="edm">EDM (Build-Drop)</option>
+                    <option value="ballad">Ballad (Intro-Verse-Bridge)</option>
+                    <option value="progressive">Progressive (Through-composed)</option>
+                </select>
+            </div>
+            <button class="ai-generate-btn" onclick="generateStructure(this)">
+                <span class="icon">✨</span> Generate Full Song
+            </button>
+            <div class="ai-result structure-result" id="structureResult"></div>
+        </div>
+
+        <!-- AI Analysis -->
+        <div class="panel ai-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🔍</span>
+                <div>
+                    <div class="ai-feature-title">Progression Analysis</div>
+                    <div class="ai-feature-desc">Understand your chord progression</div>
+                </div>
+            </div>
+            <button class="ai-generate-btn analyze-btn" onclick="analyzeProgression(this)">
+                <span class="icon">🔬</span> Analyze My Progression
+            </button>
+            <div class="ai-result analysis-result" id="analysisResult"></div>
+        </div>
+
+        <!-- AI Surprise Me -->
+        <div class="panel ai-panel surprise-panel">
+            <div class="ai-feature-header">
+                <span class="ai-icon">🎲</span>
+                <div>
+                    <div class="ai-feature-title">Surprise Me!</div>
+                    <div class="ai-feature-desc">Let AI create something unexpected</div>
+                </div>
+            </div>
+            <button class="ai-generate-btn surprise-btn" onclick="surpriseMe(this)">
+                <span class="icon">🎰</span> Generate Random Creation
+            </button>
+            <div class="ai-result" id="surpriseResult"></div>
+        </div>
     </div>
 
     <!-- PIANO ROLL TAB -->
@@ -1066,6 +1280,392 @@
             if (btn) btn.classList.remove('loading');
         }
 
+        // ADVANCED AI FEATURES
+        const GEMINI_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
+        
+        async function callGeminiAI(prompt) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.9, maxOutputTokens: 1024 } })
+                });
+                const data = await res.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+            } catch (err) {
+                console.error('Gemini error:', err);
+                return null;
+            }
+        }
+
+        async function generateMelody(btn) {
+            btn.classList.add('loading');
+            const style = document.getElementById('melodyStyle').value;
+            const range = document.getElementById('melodyRange').value;
+            const prompt = `You are a music composition AI. Generate a melody for these chords: ${state.progression.join(' - ')} in ${state.key} ${state.genre}.
+Style: ${style}, Range: ${range}.
+Return ONLY a JSON object like: {"notes": ["C4", "E4", "G4", "E4", "D4", "C4"], "rhythm": ["quarter", "quarter", "half", "quarter", "quarter", "whole"], "description": "A simple ascending melody"}
+Use standard note names with octave numbers (C4 is middle C). Keep it 8-16 notes.`;
+            
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('melodyResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const melody = JSON.parse(jsonMatch[0]);
+                        state.generatedMelody = melody;
+                        let html = `<span class="result-title">🎵 Generated Melody</span>`;
+                        html += `<div style="margin: 8px 0;">${melody.notes.map(n => `<span class="melody-note">${n}</span>`).join(' ')}</div>`;
+                        html += `<div style="color: var(--text-secondary); font-size: 12px;">${melody.description || 'AI-generated melody'}</div>`;
+                        html += `<button onclick="playMelody()" style="margin-top: 10px; padding: 8px 16px; background: var(--success); border: none; border-radius: 8px; color: white; cursor: pointer;">▶️ Play Melody</button>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast('🎵 Melody generated!');
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🎵 Melody Suggestion</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                const fallbackMelody = generateFallbackMelody();
+                resultDiv.innerHTML = `<span class="result-title">🎵 Generated Melody</span>\n${fallbackMelody.map(n => `<span class="melody-note">${n}</span>`).join(' ')}`;
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function generateFallbackMelody() {
+            const scaleNotes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+            const melody = [];
+            for (let i = 0; i < 8; i++) {
+                melody.push(scaleNotes[Math.floor(Math.random() * scaleNotes.length)]);
+            }
+            state.generatedMelody = { notes: melody };
+            return melody;
+        }
+
+        async function playMelody() {
+            if (!state.generatedMelody?.notes) return;
+            await initAudio();
+            const now = Tone.now();
+            state.generatedMelody.notes.forEach((note, i) => {
+                mainSynth.triggerAttackRelease(note, '8n', now + i * 0.3);
+            });
+            showToast('🎵 Playing melody...');
+        }
+
+        async function generateLyrics(btn) {
+            btn.classList.add('loading');
+            const theme = document.getElementById('lyricsTheme').value;
+            const mood = document.getElementById('lyricsMood').value;
+            const keywords = document.getElementById('lyricsKeywords').value;
+            
+            const prompt = `You are a professional songwriter. Write lyrics for a ${state.genre} song.
+Theme: ${theme}, Mood: ${mood}
+Chord progression: ${state.progression.join(' - ')} in ${state.key}
+${keywords ? `Include these concepts: ${keywords}` : ''}
+
+Write a verse and chorus. Format:
+[Verse]
+(4 lines)
+
+[Chorus]
+(4 lines)
+
+Make it emotional, poetic, and fitting for the ${state.genre} genre. Keep lines short and singable.`;
+
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('lyricsResult');
+            
+            if (result) {
+                state.generatedLyrics = result;
+                resultDiv.innerHTML = `<span class="result-title">✍️ Generated Lyrics</span>\n${result}`;
+                resultDiv.classList.add('active');
+                showToast('✍️ Lyrics written!');
+            } else {
+                const fallback = generateFallbackLyrics(theme, mood);
+                resultDiv.innerHTML = `<span class="result-title">✍️ Generated Lyrics</span>\n${fallback}`;
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function generateFallbackLyrics(theme, mood) {
+            const templates = {
+                love: `[Verse]\nIn your eyes I see the stars tonight\nEvery moment feels so right\nHolding on to what we've found\nLove that keeps us on the ground\n\n[Chorus]\nYou're the one I've waited for\nOpen up another door\nTogether we will find our way\nStarting from today`,
+                heartbreak: `[Verse]\nEmpty rooms and memories\nFading photos on the wall\nI remember how we used to be\nBefore the silence took it all\n\n[Chorus]\nNow I'm learning how to breathe\nWithout you here with me\nPicking up the pieces of my heart\nMaking a brand new start`,
+                party: `[Verse]\nLights are flashing, bass is pumping\nEverybody's jumping high\nFeeling like we own the night\nReaching for the sky\n\n[Chorus]\nLet's go, let's go, let's go tonight\nEverything's gonna be alright\nDance until the morning light\nWe're feeling so alive`
+            };
+            return templates[theme] || templates.love;
+        }
+
+        async function transferStyle(targetGenre, btn) {
+            document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('loading'));
+            btn.classList.add('loading');
+            
+            const prompt = `You are a music theory expert. Transform this chord progression from ${state.genre} to ${targetGenre}:
+Current: ${state.progression.join(' - ')} in ${state.key}
+
+Return ONLY a JSON object like: {"chords": ["Cmaj7", "G7", "Am9", "Fmaj7"], "explanation": "Added jazz extensions"}
+Use chords that exist in standard notation. Keep similar harmonic function but with ${targetGenre} flavor.`;
+
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('styleResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const transfer = JSON.parse(jsonMatch[0]);
+                        let html = `<span class="result-title">🎭 ${targetGenre.toUpperCase()} Style</span>\n`;
+                        html += `<div style="margin: 8px 0;">${transfer.chords.map(c => `<span class="chord-tag" onclick="applyTransferChords(['${transfer.chords.join("','")}'])">${c}</span>`).join(' ')}</div>`;
+                        html += `<div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">${transfer.explanation || ''}</div>`;
+                        html += `<button onclick="applyTransferChords(['${transfer.chords.join("','")}'])" style="margin-top: 10px; padding: 8px 16px; background: var(--accent); border: none; border-radius: 8px; color: white; cursor: pointer;">✅ Apply These Chords</button>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast(`🎭 ${targetGenre} style ready!`);
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🎭 Style Transfer</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                const fallback = generateStyleFallback(targetGenre);
+                resultDiv.innerHTML = `<span class="result-title">🎭 ${targetGenre.toUpperCase()} Style</span>\n${fallback.map(c => `<span class="chord-tag">${c}</span>`).join(' ')}`;
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function applyTransferChords(chords) {
+            const validChords = chords.filter(c => {
+                const base = c.replace(/maj7|m7|7|9|11|13|dim|aug|sus[24]?|add\d+/gi, '').replace(/[#b]$/, '');
+                return ['C','D','E','F','G','A','B'].includes(base.charAt(0).toUpperCase());
+            });
+            if (validChords.length > 0) {
+                state.progression = validChords;
+                renderChords();
+                renderSheetMusic();
+                showToast('✅ Chords applied!');
+            }
+        }
+
+        function generateStyleFallback(genre) {
+            const styles = {
+                jazz: ['Cmaj7', 'Am7', 'Dm7', 'G7'],
+                classical: ['C', 'F', 'G', 'C'],
+                edm: ['Am', 'F', 'C', 'G'],
+                rnb: ['Fmaj7', 'Em7', 'Dm7', 'Cmaj7'],
+                country: ['G', 'C', 'D', 'G'],
+                metal: ['E5', 'C5', 'G5', 'D5'],
+                bossa: ['Dm7', 'G7', 'Cmaj7', 'A7'],
+                gospel: ['C', 'C/E', 'F', 'G']
+            };
+            return styles[genre] || ['C', 'G', 'Am', 'F'];
+        }
+
+        async function enhanceChords(enhanceType, btn) {
+            document.querySelectorAll('.enhance-btn').forEach(b => b.classList.remove('loading'));
+            btn.classList.add('loading');
+            
+            const prompts = {
+                extensions: `Add 7ths, 9ths, or other extensions to: ${state.progression.join(' - ')}. Return ONLY JSON: {"chords": ["Cmaj7", "G9", "Am7", "Fmaj9"], "explanation": "..."}`,
+                substitutions: `Apply tritone or relative substitutions to: ${state.progression.join(' - ')}. Return ONLY JSON: {"chords": [...], "explanation": "..."}`,
+                passing: `Add chromatic passing chords between: ${state.progression.join(' - ')}. Return ONLY JSON: {"chords": [...], "explanation": "..."}`,
+                reharmonize: `Completely reharmonize with different approach: ${state.progression.join(' - ')} in ${state.key}. Return ONLY JSON: {"chords": [...], "explanation": "..."}`
+            };
+
+            const result = await callGeminiAI(prompts[enhanceType]);
+            const resultDiv = document.getElementById('enhanceResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const enhanced = JSON.parse(jsonMatch[0]);
+                        let html = `<span class="result-title">🎹 Enhanced Chords</span>\n`;
+                        html += `<div style="margin: 8px 0;">${enhanced.chords.map(c => `<span class="chord-tag">${c}</span>`).join(' ')}</div>`;
+                        html += `<div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">${enhanced.explanation || ''}</div>`;
+                        html += `<button onclick="applyTransferChords(['${enhanced.chords.join("','")}'])" style="margin-top: 10px; padding: 8px 16px; background: var(--accent); border: none; border-radius: 8px; color: white; cursor: pointer;">✅ Apply Enhanced Chords</button>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast('🎹 Chords enhanced!');
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🎹 Enhancement</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                const fallback = enhanceFallback(enhanceType);
+                resultDiv.innerHTML = `<span class="result-title">🎹 Enhanced</span>\n${fallback.map(c => `<span class="chord-tag">${c}</span>`).join(' ')}`;
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function enhanceFallback(type) {
+            const base = state.progression.map(c => c.replace(/[0-9]/g, ''));
+            if (type === 'extensions') return base.map(c => c + (c.includes('m') ? '7' : 'maj7'));
+            if (type === 'substitutions') return base.map((c, i) => i === 1 ? 'Dm7' : c);
+            return base;
+        }
+
+        async function generateStructure(btn) {
+            btn.classList.add('loading');
+            const structureType = document.getElementById('structureType').value;
+            
+            const prompt = `You are a professional songwriter. Create a complete ${structureType} song structure using this progression: ${state.progression.join(' - ')} in ${state.key} ${state.genre}.
+
+Return a JSON object like:
+{
+  "structure": [
+    {"section": "Intro", "chords": ["C", "Am"], "bars": 4},
+    {"section": "Verse 1", "chords": ["C", "G", "Am", "F"], "bars": 8},
+    {"section": "Chorus", "chords": ["F", "G", "C", "Am"], "bars": 8}
+  ],
+  "tips": "Build energy through the verse into the chorus"
+}
+
+Create a realistic song structure with Intro, Verses, Chorus, Bridge as appropriate for ${structureType}.`;
+
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('structureResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const structure = JSON.parse(jsonMatch[0]);
+                        state.songStructure = structure;
+                        let html = `<span class="result-title">🎬 Song Structure</span>\n\n`;
+                        structure.structure.forEach(section => {
+                            html += `<div style="margin-bottom: 12px;"><span class="section-label">${section.section}</span> (${section.bars} bars)\n`;
+                            html += section.chords.map(c => `<span class="chord-tag">${c}</span>`).join(' ');
+                            html += `</div>`;
+                        });
+                        if (structure.tips) html += `\n<div style="color: var(--text-secondary); font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px;">💡 ${structure.tips}</div>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast('🎬 Song structure created!');
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🎬 Structure</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                resultDiv.innerHTML = generateFallbackStructure(structureType);
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function generateFallbackStructure(type) {
+            const p = state.progression;
+            return `<span class="result-title">🎬 ${type.toUpperCase()} Structure</span>\n\n` +
+                `<span class="section-label">Intro</span> ${p.slice(0,2).join(' ')} (4 bars)\n` +
+                `<span class="section-label">Verse</span> ${p.join(' ')} (8 bars)\n` +
+                `<span class="section-label">Chorus</span> ${[...p].reverse().join(' ')} (8 bars)\n` +
+                `<span class="section-label">Outro</span> ${p[0]} (4 bars)`;
+        }
+
+        async function analyzeProgression(btn) {
+            btn.classList.add('loading');
+            
+            const prompt = `You are a music theory expert. Analyze this chord progression in detail:
+Chords: ${state.progression.join(' - ')}
+Key: ${state.key}
+Genre: ${state.genre}
+
+Provide analysis in this JSON format:
+{
+  "romanNumerals": "I - V - vi - IV",
+  "key": "C Major",
+  "mood": "Uplifting and nostalgic",
+  "famousUsage": ["Let It Be - Beatles", "No Woman No Cry - Bob Marley"],
+  "characteristics": ["Strong resolution", "Emotional minor chord"],
+  "suggestions": "Try adding a vi before the IV for more tension"
+}`;
+
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('analysisResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const analysis = JSON.parse(jsonMatch[0]);
+                        let html = `<span class="result-title">🔍 Progression Analysis</span>\n\n`;
+                        html += `<div class="analysis-item"><span class="analysis-label">Roman Numerals:</span> ${analysis.romanNumerals}</div>`;
+                        html += `<div class="analysis-item"><span class="analysis-label">Key:</span> ${analysis.key}</div>`;
+                        html += `<div class="analysis-item"><span class="analysis-label">Mood:</span> ${analysis.mood}</div>`;
+                        if (analysis.famousUsage?.length) html += `<div class="analysis-item"><span class="analysis-label">Famous Songs:</span> ${analysis.famousUsage.join(', ')}</div>`;
+                        if (analysis.characteristics?.length) html += `<div class="analysis-item"><span class="analysis-label">Characteristics:</span> ${analysis.characteristics.join(', ')}</div>`;
+                        if (analysis.suggestions) html += `<div class="analysis-item"><span class="analysis-label">💡 Suggestion:</span> ${analysis.suggestions}</div>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast('🔍 Analysis complete!');
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🔍 Analysis</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                resultDiv.innerHTML = generateFallbackAnalysis();
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
+        function generateFallbackAnalysis() {
+            const romanMap = { 'C': 'I', 'Dm': 'ii', 'Em': 'iii', 'F': 'IV', 'G': 'V', 'Am': 'vi', 'Bdim': 'vii°' };
+            const romans = state.progression.map(c => romanMap[c] || '?').join(' - ');
+            return `<span class="result-title">🔍 Analysis</span>\n\n` +
+                `<div class="analysis-item"><span class="analysis-label">Roman Numerals:</span> ${romans}</div>` +
+                `<div class="analysis-item"><span class="analysis-label">Key:</span> ${state.key}</div>` +
+                `<div class="analysis-item"><span class="analysis-label">Chords:</span> ${state.progression.length} total</div>`;
+        }
+
+        async function surpriseMe(btn) {
+            btn.classList.add('loading');
+            
+            const surprises = [
+                `Generate a unique, unexpected ${state.genre} chord progression that sounds fresh. Return JSON: {"chords": [...], "name": "Surprise name", "description": "Why it's interesting"}`,
+                `Create a chord progression that combines ${state.genre} with jazz elements. Return JSON: {"chords": [...], "name": "...", "description": "..."}`,
+                `Generate a progression using unusual chord voicings for ${state.genre}. Return JSON: {"chords": [...], "name": "...", "description": "..."}`,
+                `Create a progression with an unexpected twist or modulation. Return JSON: {"chords": [...], "name": "...", "description": "..."}`
+            ];
+            
+            const prompt = surprises[Math.floor(Math.random() * surprises.length)];
+            const result = await callGeminiAI(prompt);
+            const resultDiv = document.getElementById('surpriseResult');
+            
+            if (result) {
+                try {
+                    const jsonMatch = result.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        const surprise = JSON.parse(jsonMatch[0]);
+                        let html = `<span class="result-title">🎲 ${surprise.name || 'Surprise!'}</span>\n`;
+                        html += `<div style="margin: 8px 0;">${surprise.chords.map(c => `<span class="chord-tag">${c}</span>`).join(' ')}</div>`;
+                        html += `<div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">${surprise.description || 'Try something new!'}</div>`;
+                        html += `<button onclick="applyTransferChords(['${surprise.chords.join("','")}'])" style="margin-top: 10px; padding: 8px 16px; background: var(--warning); border: none; border-radius: 8px; color: #000; cursor: pointer; font-weight: 700;">🎰 Use This Progression</button>`;
+                        resultDiv.innerHTML = html;
+                        resultDiv.classList.add('active');
+                        showToast('🎲 Surprise ready!');
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML = `<span class="result-title">🎲 Surprise</span>\n${result}`;
+                    resultDiv.classList.add('active');
+                }
+            } else {
+                const surprise = ['Dm7', 'G7', 'Cmaj7', 'A7b9'];
+                resultDiv.innerHTML = `<span class="result-title">🎲 Jazz Surprise!</span>\n${surprise.map(c => `<span class="chord-tag">${c}</span>`).join(' ')}`;
+                resultDiv.classList.add('active');
+            }
+            btn.classList.remove('loading');
+        }
+
         // MODALS & TOAST
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -1078,7 +1678,7 @@
             if (savedTheme && savedTheme !== 'dark') document.body.classList.add(`theme-${savedTheme}`);
             const savedColors = localStorage.getItem('chordflow-custom-colors');
             if (savedColors) { state.customColors = JSON.parse(savedColors); document.getElementById('customBg').value = state.customColors.bg; document.getElementById('customAccent').value = state.customColors.accent; document.getElementById('customCard').value = state.customColors.card; document.getElementById('customText').value = state.customColors.text; }
-            console.log('🎵 ChordFlow v12.0 Pro Studio initialized');
+            console.log('🎵 ChordFlow v12.2 AI Studio initialized');
         }
         init();
     </script>
