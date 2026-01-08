@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v11.6 - Song Arrangement & Recording Studio</title>
+    <title>ChordFlow v11.7 - MIDI & Audio Export</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -33,6 +33,8 @@
             --strings: #8b5cf6;
             --brass: #f97316;
             --synth: #06b6d4;
+            --export-blue: #3b82f6;
+            --export-green: #22c55e;
             --safe-top: env(safe-area-inset-top, 20px);
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
@@ -72,6 +74,7 @@
         .logo h1 { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .version-badge { font-size: 9px; background: var(--success); color: white; padding: 2px 5px; border-radius: 6px; }
         .ai-badge { font-size: 9px; background: linear-gradient(135deg, var(--ai-purple), #ec4899); color: white; padding: 2px 5px; border-radius: 6px; margin-left: 3px; }
+        .export-badge { font-size: 9px; background: linear-gradient(135deg, var(--export-blue), var(--export-green)); color: white; padding: 2px 5px; border-radius: 6px; margin-left: 3px; }
         .recording-badge { font-size: 9px; background: var(--recording); color: white; padding: 2px 5px; border-radius: 6px; margin-left: 3px; animation: recordPulse 1s infinite; display: none; }
         .recording-badge.active { display: inline; }
         @keyframes recordPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -119,7 +122,7 @@
         .tab-content { display: none; padding: 0 16px; }
         .tab-content.active { display: block; }
         
-        /* AI Actions - Enhanced */
+        /* AI Actions */
         .ai-actions {
             display: flex;
             gap: 8px;
@@ -218,7 +221,7 @@
         }
         .add-section-btn:hover { border-color: var(--accent); color: var(--accent); }
         
-        /* Chord Timeline */
+        /* Timeline */
         .timeline-container {
             background: var(--bg-card);
             border-radius: 12px;
@@ -231,10 +234,7 @@
             justify-content: space-between;
             margin-bottom: 10px;
         }
-        .timeline-zoom {
-            display: flex;
-            gap: 4px;
-        }
+        .timeline-zoom { display: flex; gap: 4px; }
         .zoom-btn {
             width: 28px; height: 28px;
             border-radius: 6px;
@@ -340,32 +340,92 @@
             color: white;
             box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
         }
-        .record-btn.rec.active {
-            animation: recordPulse 0.5s infinite;
-        }
+        .record-btn.rec.active { animation: recordPulse 0.5s infinite; }
         .record-btn.stop { background: var(--bg-card); color: var(--text-primary); }
         .record-btn.export { background: linear-gradient(135deg, var(--accent), #764ba2); color: white; }
         .record-btn:active { transform: scale(0.95); }
         
-        .export-options {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
+        /* Export Panel - NEW */
+        .export-panel {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(34, 197, 94, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
-        .export-btn {
-            flex: 1;
-            min-width: 80px;
-            padding: 10px;
-            border-radius: 8px;
-            background: var(--bg-secondary);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-primary);
-            font-size: 12px;
+        .export-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .export-title { 
+            font-size: 16px; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, var(--export-blue), var(--export-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .export-card {
+            padding: 16px;
+            background: var(--bg-card);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .export-btn:active { background: var(--accent); }
+        .export-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .export-card:active { transform: scale(0.98); }
+        .export-card.midi { border-color: rgba(168, 85, 247, 0.5); }
+        .export-card.midi:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+        .export-card.wav { border-color: rgba(59, 130, 246, 0.5); }
+        .export-card.wav:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .export-card.mp3 { border-color: rgba(34, 197, 94, 0.5); }
+        .export-card.mp3:hover { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .export-card.share { border-color: rgba(249, 115, 22, 0.5); }
+        .export-card.share:hover { border-color: #f97316; background: rgba(249, 115, 22, 0.1); }
+        .export-card .icon { font-size: 28px; margin-bottom: 8px; }
+        .export-card .name { font-size: 14px; font-weight: 600; }
+        .export-card .desc { font-size: 10px; color: var(--text-secondary); margin-top: 4px; }
+        .export-card.loading { opacity: 0.6; pointer-events: none; }
+        .export-card.loading .icon { animation: spin 1s linear infinite; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .export-progress {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            display: none;
+        }
+        .export-progress.active { display: block; }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--export-blue), var(--export-green));
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
         
         /* Lyrics Panel */
         .lyrics-container {
@@ -386,10 +446,7 @@
             resize: vertical;
             font-family: inherit;
         }
-        .lyrics-input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        .lyrics-input:focus { outline: none; border-color: var(--accent); }
         .lyrics-sync {
             display: flex;
             gap: 8px;
@@ -439,11 +496,7 @@
         }
         .practice-toggle.active::after { left: 25px; }
         
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .speed-control { display: flex; align-items: center; gap: 12px; }
         .speed-slider {
             flex: 1;
             height: 6px;
@@ -510,11 +563,7 @@
         .mode-toggle button:active { transform: scale(0.98); }
         
         /* Controls Row */
-        .controls-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
+        .controls-row { display: flex; gap: 10px; margin-bottom: 16px; }
         .control-group { flex: 1; }
         .control-label { font-size: 10px; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
         .control-select {
@@ -527,10 +576,7 @@
             font-size: 13px;
             cursor: pointer;
         }
-        .control-select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        .control-select:focus { outline: none; border-color: var(--accent); }
         
         /* Chord Grid */
         .chord-grid {
@@ -563,11 +609,7 @@
         }
         .mod-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .mod-title { font-size: 14px; font-weight: 600; color: var(--gold); }
-        .mod-keys {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+        .mod-keys { display: flex; gap: 6px; flex-wrap: wrap; }
         .mod-key {
             padding: 8px 12px;
             border-radius: 8px;
@@ -693,11 +735,7 @@
         .close-btn:active { background: var(--accent); }
         
         /* Theme Selector */
-        .theme-options {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .theme-options { display: flex; gap: 8px; flex-wrap: wrap; }
         .theme-option {
             width: 50px; height: 50px;
             border-radius: 12px;
@@ -743,7 +781,6 @@
             animation: spin 0.8s linear infinite;
             display: inline-block;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
         
         /* Current Sound Badge */
         .current-sound {
@@ -788,7 +825,7 @@
     <header class="header">
         <div class="logo">
             <span>🎵</span>
-            <h1>ChordFlow<span class="version-badge">v11.6</span><span class="ai-badge">AI</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
+            <h1>ChordFlow<span class="version-badge">v11.7</span><span class="ai-badge">AI</span><span class="export-badge">EXPORT</span><span class="recording-badge" id="recordingBadge">REC</span></h1>
         </div>
         <div class="header-actions">
             <button class="icon-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
@@ -975,14 +1012,44 @@
             <div class="recording-controls">
                 <button class="record-btn stop" onclick="stopRecording()">⏹️</button>
                 <button class="record-btn rec" id="recBtn" onclick="toggleRecording()">⏺️</button>
-                <button class="record-btn export" onclick="openExportModal()">💾</button>
+                <button class="record-btn export" onclick="switchTab('studio'); document.querySelector('.export-panel').scrollIntoView({behavior: 'smooth'})">💾</button>
+            </div>
+        </div>
+        
+        <!-- NEW: Export Panel -->
+        <div class="export-panel">
+            <div class="export-header">
+                <div class="export-title">📦 Export Your Music</div>
             </div>
             
-            <div class="export-options">
-                <button class="export-btn" onclick="exportAudio('mp3')">📄 MP3</button>
-                <button class="export-btn" onclick="exportAudio('wav')">🎵 WAV</button>
-                <button class="export-btn" onclick="exportMIDI()">🎹 MIDI</button>
-                <button class="export-btn" onclick="shareSong()">📤 Share</button>
+            <div class="export-grid">
+                <div class="export-card midi" onclick="exportMIDI()">
+                    <div class="icon">🎹</div>
+                    <div class="name">MIDI File</div>
+                    <div class="desc">Import into DAWs</div>
+                </div>
+                <div class="export-card wav" onclick="exportWAV()">
+                    <div class="icon">🎵</div>
+                    <div class="name">WAV Audio</div>
+                    <div class="desc">Lossless quality</div>
+                </div>
+                <div class="export-card mp3" onclick="exportMP3()">
+                    <div class="icon">📄</div>
+                    <div class="name">MP3 Audio</div>
+                    <div class="desc">Compressed audio</div>
+                </div>
+                <div class="export-card share" onclick="shareSong()">
+                    <div class="icon">📤</div>
+                    <div class="name">Share Link</div>
+                    <div class="desc">Copy progression</div>
+                </div>
+            </div>
+            
+            <div class="export-progress" id="exportProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">Preparing export...</div>
             </div>
         </div>
         
@@ -1089,7 +1156,7 @@
                 <button class="close-btn" onclick="closeModal('settingsModal')">✕</button>
             </div>
             <div style="padding: 12px 0;">
-                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.6</p>
+                <p style="color: var(--text-secondary); margin-bottom: 12px;">ChordFlow v11.7</p>
                 <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;">
                     🎬 Song Arrangement<br>
                     🎙️ Recording Studio<br>
@@ -1097,7 +1164,9 @@
                     🔄 Key Modulation<br>
                     📚 Practice Mode<br>
                     🎨 Theme Engine<br>
-                    🎚️ Mixer Controls
+                    🎚️ Mixer Controls<br>
+                    <strong style="color:var(--export-blue);">🆕 MIDI Export</strong><br>
+                    <strong style="color:var(--export-green);">🆕 Audio Export (WAV/MP3)</strong>
                 </p>
             </div>
         </div>
@@ -1134,7 +1203,8 @@
             },
             recordingData: [],
             practiceStats: { accuracy: 0, streak: 0 },
-            mixerLevels: { main: 80, bass: 70, drums: 75 }
+            mixerLevels: { main: 80, bass: 70, drums: 75 },
+            isExporting: false
         };
 
         // Instruments
@@ -1156,7 +1226,7 @@
         ];
 
         // =============================================
-        // AUDIO ENGINE v11.6
+        // AUDIO ENGINE v11.7
         // =============================================
         let audioInitialized = false;
         let mainSynth = null;
@@ -1212,7 +1282,7 @@
             
             createMainSynth();
             audioInitialized = true;
-            console.log('🎵 Audio Engine v11.6 initialized');
+            console.log('🎵 Audio Engine v11.7 initialized');
         }
 
         const instrumentConfigs = {
@@ -1345,6 +1415,20 @@
             'E7': ['E4', 'G#4', 'B4', 'D5'], 'F7': ['F4', 'A4', 'C5', 'Eb5']
         };
 
+        // Note to MIDI conversion
+        const noteToMidi = {
+            'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3, 'E': 4, 'F': 5,
+            'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8, 'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
+        };
+
+        function noteNameToMidi(noteName) {
+            const match = noteName.match(/([A-G][#b]?)(\d)/);
+            if (!match) return 60;
+            const note = match[1];
+            const octave = parseInt(match[2]);
+            return noteToMidi[note] + (octave + 1) * 12;
+        }
+
         const progressions = {
             pop: { C: ['C','G','Am','F'], G: ['G','D','Em','C'], D: ['D','A','Bm','G'], Am: ['Am','F','C','G'], Em: ['Em','C','G','D'] },
             rock: { C: ['C','F','G','C'], G: ['G','C','D','G'], Am: ['Am','G','F','E'], Em: ['Em','D','C','D'] },
@@ -1358,6 +1442,398 @@
         };
 
         const numerals = { 'C': 'I', 'Dm': 'ii', 'Em': 'iii', 'F': 'IV', 'G': 'V', 'Am': 'vi', 'Bm': 'vii°' };
+
+        // =============================================
+        // MIDI EXPORT - Real Implementation
+        // =============================================
+        function createMIDIFile() {
+            // MIDI file structure
+            const ticksPerBeat = 480;
+            const beatsPerChord = 2;
+            const ticksPerChord = ticksPerBeat * beatsPerChord;
+            
+            // Header chunk
+            const header = [
+                0x4D, 0x54, 0x68, 0x64, // "MThd"
+                0x00, 0x00, 0x00, 0x06, // chunk length
+                0x00, 0x00,             // format 0 (single track)
+                0x00, 0x01,             // one track
+                (ticksPerBeat >> 8) & 0xFF, ticksPerBeat & 0xFF // ticks per beat
+            ];
+            
+            // Build track data
+            let trackData = [];
+            
+            // Tempo meta event (microseconds per beat for tempo BPM)
+            const microsecondsPerBeat = Math.round(60000000 / state.tempo);
+            trackData.push(
+                0x00,                   // delta time
+                0xFF, 0x51, 0x03,       // tempo meta event
+                (microsecondsPerBeat >> 16) & 0xFF,
+                (microsecondsPerBeat >> 8) & 0xFF,
+                microsecondsPerBeat & 0xFF
+            );
+            
+            // Track name
+            const trackName = `ChordFlow - ${state.key} ${state.genre}`;
+            trackData.push(0x00, 0xFF, 0x03, trackName.length);
+            for (let i = 0; i < trackName.length; i++) {
+                trackData.push(trackName.charCodeAt(i));
+            }
+            
+            // Add chords
+            let currentTick = 0;
+            state.progression.forEach((chord, index) => {
+                const notes = chordNotes[chord] || chordNotes['C'];
+                const midiNotes = notes.map(n => noteNameToMidi(n));
+                
+                // Note on events
+                midiNotes.forEach((midiNote, i) => {
+                    trackData.push(...writeVarLength(i === 0 ? 0 : 0)); // delta time
+                    trackData.push(0x90, midiNote, 100); // note on, note, velocity
+                });
+                
+                // Note off events
+                midiNotes.forEach((midiNote, i) => {
+                    trackData.push(...writeVarLength(i === 0 ? ticksPerChord : 0)); // delta time
+                    trackData.push(0x80, midiNote, 0); // note off
+                });
+            });
+            
+            // End of track
+            trackData.push(0x00, 0xFF, 0x2F, 0x00);
+            
+            // Track chunk
+            const trackChunk = [
+                0x4D, 0x54, 0x72, 0x6B, // "MTrk"
+                (trackData.length >> 24) & 0xFF,
+                (trackData.length >> 16) & 0xFF,
+                (trackData.length >> 8) & 0xFF,
+                trackData.length & 0xFF,
+                ...trackData
+            ];
+            
+            return new Uint8Array([...header, ...trackChunk]);
+        }
+        
+        function writeVarLength(value) {
+            const result = [];
+            let v = value;
+            result.push(v & 0x7F);
+            v >>= 7;
+            while (v > 0) {
+                result.unshift((v & 0x7F) | 0x80);
+                v >>= 7;
+            }
+            return result;
+        }
+        
+        async function exportMIDI() {
+            if (state.isExporting) return;
+            state.isExporting = true;
+            
+            const card = document.querySelector('.export-card.midi');
+            card.classList.add('loading');
+            showExportProgress('Generating MIDI file...');
+            
+            try {
+                await updateProgress(30, 'Creating MIDI data...');
+                const midiData = createMIDIFile();
+                
+                await updateProgress(70, 'Preparing download...');
+                const blob = new Blob([midiData], { type: 'audio/midi' });
+                
+                await updateProgress(100, 'Complete!');
+                
+                // Create download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ChordFlow_${state.key}_${state.genre}_${Date.now()}.mid`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('🎹 MIDI file downloaded!');
+            } catch (err) {
+                console.error('MIDI export error:', err);
+                showToast('❌ Export failed');
+            }
+            
+            card.classList.remove('loading');
+            hideExportProgress();
+            state.isExporting = false;
+        }
+
+        // =============================================
+        // AUDIO EXPORT - WAV Implementation
+        // =============================================
+        async function exportWAV() {
+            if (state.isExporting) return;
+            state.isExporting = true;
+            
+            const card = document.querySelector('.export-card.wav');
+            card.classList.add('loading');
+            showExportProgress('Initializing audio...');
+            
+            try {
+                await initAudio();
+                await updateProgress(10, 'Setting up recorder...');
+                
+                // Use MediaRecorder with Tone.js destination
+                const dest = Tone.context.createMediaStreamDestination();
+                const recorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm' });
+                const chunks = [];
+                
+                recorder.ondataavailable = (e) => chunks.push(e.data);
+                
+                // Connect main synth to recorder
+                mainSynth.connect(dest);
+                
+                await updateProgress(20, 'Recording progression...');
+                recorder.start();
+                
+                // Play through progression
+                const beatsPerChord = 2;
+                const msPerBeat = 60000 / state.tempo;
+                const msPerChord = msPerBeat * beatsPerChord;
+                
+                for (let i = 0; i < state.progression.length; i++) {
+                    const chord = state.progression[i];
+                    const notes = chordNotes[chord] || chordNotes['C'];
+                    const progress = 20 + ((i + 1) / state.progression.length) * 60;
+                    await updateProgress(progress, `Recording: ${chord}...`);
+                    
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
+                    mainSynth.triggerAttack(notes);
+                    
+                    await new Promise(r => setTimeout(r, msPerChord - 100));
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                await updateProgress(85, 'Finalizing audio...');
+                
+                // Stop recording
+                await new Promise(resolve => {
+                    recorder.onstop = resolve;
+                    recorder.stop();
+                });
+                
+                await updateProgress(95, 'Creating WAV file...');
+                
+                // Convert WebM to WAV using AudioContext
+                const webmBlob = new Blob(chunks, { type: 'audio/webm' });
+                const arrayBuffer = await webmBlob.arrayBuffer();
+                const audioContext = new AudioContext();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                // Convert to WAV
+                const wavBlob = audioBufferToWav(audioBuffer);
+                
+                await updateProgress(100, 'Complete!');
+                
+                // Download
+                const url = URL.createObjectURL(wavBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ChordFlow_${state.key}_${state.genre}_${Date.now()}.wav`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Reconnect to normal destination
+                mainSynth.disconnect(dest);
+                mainSynth.connect(filter);
+                
+                showToast('🎵 WAV file downloaded!');
+            } catch (err) {
+                console.error('WAV export error:', err);
+                showToast('❌ Export failed - try again');
+            }
+            
+            card.classList.remove('loading');
+            hideExportProgress();
+            state.isExporting = false;
+        }
+        
+        function audioBufferToWav(buffer) {
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            
+            const data = interleave(buffer);
+            const dataLength = data.length * bytesPerSample;
+            const bufferLength = 44 + dataLength;
+            
+            const arrayBuffer = new ArrayBuffer(bufferLength);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+            
+            // Write audio data
+            const offset = 44;
+            for (let i = 0; i < data.length; i++) {
+                const sample = Math.max(-1, Math.min(1, data[i]));
+                view.setInt16(offset + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            }
+            
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+        
+        function interleave(buffer) {
+            const channels = [];
+            for (let i = 0; i < buffer.numberOfChannels; i++) {
+                channels.push(buffer.getChannelData(i));
+            }
+            
+            const length = channels[0].length;
+            const result = new Float32Array(length * channels.length);
+            
+            for (let i = 0; i < length; i++) {
+                for (let c = 0; c < channels.length; c++) {
+                    result[i * channels.length + c] = channels[c][i];
+                }
+            }
+            
+            return result;
+        }
+        
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // =============================================
+        // MP3 EXPORT
+        // =============================================
+        async function exportMP3() {
+            if (state.isExporting) return;
+            state.isExporting = true;
+            
+            const card = document.querySelector('.export-card.mp3');
+            card.classList.add('loading');
+            showExportProgress('Initializing audio...');
+            
+            try {
+                await initAudio();
+                await updateProgress(10, 'Setting up recorder...');
+                
+                // Use MediaRecorder
+                const dest = Tone.context.createMediaStreamDestination();
+                
+                // Check for MP3 support, fallback to webm
+                let mimeType = 'audio/webm';
+                if (MediaRecorder.isTypeSupported('audio/mp3')) {
+                    mimeType = 'audio/mp3';
+                } else if (MediaRecorder.isTypeSupported('audio/mpeg')) {
+                    mimeType = 'audio/mpeg';
+                }
+                
+                const recorder = new MediaRecorder(dest.stream, { mimeType });
+                const chunks = [];
+                
+                recorder.ondataavailable = (e) => chunks.push(e.data);
+                
+                mainSynth.connect(dest);
+                
+                await updateProgress(20, 'Recording progression...');
+                recorder.start();
+                
+                const beatsPerChord = 2;
+                const msPerBeat = 60000 / state.tempo;
+                const msPerChord = msPerBeat * beatsPerChord;
+                
+                for (let i = 0; i < state.progression.length; i++) {
+                    const chord = state.progression[i];
+                    const notes = chordNotes[chord] || chordNotes['C'];
+                    const progress = 20 + ((i + 1) / state.progression.length) * 60;
+                    await updateProgress(progress, `Recording: ${chord}...`);
+                    
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
+                    mainSynth.triggerAttack(notes);
+                    
+                    await new Promise(r => setTimeout(r, msPerChord - 100));
+                    if (mainSynth.releaseAll) mainSynth.releaseAll();
+                    await new Promise(r => setTimeout(r, 100));
+                }
+                
+                await updateProgress(90, 'Finalizing...');
+                
+                await new Promise(resolve => {
+                    recorder.onstop = resolve;
+                    recorder.stop();
+                });
+                
+                await updateProgress(100, 'Complete!');
+                
+                const blob = new Blob(chunks, { type: mimeType });
+                const ext = mimeType.includes('mp3') || mimeType.includes('mpeg') ? 'mp3' : 'webm';
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ChordFlow_${state.key}_${state.genre}_${Date.now()}.${ext}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                mainSynth.disconnect(dest);
+                mainSynth.connect(filter);
+                
+                showToast(`📄 ${ext.toUpperCase()} file downloaded!`);
+            } catch (err) {
+                console.error('MP3 export error:', err);
+                showToast('❌ Export failed');
+            }
+            
+            card.classList.remove('loading');
+            hideExportProgress();
+            state.isExporting = false;
+        }
+
+        // =============================================
+        // EXPORT UI HELPERS
+        // =============================================
+        function showExportProgress(text) {
+            const progress = document.getElementById('exportProgress');
+            progress.classList.add('active');
+            document.getElementById('progressText').textContent = text;
+            document.getElementById('progressFill').style.width = '0%';
+        }
+        
+        function hideExportProgress() {
+            setTimeout(() => {
+                document.getElementById('exportProgress').classList.remove('active');
+            }, 1000);
+        }
+        
+        async function updateProgress(percent, text) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+            await new Promise(r => setTimeout(r, 100));
+        }
 
         // =============================================
         // PLAYBACK
@@ -1627,25 +2103,19 @@
             }).join('');
         }
 
-        function exportAudio(format) {
-            showToast(`Exporting as ${format.toUpperCase()}...`);
-            setTimeout(() => showToast(`${format.toUpperCase()} exported!`), 1500);
-        }
-
-        function exportMIDI() {
-            showToast('Exporting MIDI...');
-            setTimeout(() => showToast('MIDI file ready!'), 1500);
-        }
-
-        function openExportModal() {
-            showToast('Export options available below');
-        }
-
         function shareSong() {
+            const shareText = `Check out my ChordFlow progression!\n\n🎵 Key: ${state.key}\n🎸 Genre: ${state.genre}\n🎹 Chords: ${state.progression.join(' → ')}\n\n🔗 ${window.location.href}`;
+            
             if (navigator.share) {
-                navigator.share({ title: 'ChordFlow Song', text: `Check out my chord progression: ${state.progression.join(' → ')}`, url: window.location.href });
+                navigator.share({ 
+                    title: 'ChordFlow Progression', 
+                    text: shareText,
+                    url: window.location.href 
+                });
             } else {
-                showToast('Link copied to clipboard!');
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showToast('📋 Copied to clipboard!');
+                });
             }
         }
 
@@ -1804,7 +2274,7 @@
             const savedTheme = localStorage.getItem('chordflow-theme');
             if (savedTheme === 'light') document.body.classList.add('theme-light');
             
-            console.log('🎵 ChordFlow v11.6 initialized');
+            console.log('🎵 ChordFlow v11.7 - MIDI & Audio Export initialized');
         }
 
         init();
