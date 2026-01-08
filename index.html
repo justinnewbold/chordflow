@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1a2e">
-    <title>ChordFlow v12.0 - Pro Studio</title>
+    <title>ChordFlow v12.1 - Pro Studio</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -969,6 +969,7 @@
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             event.target.closest('.tab-btn').classList.add('active');
             document.getElementById(`${tabId}-tab`).classList.add('active');
+            if (tabId === 'sheet') setTimeout(renderSheetMusic, 50);
         }
         function setMode(mode, btn) {
             state.mode = mode;
