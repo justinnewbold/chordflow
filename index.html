@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.62</title>
+    <title>ChordFlow v0.63</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -78,8 +78,8 @@
         .tempo-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
         .tempo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
         .tempo-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
-        .tempo-value { min-width: 60px; padding: 6px 10px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; }
-        .tempo-value:active { background: var(--accent); }
+        .tempo-value { min-width: 60px; padding: 6px 10px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: all var(--transition-fast); }
+        .tempo-value:active, .tempo-value.tapping { background: var(--accent); transform: scale(1.05); }
 
         /* Progress Bar */
         .progress-container { margin-bottom: var(--spacing-md); }
@@ -99,256 +99,266 @@
         .count-in-btn.active { background: var(--accent-green); }
 
         .undo-redo-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
-        .undo-btn { flex: 1; padding: 10px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; cursor: pointer; transition: all var(--transition-fast); }
-        .undo-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .undo-btn:not(:disabled):active { transform: scale(0.97); }
-        
-        .sections-strip { display: flex; gap: var(--spacing-sm); overflow-x: auto; padding-bottom: var(--spacing-md); margin-bottom: var(--spacing-md); scrollbar-width: none; scroll-behavior: smooth; }
-        .sections-strip::-webkit-scrollbar { display: none; }
-        .section-pill { background: var(--bg-secondary); border: none; border-radius: var(--radius-full); padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); display: flex; align-items: center; gap: 6px; position: relative; flex-shrink: 0; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-        .section-pill:active { transform: scale(0.95); }
-        .section-pill.active { background: var(--accent); }
-        .section-pill .section-icon { font-size: 14px; flex-shrink: 0; }
-        .section-delete { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; background: var(--accent-pink); border: 2px solid var(--bg-primary); border-radius: 50%; font-size: 12px; display: none; align-items: center; justify-content: center; cursor: pointer; }
-        .section-pill.editing .section-delete { display: flex; }
-        .add-section-btn { background: var(--bg-tertiary); border: 1px dashed var(--separator); border-radius: var(--radius-full); padding: 10px 16px; font-size: 13px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .undo-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); }
+        .undo-btn:disabled { opacity: 0.4; }
+        .undo-btn:active:not(:disabled) { transform: scale(0.97); background: var(--bg-tertiary); }
 
-        /* Chord Grid */
+        .sections-strip { display: flex; gap: var(--spacing-sm); overflow-x: auto; padding-bottom: var(--spacing-md); scrollbar-width: none; -ms-overflow-style: none; }
+        .sections-strip::-webkit-scrollbar { display: none; }
+        .section-pill { display: flex; align-items: center; gap: 6px; padding: 10px 16px; background: var(--bg-secondary); border: 2px solid transparent; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+        .section-pill.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
+        .section-pill.editing .section-delete { display: flex; }
+        .section-icon { font-size: 16px; flex-shrink: 0; }
+        .section-delete { display: none; width: 20px; height: 20px; background: var(--accent-pink); border-radius: 50%; align-items: center; justify-content: center; font-size: 12px; margin-left: 4px; flex-shrink: 0; }
+        .add-section-btn { padding: 10px 16px; background: var(--bg-tertiary); border: 2px dashed var(--separator); border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; cursor: pointer; flex-shrink: 0; }
+
         .chord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
         .chord-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; border: 2px solid transparent; }
         .chord-card:active { transform: scale(0.96); }
-        .chord-card.playing { border-color: var(--accent); background: rgba(10,132,255,0.15); transform: scale(1.02); box-shadow: 0 0 20px rgba(10,132,255,0.3); }
-        .chord-card.major { border-left: 4px solid var(--accent); }
+        .chord-card.playing { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); animation: pulse 0.5s ease infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(10, 132, 255, 0); } }
+        .chord-card.major { border-left: 4px solid var(--accent-green); }
         .chord-card.minor { border-left: 4px solid var(--accent-purple); }
         .chord-card.seventh { border-left: 4px solid var(--accent-orange); }
         .chord-card.diminished { border-left: 4px solid var(--accent-pink); }
-        .chord-index { position: absolute; top: 8px; left: 10px; font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
-        .chord-diagram-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .chord-name { font-size: 32px; font-weight: 800; margin: var(--spacing-sm) 0; }
+        .chord-index { position: absolute; top: 8px; left: 12px; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }
+        .chord-diagram-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .chord-name { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
         .chord-type { font-size: 13px; color: var(--text-secondary); }
-        .generate-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, var(--accent-purple), var(--accent)); border: none; border-radius: var(--radius-lg); color: white; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); transition: all var(--transition-fast); margin-bottom: var(--spacing-md); }
-        .generate-btn:active { transform: scale(0.98); }
+
+        .generate-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), var(--accent-purple)); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: var(--spacing-md); transition: all var(--transition-fast); }
+        .generate-btn:active { transform: scale(0.98); opacity: 0.9; }
+
         .ai-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
-        .ai-btn { padding: var(--spacing-md); background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); transition: all var(--transition-fast); }
-        .ai-btn:active { transform: scale(0.96); }
-        .ai-btn.loading { opacity: 0.6; pointer-events: none; }
+        .ai-btn { padding: 14px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all var(--transition-fast); }
+        .ai-btn:active { transform: scale(0.96); background: var(--bg-tertiary); }
+        .ai-btn:disabled { opacity: 0.5; }
+        .ai-btn.loading { animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .ai-btn .icon { font-size: 18px; }
 
         /* Produce View */
-        .produce-tabs { display: flex; gap: var(--spacing-xs); background: var(--bg-secondary); border-radius: var(--radius-md); padding: 4px; margin-bottom: var(--spacing-lg); }
+        .produce-tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); padding: 4px; }
         .produce-tab { flex: 1; padding: 12px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
-        .produce-tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
+        .produce-tab.active { background: var(--accent); color: white; }
         .produce-panel { display: none; }
         .produce-panel.active { display: block; }
+
         .mixer-channel { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
         .channel-name { font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-sm); }
         .fader-container { display: flex; align-items: center; gap: var(--spacing-md); }
         .fader { flex: 1; -webkit-appearance: none; appearance: none; height: 8px; background: var(--bg-tertiary); border-radius: 4px; outline: none; }
-        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: white; border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        .fader::-moz-range-thumb { width: 24px; height: 24px; background: white; border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        .fader-value { font-size: 14px; font-weight: 600; min-width: 45px; text-align: right; }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); }
-        .toggle-label { font-weight: 600; }
-        .toggle-desc { font-size: 13px; color: var(--text-secondary); }
-        .toggle-switch { width: 51px; height: 31px; background: var(--bg-tertiary); border-radius: 16px; position: relative; cursor: pointer; transition: background 0.3s; flex-shrink: 0; }
+        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader-value { min-width: 50px; text-align: right; font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
+        .toggle-label { font-size: 14px; font-weight: 600; }
+        .toggle-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .toggle-switch { width: 52px; height: 32px; background: var(--bg-tertiary); border-radius: var(--radius-full); position: relative; cursor: pointer; transition: all var(--transition-fast); flex-shrink: 0; }
+        .toggle-switch::after { content: ''; position: absolute; width: 26px; height: 26px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all var(--transition-fast); }
         .toggle-switch.active { background: var(--accent-green); }
-        .toggle-switch::after { content: ''; position: absolute; width: 27px; height: 27px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .toggle-switch.active::after { transform: translateX(20px); }
+        .toggle-switch.active::after { left: 23px; }
+
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
-        .export-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-lg); text-align: center; cursor: pointer; border: 2px solid transparent; transition: all var(--transition-fast); }
-        .export-card:active { border-color: var(--accent); transform: scale(0.97); }
-        .export-card.new { border-color: var(--accent-green); }
-        .export-icon { font-size: 36px; margin-bottom: var(--spacing-sm); }
-        .export-title { font-weight: 600; }
+        .export-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; }
+        .export-card:active { transform: scale(0.96); background: var(--bg-tertiary); }
+        .export-card.new { border: 2px solid var(--accent-green); }
+        .export-icon { font-size: 40px; margin-bottom: var(--spacing-sm); }
+        .export-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .export-desc { font-size: 12px; color: var(--text-secondary); }
-        .export-badge { display: inline-block; background: var(--accent-green); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-top: 4px; }
+        .export-badge { position: absolute; top: 8px; right: 8px; background: var(--accent-green); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-full); }
+
         .save-load-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
-        .save-btn, .load-btn { padding: 16px; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .save-btn { background: var(--accent); color: white; }
-        .load-btn { background: var(--bg-secondary); color: var(--text-primary); }
-        .saved-song-item { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; }
-        .saved-song-name { font-weight: 600; }
-        .saved-song-meta { font-size: 12px; color: var(--text-secondary); }
-        .saved-song-delete { width: 32px; height: 32px; background: var(--accent-pink); border: none; border-radius: var(--radius-full); color: white; cursor: pointer; flex-shrink: 0; }
+        .save-btn, .load-btn { padding: 16px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .save-btn:active, .load-btn:active { transform: scale(0.96); background: var(--bg-tertiary); }
+
+        .saved-songs { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .saved-song-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); cursor: pointer; transition: all var(--transition-fast); }
+        .saved-song-item:active { background: var(--bg-tertiary); }
+        .saved-song-name { font-size: 15px; font-weight: 600; }
+        .saved-song-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .saved-song-delete { width: 32px; height: 32px; background: var(--accent-pink); border: none; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* Transport */
-        .transport { position: fixed; bottom: calc(var(--safe-bottom) + 10px); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-md); display: flex; align-items: center; justify-content: space-between; z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid var(--separator); }
-        .transport-left, .transport-right { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+        .transport-left, .transport-right { width: 60px; }
         .transport-center { display: flex; align-items: center; gap: var(--spacing-md); }
-        .play-btn { width: 56px; height: 56px; border-radius: var(--radius-full); background: var(--accent); border: none; color: white; font-size: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 16px rgba(10,132,255,0.4); transition: all var(--transition-fast); }
-        .play-btn:active { transform: scale(0.92); }
-        .play-btn.playing { background: var(--accent-orange); box-shadow: 0 4px 16px rgba(255,159,10,0.4); }
-        .transport-btn { width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); }
-        .transport-btn:active { transform: scale(0.92); }
+        .transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 20px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .transport-btn:active { transform: scale(0.9); }
         .transport-btn.active { background: var(--accent); }
-        .tempo-tap { background: var(--bg-tertiary); padding: 8px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all var(--transition-fast); user-select: none; }
-        .tempo-tap:active { background: var(--accent); transform: scale(0.95); }
-        .tempo-tap.tapping { background: var(--accent-orange); }
-        .bpm-label { color: var(--text-secondary); font-size: 10px; }
+        .play-btn { width: 56px; height: 56px; background: var(--accent); border: none; border-radius: 50%; font-size: 24px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .play-btn:active { transform: scale(0.92); }
+        .play-btn.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
+        .tempo-tap { text-align: center; cursor: pointer; transition: all var(--transition-fast); padding: 4px 8px; border-radius: var(--radius-sm); }
+        .tempo-tap:active, .tempo-tap.tapping { background: var(--accent); transform: scale(1.1); }
+        .tempo-tap span { display: block; }
+        .tempo-tap #tempoValue { font-size: 18px; font-weight: 700; }
+        .tempo-tap .bpm-label { font-size: 10px; color: var(--text-secondary); }
 
-        /* SHEET FLOW UI */
-        #sheetFlowUI { position: relative; overflow: hidden; }
-        .sf-canvas { flex: 1; display: flex; flex-direction: column; padding: var(--spacing-lg); padding-top: calc(var(--safe-top) + 60px); padding-bottom: calc(var(--safe-bottom) + 100px); overflow-y: auto; }
-        .sf-header { position: fixed; top: var(--safe-top); left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) var(--spacing-lg); z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); }
-        .sf-logo { font-size: 18px; font-weight: 700; opacity: 0.7; }
+        /* SHEET FLOW */
+        #sheetFlowUI { background: var(--bg-primary); }
+        .sf-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); }
+        .sf-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .sf-header-actions { display: flex; gap: var(--spacing-sm); }
-        .sf-header-btn { width: 32px; height: 32px; border-radius: var(--radius-full); background: rgba(255,255,255,0.1); border: none; color: white; font-size: 16px; cursor: pointer; }
-        .sf-chord-display { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 35vh; }
-        .sf-current-chord { font-size: 100px; font-weight: 900; letter-spacing: -4px; text-shadow: 0 0 60px rgba(10,132,255,0.3); transition: all 0.2s; }
-        .sf-current-chord.playing { text-shadow: 0 0 80px rgba(10,132,255,0.6); transform: scale(1.05); }
-        .sf-chord-label { font-size: 18px; color: var(--text-secondary); margin-top: var(--spacing-md); }
-        .sf-progress { margin-top: var(--spacing-md); width: 200px; }
-        .sf-progress .progress-bar { height: 4px; }
+        .sf-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sf-canvas { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--spacing-lg); position: relative; }
+        .sf-chord-display { text-align: center; margin-bottom: var(--spacing-xl); }
+        .sf-current-chord { font-size: 120px; font-weight: 900; line-height: 1; transition: all 0.2s ease; }
+        .sf-current-chord.playing { animation: pulse 0.5s ease infinite; color: var(--accent); }
+        .sf-chord-label { font-size: 16px; color: var(--text-secondary); margin-top: var(--spacing-md); }
+        .sf-progress { margin-top: var(--spacing-lg); width: 200px; }
         .sf-beat-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
-        .sf-beat-dots .beat-dot { width: 8px; height: 8px; }
-        .sf-chord-strip { display: flex; gap: var(--spacing-md); padding: var(--spacing-lg) 0; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .sf-chord-strip { display: flex; gap: var(--spacing-md); overflow-x: auto; padding: var(--spacing-md) 0; scrollbar-width: none; }
         .sf-chord-strip::-webkit-scrollbar { display: none; }
-        .sf-strip-chord { flex-shrink: 0; width: 70px; height: 70px; background: var(--bg-secondary); border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; scroll-snap-align: center; border: 2px solid transparent; transition: all var(--transition-fast); }
-        .sf-strip-chord.active { border-color: var(--accent); background: rgba(10,132,255,0.2); transform: scale(1.1); }
+        .sf-strip-chord { flex-shrink: 0; width: 70px; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .sf-strip-chord.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
         .sf-strip-name { font-size: 20px; font-weight: 700; }
-        .sf-strip-num { font-size: 11px; color: var(--text-secondary); }
-        .sf-gesture-hint { position: fixed; bottom: calc(var(--safe-bottom) + 95px); left: 50%; transform: translateX(-50%); display: flex; gap: var(--spacing-xl); opacity: 0.3; font-size: 11px; color: var(--text-secondary); }
-        
-        /* SF Transport - NEW! */
-        .sf-transport { position: fixed; bottom: calc(var(--safe-bottom) + 10px); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .sf-transport-btn { width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 18px; cursor: pointer; transition: all var(--transition-fast); }
-        .sf-transport-btn:active { transform: scale(0.92); }
-        .sf-transport-btn.active { background: var(--accent); }
-        .sf-transport-btn.play { width: 56px; height: 56px; background: var(--accent); font-size: 22px; box-shadow: 0 4px 16px rgba(10,132,255,0.4); }
-        .sf-transport-btn.play.playing { background: var(--accent-orange); }
-        .sf-tempo { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .sf-strip-num { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .sf-gesture-hint { display: flex; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); color: var(--text-tertiary); font-size: 12px; }
 
-        .sf-panel { position: fixed; top: 0; bottom: 0; width: 85%; max-width: 320px; background: var(--bg-secondary); z-index: 500; transition: transform var(--transition-smooth); display: flex; flex-direction: column; }
-        .sf-panel-left { left: 0; transform: translateX(-100%); border-radius: 0 var(--radius-xl) var(--radius-xl) 0; }
-        .sf-panel-left.open { transform: translateX(0); }
-        .sf-panel-right { right: 0; transform: translateX(100%); border-radius: var(--radius-xl) 0 0 var(--radius-xl); }
-        .sf-panel-right.open { transform: translateX(0); }
-        .sf-panel-header { padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--separator); flex-shrink: 0; }
-        .sf-panel-title { font-size: 20px; font-weight: 700; }
-        .sf-panel-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; }
-        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); }
-        .sf-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 400; backdrop-filter: blur(4px); }
-        .sf-overlay.active { opacity: 1; visibility: visible; }
+        /* Sheet Flow Transport */
+        .sf-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: space-around; z-index: 100; }
+        .sf-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .sf-transport-btn:active { transform: scale(0.9); }
+        .sf-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 22px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .sf-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
+        .sf-tempo { font-size: 16px; font-weight: 700; color: var(--text-secondary); min-width: 40px; text-align: center; }
+
+        .sf-panel { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--bg-secondary); z-index: 300; transform: translateX(-100%); transition: transform var(--transition-smooth); display: flex; flex-direction: column; }
+        .sf-panel-right { right: 0; left: auto; transform: translateX(100%); }
+        .sf-panel.open { transform: translateX(0); }
+        .sf-panel-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-md) var(--spacing-md); border-bottom: 1px solid var(--separator); }
+        .sf-panel-title { font-size: 18px; font-weight: 700; }
+        .sf-panel-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-md); }
         .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
-        .sf-instrument-item.selected { background: var(--accent); }
-        .sf-instrument-icon { font-size: 28px; }
-        .sf-instrument-name { flex: 1; font-weight: 500; }
-        .sf-instrument-check { opacity: 0; }
+        .sf-instrument-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
+        .sf-instrument-icon { font-size: 24px; }
+        .sf-instrument-name { flex: 1; font-size: 15px; font-weight: 500; }
+        .sf-instrument-check { color: var(--accent); opacity: 0; }
         .sf-instrument-item.selected .sf-instrument-check { opacity: 1; }
+        .sf-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 250; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .sf-overlay.active { opacity: 1; pointer-events: auto; }
 
-        /* CARD DECK UI */
-        #cardDeckUI { position: relative; overflow: hidden; }
-        .cd-header { position: fixed; top: var(--safe-top); left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); z-index: 100; }
-        .cd-logo { font-size: 20px; font-weight: 700; }
+        /* CARD DECK */
+        #cardDeckUI { background: var(--bg-primary); padding-bottom: calc(var(--safe-bottom) + 80px); }
+        .cd-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); }
+        .cd-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .cd-header-actions { display: flex; gap: var(--spacing-sm); }
-        .cd-header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 18px; cursor: pointer; }
-        .cd-stack-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: calc(var(--safe-top) + 70px) var(--spacing-lg) calc(var(--safe-bottom) + 110px); perspective: 1000px; touch-action: pan-y; }
-        .cd-card-stack { position: relative; width: 100%; max-width: 350px; height: 420px; }
-        .cd-card { position: absolute; width: 100%; height: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); display: flex; flex-direction: column; cursor: pointer; transition: all var(--transition-smooth); transform-origin: center bottom; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--separator); overflow: hidden; }
-        .cd-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(255,255,255,0.05), transparent); pointer-events: none; }
+        .cd-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .cd-stack-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); perspective: 1000px; }
+        .cd-card-stack { position: relative; width: 100%; max-width: 350px; height: 380px; }
+        .cd-card { position: absolute; width: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); overflow: hidden; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
         .cd-card.active { z-index: 10; transform: translateY(0) scale(1); opacity: 1; }
-        .cd-card.next { z-index: 9; transform: translateY(20px) scale(0.95); opacity: 0.7; pointer-events: none; }
-        .cd-card.behind { z-index: 8; transform: translateY(40px) scale(0.9); opacity: 0.4; pointer-events: none; }
-        .cd-card.hidden-card { z-index: 7; transform: translateY(60px) scale(0.85); opacity: 0.2; pointer-events: none; }
-        .cd-card.expanded { z-index: 100; position: fixed; top: calc(var(--safe-top) + 10px); left: var(--spacing-md); right: var(--spacing-md); bottom: calc(var(--safe-bottom) + 90px); height: auto; max-width: none; transform: none; opacity: 1; }
-        .cd-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-lg); position: relative; z-index: 1; }
-        .cd-card-icon { font-size: 32px; }
-        .cd-card-label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
-        .cd-card-close { display: none; width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 16px; cursor: pointer; align-items: center; justify-content: center; }
-        .cd-card.expanded .cd-card-close { display: flex; }
-        .cd-card-body { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; z-index: 1; }
-        .cd-progression-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .cd-big-chord { font-size: 72px; font-weight: 900; margin-bottom: var(--spacing-sm); transition: all 0.2s; }
-        .cd-big-chord.playing { transform: scale(1.1); text-shadow: 0 0 40px rgba(10,132,255,0.5); }
-        .cd-chord-info { font-size: 16px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
-        .cd-mini-chords { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; justify-content: center; }
-        .cd-mini-chord { width: 50px; height: 50px; background: var(--bg-tertiary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all var(--transition-fast); }
-        .cd-mini-chord.active { border-color: var(--accent); background: rgba(10,132,255,0.2); }
-        .cd-tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); flex: 1; }
-        .cd-tool-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .cd-card.next { z-index: 5; transform: translateY(20px) scale(0.95); opacity: 0.7; }
+        .cd-card.behind { z-index: 1; transform: translateY(40px) scale(0.9); opacity: 0.4; }
+        .cd-card.hidden-card { z-index: 0; transform: translateY(60px) scale(0.85); opacity: 0; }
+        .cd-card.expanded { position: fixed; top: var(--safe-top); left: var(--spacing-md); right: var(--spacing-md); bottom: calc(var(--safe-bottom) + 100px); width: auto; height: auto; z-index: 400; border-radius: var(--radius-xl); }
+        .cd-card-header { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); border-bottom: 1px solid var(--separator); }
+        .cd-card-icon { font-size: 24px; }
+        .cd-card-label { flex: 1; font-size: 18px; font-weight: 700; }
+        .cd-card-close { display: none; width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; }
+        .cd-card.expanded .cd-card-close { display: flex; align-items: center; justify-content: center; }
+        .cd-card-body { padding: var(--spacing-lg); height: calc(100% - 70px); overflow-y: auto; }
+        .cd-progression-display { text-align: center; padding: var(--spacing-lg) 0; }
+        .cd-big-chord { font-size: 72px; font-weight: 900; margin-bottom: var(--spacing-sm); transition: color 0.2s ease; }
+        .cd-big-chord.playing { color: var(--accent); animation: pulse 0.5s ease infinite; }
+        .cd-chord-info { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .cd-mini-chords { display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap; }
+        .cd-mini-chord { padding: 8px 16px; background: var(--bg-tertiary); border-radius: var(--radius-full); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .cd-mini-chord.active { background: var(--accent); color: white; }
+        .cd-tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
+        .cd-tool-item { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
         .cd-tool-item:active { transform: scale(0.95); background: var(--bg-elevated); }
-        .cd-tool-item.loading { opacity: 0.5; pointer-events: none; }
+        .cd-tool-item.loading { animation: shimmer 1.5s infinite; }
         .cd-tool-item .icon { font-size: 28px; }
-        .cd-tool-item .label { font-size: 13px; font-weight: 600; }
-        .cd-card[data-type="progression"] { background: linear-gradient(145deg, #1a1a2e, #16213e); }
-        .cd-card[data-type="ai"] { background: linear-gradient(145deg, #2d1b4e, #1a1a2e); }
-        .cd-card[data-type="mixer"] { background: linear-gradient(145deg, #1b3a4b, #1a1a2e); }
-        .cd-card[data-type="export"] { background: linear-gradient(145deg, #2e1a1a, #1a1a2e); }
-        .cd-nav-dots { display: flex; gap: 8px; justify-content: center; margin-top: var(--spacing-md); }
-        .cd-nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg-tertiary); transition: all 0.3s; cursor: pointer; }
+        .cd-tool-item .label { font-size: 14px; font-weight: 500; }
+        .cd-nav-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .cd-nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg-tertiary); cursor: pointer; transition: all var(--transition-fast); }
         .cd-nav-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
-        .cd-transport { position: fixed; bottom: calc(var(--safe-bottom) + 10px); left: var(--spacing-md); right: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-md); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 300; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-        .cd-transport-btn { width: 50px; height: 50px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: white; font-size: 20px; cursor: pointer; transition: all var(--transition-fast); }
-        .cd-transport-btn:active { transform: scale(0.92); }
+        .cd-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 100; }
+        .cd-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 20px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .cd-transport-btn:active { transform: scale(0.9); }
         .cd-transport-btn.active { background: var(--accent); }
-        .cd-transport-btn.play { width: 60px; height: 60px; background: var(--accent); font-size: 24px; box-shadow: 0 4px 16px rgba(10,132,255,0.4); }
-        .cd-transport-btn.play.playing { background: var(--accent-orange); }
+        .cd-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 24px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .cd-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
         .cd-tempo { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
 
         /* Bottom Sheets */
-        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 400; backdrop-filter: blur(4px); }
-        .sheet-overlay.active { opacity: 1; visibility: visible; }
-        .bottom-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; transform: translateY(100%); transition: transform var(--transition-smooth); z-index: 500; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .sheet-overlay.active { opacity: 1; pointer-events: auto; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 600; transform: translateY(100%); transition: transform var(--transition-smooth); max-height: 85vh; display: flex; flex-direction: column; }
         .bottom-sheet.active { transform: translateY(0); }
-        .sheet-handle { width: 36px; height: 5px; background: var(--bg-elevated); border-radius: var(--radius-full); margin: 10px auto; flex-shrink: 0; }
-        .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-md); flex-shrink: 0; }
+        .sheet-handle { width: 36px; height: 4px; background: var(--separator); border-radius: 2px; margin: var(--spacing-sm) auto; }
+        .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--separator); }
         .sheet-title { font-size: 18px; font-weight: 700; }
-        .sheet-close { width: 30px; height: 30px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sheet-body { flex: 1; overflow-y: auto; padding: 0 var(--spacing-lg) var(--spacing-lg); padding-bottom: calc(var(--spacing-lg) + var(--safe-bottom)); }
-        .option-list { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .sheet-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sheet-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); padding-bottom: calc(var(--safe-bottom) + var(--spacing-lg)); }
+        .option-list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
         .option-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
         .option-item:active { background: var(--bg-elevated); }
-        .option-item.selected { background: var(--accent); }
-        .option-icon { font-size: 24px; width: 40px; text-align: center; flex-shrink: 0; }
-        .option-text { flex: 1; min-width: 0; }
-        .option-title { font-weight: 600; }
-        .option-desc { font-size: 13px; color: var(--text-secondary); }
-        .option-item.selected .option-desc { color: rgba(255,255,255,0.7); }
-        .option-check { opacity: 0; color: white; flex-shrink: 0; }
+        .option-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
+        .option-icon { font-size: 24px; }
+        .option-text { flex: 1; }
+        .option-title { font-size: 16px; font-weight: 500; }
+        .option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .option-check { color: var(--accent); font-size: 18px; opacity: 0; }
         .option-item.selected .option-check { opacity: 1; }
+
         .settings-group { margin-bottom: var(--spacing-lg); }
-        .settings-group-title { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
-        .settings-item { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-xs); cursor: pointer; }
+        .settings-group-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
+        .settings-item { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .settings-item:active { background: var(--bg-elevated); }
         .settings-label { display: flex; align-items: center; gap: var(--spacing-sm); }
         .settings-icon { font-size: 20px; }
 
         /* Modals */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 600; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(8px); }
-        .modal.active { opacity: 1; visibility: visible; }
-        .modal-content { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); max-width: 350px; width: 90%; max-height: 80vh; overflow-y: auto; }
-        .modal-title { font-size: 24px; font-weight: 700; margin-bottom: var(--spacing-lg); text-align: center; }
-        .modal-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; margin-bottom: var(--spacing-lg); }
-        .modal-input:focus { outline: none; border-color: var(--accent); }
-        .modal-buttons { display: flex; gap: var(--spacing-md); }
-        .modal-btn { flex: 1; padding: 14px; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; }
-        .modal-btn.cancel { background: var(--bg-tertiary); color: var(--text-primary); }
-        .modal-btn.confirm { background: var(--accent); color: white; }
-        .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--separator); }
-        .shortcut-row:last-child { border-bottom: none; }
-        .shortcut-key { background: var(--bg-tertiary); padding: 6px 12px; border-radius: var(--radius-sm); font-family: monospace; font-weight: 600; }
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 700; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--bg-secondary); border-radius: var(--radius-xl); width: 100%; max-width: 320px; overflow: hidden; }
+        .modal-header { padding: var(--spacing-lg); text-align: center; border-bottom: 1px solid var(--separator); }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-body { padding: var(--spacing-lg); }
+        .modal-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); outline: none; transition: border-color var(--transition-fast); }
+        .modal-input:focus { border-color: var(--accent); }
+        .modal-footer { display: flex; gap: var(--spacing-sm); padding: var(--spacing-lg); padding-top: 0; }
+        .modal-btn { flex: 1; padding: 14px; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+        .modal-btn-primary { background: var(--accent); color: white; }
 
-        /* Chord Diagram */
-        .chord-diagram-content { text-align: center; }
-        .chord-diagram-title { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-md); }
-        .chord-diagram-svg { width: 100%; max-width: 200px; margin: 0 auto var(--spacing-md); display: block; }
-        .chord-diagram-notes { font-size: 18px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .chord-diagram-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .chord-diagram-modal.active { opacity: 1; pointer-events: auto; }
+        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; }
+        .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); }
+        .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
+
+        /* Shortcuts Modal */
+        .shortcuts-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .shortcuts-modal.active { opacity: 1; pointer-events: auto; }
+        .shortcuts-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 360px; max-height: 80vh; overflow-y: auto; }
+        .shortcuts-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-lg); }
+        .shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--separator); }
+        .shortcut-row:last-child { border-bottom: none; }
+        .shortcut-action { font-size: 14px; }
+        .shortcut-key { background: var(--bg-tertiary); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; font-family: monospace; }
+        .shortcuts-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
 
         /* Count-in Overlay */
-        .count-in-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.2s; }
-        .count-in-overlay.active { opacity: 1; visibility: visible; }
-        .count-in-number { font-size: 150px; font-weight: 900; color: var(--accent); }
+        .count-in-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 900; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .count-in-overlay.active { opacity: 1; pointer-events: auto; }
+        .count-in-number { font-size: 150px; font-weight: 900; color: var(--accent); animation: countPop 0.3s ease; }
+        @keyframes countPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
 
         /* Toast */
-        .toast { position: fixed; top: calc(var(--safe-top) + 60px); left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--bg-elevated); padding: var(--spacing-md) var(--spacing-lg); border-radius: var(--radius-full); font-size: 15px; font-weight: 500; z-index: 700; opacity: 0; transition: all var(--transition-smooth); box-shadow: 0 8px 32px rgba(0,0,0,0.3); max-width: 90%; text-align: center; }
+        .toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 24px; border-radius: var(--radius-full); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 1000; white-space: nowrap; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        @media (min-width: 768px) {
-            .chord-grid { grid-template-columns: repeat(4, 1fr); }
-            .transport, .cd-transport, .sf-transport { left: 50%; right: auto; transform: translateX(-50%); width: 500px; }
-        }
-
+        /* Accessibility */
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
     </style>
 </head>
@@ -362,7 +372,7 @@
         </div>
         <div class="onboarding-modes">
             <div class="mode-option selected" data-mode="dual" onclick="selectOnboardingMode('dual')">
-                <span class="mode-option-icon">📱</span>
+                <div class="mode-option-icon">📱</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Dual Mode</div>
                     <div class="mode-option-desc">Simple Create/Produce toggle. Best for beginners.</div>
@@ -370,7 +380,7 @@
                 <div class="mode-option-check">✓</div>
             </div>
             <div class="mode-option" data-mode="sheet" onclick="selectOnboardingMode('sheet')">
-                <span class="mode-option-icon">📄</span>
+                <div class="mode-option-icon">📄</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Sheet Flow</div>
                     <div class="mode-option-desc">Gesture-based with sliding panels.</div>
@@ -378,7 +388,7 @@
                 <div class="mode-option-check">✓</div>
             </div>
             <div class="mode-option" data-mode="cards" onclick="selectOnboardingMode('cards')">
-                <span class="mode-option-icon">🃏</span>
+                <div class="mode-option-icon">🃏</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Card Deck</div>
                     <div class="mode-option-desc">Swipeable cards for different tools.</div>
@@ -664,7 +674,7 @@
                 <div class="settings-group-title">About</div>
                 <div class="settings-item">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Version</span></div>
-                    <span style="color: var(--text-secondary);">0.62</span>
+                    <span id="versionDisplay" style="color: var(--text-secondary);">0.63</span>
                 </div>
             </div>
         </div>
@@ -700,51 +710,57 @@
         <div class="sheet-body" id="songsSheetBody"></div>
     </div>
 
-    <!-- Modals -->
-    <div class="modal" id="chordDiagramModal" onclick="closeChordDiagram()">
-        <div class="modal-content chord-diagram-content" onclick="event.stopPropagation()">
-            <div class="chord-diagram-title" id="diagramChordName">C</div>
-            <svg class="chord-diagram-svg" id="chordDiagramSvg" viewBox="0 0 100 120"></svg>
-            <div class="chord-diagram-notes" id="diagramNotes">C - E - G</div>
-            <button class="modal-btn confirm" onclick="closeChordDiagram()" style="width:100%">Close</button>
+    <!-- Chord Diagram Modal -->
+    <div class="chord-diagram-modal" id="chordDiagramModal" onclick="closeChordDiagram()">
+        <div class="diagram-card" onclick="event.stopPropagation()">
+            <div class="diagram-chord-name" id="diagramChordName">C</div>
+            <div class="diagram-notes" id="diagramNotes">C - E - G</div>
+            <svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg>
+            <button class="diagram-close" onclick="closeChordDiagram()">Close</button>
         </div>
     </div>
 
-    <div class="modal" id="saveModal" onclick="closeSaveModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">💾 Save Song</div>
-            <input type="text" class="modal-input" id="songNameInput" placeholder="Enter song name..." maxlength="50">
-            <div class="modal-buttons">
-                <button class="modal-btn cancel" onclick="closeSaveModal()">Cancel</button>
-                <button class="modal-btn confirm" onclick="confirmSaveSong()">Save</button>
+    <!-- Save Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header"><div class="modal-title">💾 Save Song</div></div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="songNameInput" placeholder="Enter song name..." maxlength="50" autocomplete="off">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmSaveSong()">Save</button>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="shortcutsModal" onclick="closeShortcuts()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">⌨️ Keyboard Shortcuts</div>
-            <div class="shortcut-row"><span>Play / Pause</span><span class="shortcut-key">Space</span></div>
-            <div class="shortcut-row"><span>Generate Random</span><span class="shortcut-key">G</span></div>
-            <div class="shortcut-row"><span>AI Generate</span><span class="shortcut-key">A</span></div>
-            <div class="shortcut-row"><span>Export MIDI</span><span class="shortcut-key">Ctrl+M</span></div>
-            <div class="shortcut-row"><span>Export PDF</span><span class="shortcut-key">Ctrl+P</span></div>
-            <div class="shortcut-row"><span>Save Song</span><span class="shortcut-key">Ctrl+S</span></div>
-            <div class="shortcut-row"><span>Undo</span><span class="shortcut-key">Ctrl+Z</span></div>
-            <div class="shortcut-row"><span>Redo</span><span class="shortcut-key">Ctrl+Shift+Z</span></div>
-            <div class="shortcut-row"><span>Show Shortcuts</span><span class="shortcut-key">?</span></div>
-            <button class="modal-btn cancel" onclick="closeShortcuts()" style="width:100%;margin-top:var(--spacing-lg)">Close</button>
+    <!-- Shortcuts Modal -->
+    <div class="shortcuts-modal" id="shortcutsModal" onclick="closeShortcuts()">
+        <div class="shortcuts-card" onclick="event.stopPropagation()">
+            <div class="shortcuts-title">⌨️ Keyboard Shortcuts</div>
+            <div class="shortcut-row"><span class="shortcut-action">Play / Pause</span><span class="shortcut-key">Space</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Generate Random</span><span class="shortcut-key">G</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">AI Generate</span><span class="shortcut-key">A</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Export MIDI</span><span class="shortcut-key">Ctrl+M</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Export PDF</span><span class="shortcut-key">Ctrl+P</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Save Song</span><span class="shortcut-key">Ctrl+S</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Undo</span><span class="shortcut-key">Ctrl+Z</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Redo</span><span class="shortcut-key">Ctrl+Shift+Z</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Show Shortcuts</span><span class="shortcut-key">?</span></div>
+            <button class="shortcuts-close" onclick="closeShortcuts()">Close</button>
         </div>
     </div>
 
+    <!-- Count-in Overlay -->
     <div class="count-in-overlay" id="countInOverlay">
         <div class="count-in-number" id="countInNumber">4</div>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <script>
-        const VERSION = '0.62';
+        const VERSION = '0.63';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -849,9 +865,13 @@
             else if (type === 'bass') state.bassVolume = value;
             else if (type === 'master') state.masterVolume = value;
             updateVolumes();
-            // Update all displays
-            document.querySelectorAll(`#${type}Volume, .cd-card input[oninput*="${type}"]`).forEach(el => { if (el.value !== undefined) el.value = value; });
-            document.querySelectorAll(`#${type}VolumeDisplay, .cd-${type}-vol`).forEach(el => el.textContent = value + '%');
+            // Update all displays across UI modes
+            const el = document.getElementById(`${type}Volume`);
+            if (el) el.value = value;
+            const display = document.getElementById(`${type}VolumeDisplay`);
+            if (display) display.textContent = value + '%';
+            // Card deck displays
+            document.querySelectorAll(`.cd-${type}-vol`).forEach(el => el.textContent = value + '%');
         }
 
         function getChordNotes(chord) { return CHORD_NOTES[chord] || CHORD_NOTES[chord.replace('7', '')] || CHORD_NOTES['C']; }
@@ -982,7 +1002,8 @@
             state.baseTempo = value;
             state.tempo = Math.round(value * state.speedMultiplier);
             updateTempoDisplay();
-            document.getElementById('tempoSlider').value = value;
+            const slider = document.getElementById('tempoSlider');
+            if (slider) slider.value = value;
             if (state.isPlaying) restartPlayback();
         }
         function setSpeed(multiplier) {
@@ -990,13 +1011,15 @@
             state.tempo = Math.round(state.baseTempo * multiplier);
             updateTempoDisplay();
             document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`speed${multiplier * 100}`)?.classList.add('active');
+            const btn = document.getElementById(`speed${multiplier * 100}`);
+            if (btn) btn.classList.add('active');
             if (state.isPlaying) restartPlayback();
             showToast(`⏱️ Speed: ${multiplier * 100}%`);
         }
         function toggleCountIn() {
             state.countInEnabled = !state.countInEnabled;
-            document.getElementById('countInBtn')?.classList.toggle('active', state.countInEnabled);
+            const btn = document.getElementById('countInBtn');
+            if (btn) btn.classList.toggle('active', state.countInEnabled);
             showToast(state.countInEnabled ? '📢 Count-in ON' : '📢 Count-in OFF');
         }
         let tapTimes = [];
@@ -1004,10 +1027,13 @@
             const now = Date.now();
             tapTimes = tapTimes.filter(t => now - t < 3000);
             tapTimes.push(now);
-            // Visual feedback
+            // Visual feedback for all tappable elements
             ['tempoValueDisplay', 'tempoTap'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) { el.classList.add('tapping'); setTimeout(() => el.classList.remove('tapping'), 200); }
+                if (el) { 
+                    el.classList.add('tapping'); 
+                    setTimeout(() => el.classList.remove('tapping'), 200); 
+                }
             });
             if (tapTimes.length >= 2) {
                 const intervals = [];
@@ -1017,16 +1043,22 @@
                 if (newTempo >= 40 && newTempo <= 200) {
                     state.baseTempo = newTempo;
                     state.tempo = Math.round(newTempo * state.speedMultiplier);
-                    document.getElementById('tempoSlider').value = newTempo;
+                    const slider = document.getElementById('tempoSlider');
+                    if (slider) slider.value = newTempo;
                     updateTempoDisplay();
                     if (state.isPlaying) restartPlayback();
+                    showToast(`🥁 Tempo: ${newTempo} BPM`);
                 }
             }
         }
         function updateTempoDisplay() {
             const displayTempo = state.tempo;
-            ['tempoValue', 'tempoValueDisplay', 'sfTempo'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = displayTempo; });
-            const cdTempo = document.getElementById('cdTempo'); if (cdTempo) cdTempo.textContent = `${displayTempo} BPM`;
+            ['tempoValue', 'tempoValueDisplay', 'sfTempo'].forEach(id => { 
+                const el = document.getElementById(id); 
+                if (el) el.textContent = displayTempo; 
+            });
+            const cdTempo = document.getElementById('cdTempo'); 
+            if (cdTempo) cdTempo.textContent = `${displayTempo} BPM`;
         }
 
         // AI
@@ -1161,8 +1193,10 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             const html = songs.length === 0 ? '<p style="color:var(--text-secondary);text-align:center;">No saved songs yet</p>' :
                 songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${s.name}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
-            document.getElementById('savedSongsList').innerHTML = html;
-            document.getElementById('songsSheetBody').innerHTML = html;
+            const savedList = document.getElementById('savedSongsList');
+            if (savedList) savedList.innerHTML = html;
+            const songsBody = document.getElementById('songsSheetBody');
+            if (songsBody) songsBody.innerHTML = html;
         }
 
         // Onboarding
@@ -1194,9 +1228,13 @@
         function activateUI() {
             const uiMap = { dual: 'dualModeUI', sheet: 'sheetFlowUI', cards: 'cardDeckUI' };
             document.querySelectorAll('.ui-container').forEach(c => c.classList.remove('active'));
-            document.getElementById(uiMap[state.uiMode])?.classList.add('active');
+            const container = document.getElementById(uiMap[state.uiMode]);
+            if (container) container.classList.add('active');
             updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs();
             if (state.uiMode === 'cards') initCardDeck();
+            // Update version display
+            const versionDisplay = document.getElementById('versionDisplay');
+            if (versionDisplay) versionDisplay.textContent = VERSION;
         }
         function switchUIMode(mode) {
             state.uiMode = mode;
@@ -1205,60 +1243,95 @@
             showToast({ dual: '📱 Dual Mode', sheet: '📄 Sheet Flow', cards: '🃏 Card Deck' }[mode]);
         }
         function updateUISelectors() {
-            document.getElementById('uiOptDual')?.classList.toggle('selected', state.uiMode === 'dual');
-            document.getElementById('uiOptSheet')?.classList.toggle('selected', state.uiMode === 'sheet');
-            document.getElementById('uiOptCards')?.classList.toggle('selected', state.uiMode === 'cards');
+            const optDual = document.getElementById('uiOptDual');
+            const optSheet = document.getElementById('uiOptSheet');
+            const optCards = document.getElementById('uiOptCards');
+            if (optDual) optDual.classList.toggle('selected', state.uiMode === 'dual');
+            if (optSheet) optSheet.classList.toggle('selected', state.uiMode === 'sheet');
+            if (optCards) optCards.classList.toggle('selected', state.uiMode === 'cards');
             const label = document.getElementById('currentUILabel');
             if (label) label.textContent = { dual: 'Dual Mode ›', sheet: 'Sheet Flow ›', cards: 'Card Deck ›' }[state.uiMode];
         }
         function syncUIState() {
-            document.getElementById('bassToggle')?.classList.toggle('active', state.bassEnabled);
-            document.getElementById('metronomeToggle')?.classList.toggle('active', state.metronomeEnabled);
-            document.getElementById('metronomeHeaderBtn')?.classList.toggle('active', state.metronomeEnabled);
-            document.getElementById('loopBtn')?.classList.toggle('active', state.isLooping);
-            document.getElementById('cdLoopBtn')?.classList.toggle('active', state.isLooping);
-            document.getElementById('countInBtn')?.classList.toggle('active', state.countInEnabled);
-            document.getElementById('chordVolume').value = state.chordVolume;
-            document.getElementById('bassVolume').value = state.bassVolume;
-            document.getElementById('masterVolume').value = state.masterVolume;
-            document.getElementById('chordVolumeDisplay').textContent = state.chordVolume + '%';
-            document.getElementById('bassVolumeDisplay').textContent = state.bassVolume + '%';
-            document.getElementById('masterVolumeDisplay').textContent = state.masterVolume + '%';
-            document.getElementById('tempoSlider').value = state.baseTempo;
+            const bassToggle = document.getElementById('bassToggle');
+            if (bassToggle) bassToggle.classList.toggle('active', state.bassEnabled);
+            const metronomeToggle = document.getElementById('metronomeToggle');
+            if (metronomeToggle) metronomeToggle.classList.toggle('active', state.metronomeEnabled);
+            const metronomeHeaderBtn = document.getElementById('metronomeHeaderBtn');
+            if (metronomeHeaderBtn) metronomeHeaderBtn.classList.toggle('active', state.metronomeEnabled);
+            const loopBtn = document.getElementById('loopBtn');
+            if (loopBtn) loopBtn.classList.toggle('active', state.isLooping);
+            const cdLoopBtn = document.getElementById('cdLoopBtn');
+            if (cdLoopBtn) cdLoopBtn.classList.toggle('active', state.isLooping);
+            const countInBtn = document.getElementById('countInBtn');
+            if (countInBtn) countInBtn.classList.toggle('active', state.countInEnabled);
+            
+            const chordVol = document.getElementById('chordVolume');
+            if (chordVol) chordVol.value = state.chordVolume;
+            const bassVol = document.getElementById('bassVolume');
+            if (bassVol) bassVol.value = state.bassVolume;
+            const masterVol = document.getElementById('masterVolume');
+            if (masterVol) masterVol.value = state.masterVolume;
+            
+            const chordDisplay = document.getElementById('chordVolumeDisplay');
+            if (chordDisplay) chordDisplay.textContent = state.chordVolume + '%';
+            const bassDisplay = document.getElementById('bassVolumeDisplay');
+            if (bassDisplay) bassDisplay.textContent = state.bassVolume + '%';
+            const masterDisplay = document.getElementById('masterVolumeDisplay');
+            if (masterDisplay) masterDisplay.textContent = state.masterVolume + '%';
+            
+            const tempoSlider = document.getElementById('tempoSlider');
+            if (tempoSlider) tempoSlider.value = state.baseTempo;
             updateTempoDisplay();
             document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`speed${state.speedMultiplier * 100}`)?.classList.add('active');
+            const speedBtn = document.getElementById(`speed${state.speedMultiplier * 100}`);
+            if (speedBtn) speedBtn.classList.add('active');
         }
 
         // Toggles
-        function toggleBass() { state.bassEnabled = !state.bassEnabled; document.getElementById('bassToggle')?.classList.toggle('active', state.bassEnabled); showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF'); }
+        function toggleBass() { 
+            state.bassEnabled = !state.bassEnabled; 
+            const toggle = document.getElementById('bassToggle');
+            if (toggle) toggle.classList.toggle('active', state.bassEnabled); 
+            showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF'); 
+        }
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
-            document.getElementById('metronomeToggle')?.classList.toggle('active', state.metronomeEnabled);
-            document.getElementById('metronomeHeaderBtn')?.classList.toggle('active', state.metronomeEnabled);
+            const toggle = document.getElementById('metronomeToggle');
+            if (toggle) toggle.classList.toggle('active', state.metronomeEnabled);
+            const headerBtn = document.getElementById('metronomeHeaderBtn');
+            if (headerBtn) headerBtn.classList.toggle('active', state.metronomeEnabled);
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
         }
         function toggleLoop() {
             state.isLooping = !state.isLooping;
-            document.getElementById('loopBtn')?.classList.toggle('active', state.isLooping);
-            document.getElementById('cdLoopBtn')?.classList.toggle('active', state.isLooping);
+            const loopBtn = document.getElementById('loopBtn');
+            if (loopBtn) loopBtn.classList.toggle('active', state.isLooping);
+            const cdLoopBtn = document.getElementById('cdLoopBtn');
+            if (cdLoopBtn) cdLoopBtn.classList.toggle('active', state.isLooping);
             showToast(state.isLooping ? '🔁 Loop ON' : '🔁 Loop OFF');
         }
 
         // Dual Mode
         function setMode(mode) {
             state.mode = mode;
-            document.getElementById('createModeBtn')?.classList.toggle('active', mode === 'create');
-            document.getElementById('produceModeBtn')?.classList.toggle('active', mode === 'produce');
-            document.getElementById('createView')?.classList.toggle('active', mode === 'create');
-            document.getElementById('produceView')?.classList.toggle('active', mode === 'produce');
+            const createBtn = document.getElementById('createModeBtn');
+            const produceBtn = document.getElementById('produceModeBtn');
+            const createView = document.getElementById('createView');
+            const produceView = document.getElementById('produceView');
+            if (createBtn) createBtn.classList.toggle('active', mode === 'create');
+            if (produceBtn) produceBtn.classList.toggle('active', mode === 'produce');
+            if (createView) createView.classList.toggle('active', mode === 'create');
+            if (produceView) produceView.classList.toggle('active', mode === 'produce');
         }
         function setProduceTab(tab) {
             state.produceTab = tab;
             document.querySelectorAll('.produce-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.produce-panel').forEach(p => p.classList.remove('active'));
-            document.querySelector(`.produce-tab[onclick*="${tab}"]`)?.classList.add('active');
-            document.getElementById(`${tab}Panel`)?.classList.add('active');
+            const tabBtn = document.querySelector(`.produce-tab[onclick*="${tab}"]`);
+            if (tabBtn) tabBtn.classList.add('active');
+            const panel = document.getElementById(`${tab}Panel`);
+            if (panel) panel.classList.add('active');
         }
 
         // Sections
@@ -1298,7 +1371,8 @@
             const displayChords = getTransposedProgression();
             const progress = ((state.currentChordIndex + 1) / displayChords.length) * 100;
             document.querySelectorAll('.progress-fill').forEach(el => el.style.width = progress + '%');
-            document.getElementById('sfProgressFill').style.width = progress + '%';
+            const sfProgress = document.getElementById('sfProgressFill');
+            if (sfProgress) sfProgress.style.width = progress + '%';
         }
         function updateBeatDots(beat) {
             // Dual mode beat dots
@@ -1349,17 +1423,34 @@
             if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
             const secList = document.getElementById('sfSectionsList');
             if (secList) secList.innerHTML = '<div class="option-list">' + state.sections.map((s, i) => `<div class="option-item ${state.currentSection === i ? 'selected' : ''}" onclick="selectSection(${i}); closeSFPanel('right')"><span class="option-icon">${s.icon}</span><div class="option-text"><div class="option-title">${s.name}</div></div></div>`).join('') + '</div>';
-            // Update SF transport
+            // Update SF transport buttons
             const sfPlayBtn = document.getElementById('sfPlayBtn');
-            if (sfPlayBtn) { sfPlayBtn.textContent = state.isPlaying ? '⏸️' : '▶️'; sfPlayBtn.classList.toggle('playing', state.isPlaying); }
+            if (sfPlayBtn) { 
+                sfPlayBtn.textContent = state.isPlaying ? '⏸️' : '▶️'; 
+                sfPlayBtn.classList.toggle('playing', state.isPlaying); 
+            }
             const sfTempo = document.getElementById('sfTempo');
             if (sfTempo) sfTempo.textContent = state.tempo;
         }
         function sfSelectChord(i) { state.currentChordIndex = i; renderAll(); playChord(getTransposedProgression()[i], '4n'); }
         function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); }
-        function openSFPanel(side) { document.getElementById('sfOverlay').classList.add('active'); document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel').classList.add('open'); }
-        function closeSFPanel(side) { document.getElementById('sfOverlay').classList.remove('active'); document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel').classList.remove('open'); }
-        function closeAllSFPanels() { document.getElementById('sfOverlay').classList.remove('active'); document.querySelectorAll('.sf-panel').forEach(p => p.classList.remove('open')); }
+        function openSFPanel(side) { 
+            const overlay = document.getElementById('sfOverlay');
+            if (overlay) overlay.classList.add('active'); 
+            const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
+            if (panel) panel.classList.add('open'); 
+        }
+        function closeSFPanel(side) { 
+            const overlay = document.getElementById('sfOverlay');
+            if (overlay) overlay.classList.remove('active'); 
+            const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
+            if (panel) panel.classList.remove('open'); 
+        }
+        function closeAllSFPanels() { 
+            const overlay = document.getElementById('sfOverlay');
+            if (overlay) overlay.classList.remove('active'); 
+            document.querySelectorAll('.sf-panel').forEach(p => p.classList.remove('open')); 
+        }
 
         // Card Deck
         let cdExpandedCard = null, cdSwipeInitialized = false;
@@ -1389,7 +1480,14 @@
             if (!container) return;
             container.addEventListener('touchstart', e => { if (cdExpandedCard) return; cdTouchStartX = e.touches[0].clientX; cdIsSwiping = false; }, { passive: true });
             container.addEventListener('touchmove', e => { if (cdExpandedCard) return; if (Math.abs(e.touches[0].clientX - cdTouchStartX) > 20) cdIsSwiping = true; }, { passive: true });
-            container.addEventListener('touchend', e => { if (cdExpandedCard) return; const dx = e.changedTouches[0].clientX - cdTouchStartX; if (cdIsSwiping && Math.abs(dx) > 50) { if (dx < 0) cdNextCard(); else cdPrevCard(); } cdIsSwiping = false; }, { passive: true });
+            container.addEventListener('touchend', e => { 
+                if (cdExpandedCard) return; 
+                const dx = e.changedTouches[0].clientX - cdTouchStartX; 
+                if (cdIsSwiping && Math.abs(dx) > 70) { // Increased threshold from 50 to 70
+                    if (dx < 0) cdNextCard(); else cdPrevCard(); 
+                } 
+                cdIsSwiping = false; 
+            }, { passive: true });
             container.addEventListener('click', e => { const card = e.target.closest('.cd-card'); if (card && !cdExpandedCard && card.classList.contains('active')) cdExpandCard(card); });
         }
         function cdNextCard() { state.currentCardIndex = (state.currentCardIndex + 1) % cardTypes.length; renderCardStack(); }
@@ -1410,8 +1508,8 @@
         }
         function updatePlayButtons() {
             const icon = state.isPlaying ? '⏸️' : '▶️';
-            document.getElementById('playBtn').textContent = icon;
-            document.getElementById('playBtn').classList.toggle('playing', state.isPlaying);
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn) { playBtn.textContent = icon; playBtn.classList.toggle('playing', state.isPlaying); }
             const sfBtn = document.getElementById('sfPlayBtn');
             if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); }
             const cdBtn = document.getElementById('cdPlayBtn');
@@ -1419,14 +1517,14 @@
         }
         async function doCountIn() {
             const overlay = document.getElementById('countInOverlay'), numEl = document.getElementById('countInNumber');
-            overlay.classList.add('active');
+            if (overlay) overlay.classList.add('active');
             const beatMs = 60000 / state.tempo;
             for (let i = 4; i >= 1; i--) {
-                numEl.textContent = i;
+                if (numEl) numEl.textContent = i;
                 playMetronomeTick(i === 4);
                 await new Promise(r => setTimeout(r, beatMs));
             }
-            overlay.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
         }
         function startPlayback() {
             const beatMs = 60000 / state.tempo;
@@ -1477,27 +1575,42 @@
 
         function renderAll() {
             renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
-            const keyDisplay = document.getElementById('keyDisplay'); if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
-            const genreDisplay = document.getElementById('genreDisplay'); if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
+            const keyDisplay = document.getElementById('keyDisplay'); 
+            if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
+            const genreDisplay = document.getElementById('genreDisplay'); 
+            if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
         }
 
         // Bottom Sheets
         function openSheet(type) {
             closeSheet();
-            document.getElementById('sheetOverlay').classList.add('active');
-            document.getElementById(`${type}Sheet`)?.classList.add('active');
+            const overlay = document.getElementById('sheetOverlay');
+            if (overlay) overlay.classList.add('active');
+            const sheet = document.getElementById(`${type}Sheet`);
+            if (sheet) sheet.classList.add('active');
             if (type === 'instrument') renderInstrumentOptions();
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
             if (type === 'songs') renderSavedSongs();
         }
-        function closeSheet() { document.getElementById('sheetOverlay').classList.remove('active'); document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active')); }
+        function closeSheet() { 
+            const overlay = document.getElementById('sheetOverlay');
+            if (overlay) overlay.classList.remove('active'); 
+            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active')); 
+        }
         function renderInstrumentOptions() {
             const list = document.getElementById('instrumentList'); if (!list) return;
             list.innerHTML = instruments.map(inst => `<div class="option-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="selectInstrument('${inst.id}')"><span class="option-icon">${inst.icon}</span><div class="option-text"><div class="option-title">${inst.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-        function selectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); document.getElementById('instrumentBtn').textContent = instruments.find(i => i.id === id).icon; closeSheet(); showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); }
+        function selectInstrument(id) { 
+            state.instrument = id; 
+            if (audioInit) createSynth(); 
+            const btn = document.getElementById('instrumentBtn');
+            if (btn) btn.textContent = instruments.find(i => i.id === id).icon; 
+            closeSheet(); 
+            showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); 
+        }
         function renderKeyOptions() {
             const majorList = document.getElementById('majorKeyList'), minorList = document.getElementById('minorKeyList');
             if (majorList) majorList.innerHTML = majorKeys.map(k => `<div class="option-item ${state.key === k ? 'selected' : ''}" onclick="selectKey('${k}')"><span class="option-icon">🎵</span><div class="option-text"><div class="option-title">${k} Major</div></div><span class="option-check">✓</span></div>`).join('');
@@ -1515,7 +1628,13 @@
         function closeShortcuts() { document.getElementById('shortcutsModal').classList.remove('active'); }
 
         // Toast
-        function showToast(msg) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+        function showToast(msg) { 
+            const t = document.getElementById('toast'); 
+            if (!t) return; 
+            t.textContent = msg; 
+            t.classList.add('show'); 
+            setTimeout(() => t.classList.remove('show'), 2500); 
+        }
 
         // Event Listeners
         document.addEventListener('keydown', e => {
@@ -1533,18 +1652,22 @@
             if (e.code === 'ArrowRight' && state.uiMode === 'cards') cdNextCard();
         });
 
+        // Sheet Flow swipe gestures
         let sfTouchStartX = 0;
-        document.getElementById('sfCanvas')?.addEventListener('touchstart', e => { sfTouchStartX = e.touches[0].clientX; }, { passive: true });
-        document.getElementById('sfCanvas')?.addEventListener('touchend', e => {
-            const dx = e.changedTouches[0].clientX - sfTouchStartX;
-            if (Math.abs(dx) > 100) { if (dx > 0) openSFPanel('left'); else openSFPanel('right'); }
-        }, { passive: true });
+        const sfCanvas = document.getElementById('sfCanvas');
+        if (sfCanvas) {
+            sfCanvas.addEventListener('touchstart', e => { sfTouchStartX = e.touches[0].clientX; }, { passive: true });
+            sfCanvas.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - sfTouchStartX;
+                if (Math.abs(dx) > 100) { if (dx > 0) openSFPanel('left'); else openSFPanel('right'); }
+            }, { passive: true });
+        }
 
         // Init
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} loaded - Bug fixes & UI improvements`);
+            console.log(`🎵 ChordFlow v${VERSION} loaded - Bug fixes & polish`);
         }
         init();
     </script>
