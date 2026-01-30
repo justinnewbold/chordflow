@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.64</title>
+    <title>ChordFlow v0.65</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -779,17 +779,17 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const VERSION = '0.64';
+        const VERSION = '0.65';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
         const instruments = [
-            { id: 'piano', name: 'Grand Piano', icon: '🎹', type: 'triangle', attack: 0.02, release: 1.2 },
-            { id: 'epiano', name: 'Electric Piano', icon: '🎹', type: 'sine', attack: 0.01, release: 0.8 },
-            { id: 'synth', name: 'Synth Pad', icon: '🎛️', type: 'sawtooth', attack: 0.3, release: 1.5 },
-            { id: 'guitar', name: 'Acoustic Guitar', icon: '🎸', type: 'triangle', attack: 0.01, release: 0.5 },
-            { id: 'strings', name: 'Strings', icon: '🎻', type: 'sawtooth', attack: 0.2, release: 1.8 },
-            { id: 'organ', name: 'Organ', icon: '🎹', type: 'square', attack: 0.01, release: 0.3 }
+            { id: 'piano', name: 'Grand Piano', icon: '🎹', synthType: 'Synth', options: { oscillator: { type: 'triangle8' }, envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.2 } } },
+            { id: 'epiano', name: 'Electric Piano', icon: '🎹', synthType: 'FMSynth', options: { harmonicity: 3, modulationIndex: 10, envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 } } },
+            { id: 'synth', name: 'Synth Pad', icon: '🎛️', synthType: 'AMSynth', options: { harmonicity: 2, envelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 2 } } },
+            { id: 'guitar', name: 'Acoustic Guitar', icon: '🎸', synthType: 'PluckSynth', options: { attackNoise: 1, dampening: 4000, resonance: 0.98, release: 1 } },
+            { id: 'strings', name: 'Strings', icon: '🎻', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 30, count: 3 }, envelope: { attack: 0.3, decay: 0.1, sustain: 0.9, release: 1.8 } } },
+            { id: 'organ', name: 'Organ', icon: '🎹', synthType: 'Synth', options: { oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 1, release: 0.1 } } }
         ];
         const genres = [
             { id: 'pop', name: 'Pop', icon: '🎤' }, { id: 'rock', name: 'Rock', icon: '🎸' },
@@ -874,7 +874,21 @@
         function createSynth() {
             if (synth) { try { synth.dispose(); } catch(e) {} }
             const inst = instruments.find(i => i.id === state.instrument) || instruments[0];
-            synth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: inst.type }, envelope: { attack: inst.attack, decay: 0.3, sustain: 0.5, release: inst.release } }).connect(masterGain);
+            
+            // Create appropriate synth based on instrument type
+            if (inst.synthType === 'PluckSynth') {
+                // PluckSynth doesn't support PolySynth, create multiple instances
+                synth = new Tone.PolySynth(Tone.Synth, { 
+                    oscillator: { type: 'triangle' }, 
+                    envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.5 } 
+                }).connect(masterGain);
+            } else if (inst.synthType === 'FMSynth') {
+                synth = new Tone.PolySynth(Tone.FMSynth, inst.options).connect(masterGain);
+            } else if (inst.synthType === 'AMSynth') {
+                synth = new Tone.PolySynth(Tone.AMSynth, inst.options).connect(masterGain);
+            } else {
+                synth = new Tone.PolySynth(Tone.Synth, inst.options).connect(masterGain);
+            }
             updateVolumes();
         }
         function updateVolumes() {
@@ -1761,7 +1775,7 @@
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} loaded - Bug fixes & polish`);
+            console.log(`🎵 ChordFlow v${VERSION} - Enhanced instrument sounds`);
         }
         init();
     </script>
@@ -1771,4 +1785,5 @@
     </div>
 </body>
 </html>
+
 
