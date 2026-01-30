@@ -1,4 +1,830 @@
- ['G', 'C', 'D', 'G'], ['A', 'D', 'E', 'A'], ['E', 'G', 'A', 'E']],
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ChordFlow v0.64</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000; --bg-secondary: #1c1c1e; --bg-tertiary: #2c2c2e; --bg-elevated: #3a3a3c;
+            --text-primary: #ffffff; --text-secondary: #8e8e93; --text-tertiary: #636366;
+            --accent: #0a84ff; --accent-green: #30d158; --accent-orange: #ff9f0a; --accent-pink: #ff375f; --accent-purple: #bf5af2;
+            --separator: rgba(84, 84, 88, 0.65);
+            --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 16px; --spacing-lg: 24px; --spacing-xl: 32px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px; --radius-full: 100px;
+            --safe-top: env(safe-area-inset-top, 20px); --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --transition-fast: 0.15s ease; --transition-smooth: 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: 100dvh; overflow: hidden; overscroll-behavior: none; }
+        button { font-family: var(--font); }
+
+        /* Onboarding */
+        .onboarding { position: fixed; inset: 0; background: var(--bg-primary); z-index: 1000; display: flex; flex-direction: column; padding: var(--safe-top) var(--spacing-lg) var(--safe-bottom); }
+        .onboarding.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .onboarding-header { text-align: center; padding: var(--spacing-xl) 0; }
+        .onboarding-logo { font-size: 64px; margin-bottom: var(--spacing-md); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .onboarding-title { font-size: 32px; font-weight: 800; margin-bottom: var(--spacing-sm); }
+        .onboarding-subtitle { font-size: 17px; color: var(--text-secondary); max-width: 300px; margin: 0 auto; line-height: 1.4; }
+        .onboarding-modes { flex: 1; display: flex; flex-direction: column; gap: var(--spacing-md); padding: var(--spacing-lg) 0; max-width: 400px; margin: 0 auto; width: 100%; overflow-y: auto; }
+        .mode-option { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; display: flex; align-items: center; gap: var(--spacing-md); }
+        .mode-option.selected { border-color: var(--accent); background: rgba(10, 132, 255, 0.1); }
+        .mode-option-icon { font-size: 40px; flex-shrink: 0; }
+        .mode-option-content { flex: 1; }
+        .mode-option-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .mode-option-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.3; }
+        .mode-option-check { width: 24px; height: 24px; border-radius: var(--radius-full); border: 2px solid var(--separator); display: flex; align-items: center; justify-content: center; color: transparent; transition: all var(--transition-fast); flex-shrink: 0; }
+        .mode-option.selected .mode-option-check { background: var(--accent); border-color: var(--accent); color: white; }
+        .onboarding-footer { padding: var(--spacing-lg) 0; flex-shrink: 0; }
+        .onboarding-cta { width: 100%; max-width: 400px; margin: 0 auto; padding: 18px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 17px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); }
+        .onboarding-skip { display: block; text-align: center; margin-top: var(--spacing-md); color: var(--text-secondary); font-size: 15px; cursor: pointer; background: none; border: none; }
+
+        /* UI Container */
+        .ui-container { display: none; min-height: 100vh; min-height: 100dvh; }
+        .ui-container.active { display: flex; flex-direction: column; }
+
+        /* DUAL MODE */
+        #dualModeUI { padding-top: var(--safe-top); padding-bottom: calc(var(--safe-bottom) + 90px); }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.9); backdrop-filter: blur(20px); }
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .header-actions { display: flex; gap: var(--spacing-sm); }
+        .header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); }
+        .header-btn:active { transform: scale(0.92); }
+        .header-btn.active { background: var(--accent); }
+        .mode-toggle { position: fixed; top: calc(var(--safe-top) + 70px); left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border-radius: var(--radius-full); padding: 4px; display: flex; z-index: 200; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+        .mode-btn { padding: 10px 24px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
+        .mode-btn.active { background: var(--accent); color: white; }
+        .main-content { flex: 1; overflow-y: auto; padding: var(--spacing-lg); padding-top: 80px; }
+
+        .mode-view { display: none; }
+        .mode-view.active { display: block; }
+        .settings-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .setting-chip { flex: 1; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); padding: var(--spacing-md); cursor: pointer; text-align: left; transition: all var(--transition-fast); }
+        .setting-chip:active { transform: scale(0.97); background: var(--bg-tertiary); }
+        .setting-chip .label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+        .setting-chip span:last-child { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
+        /* Tempo Control Row */
+        .tempo-control-row { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); }
+        .tempo-label { font-size: 12px; color: var(--text-secondary); margin-right: var(--spacing-xs); }
+        .tempo-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
+        .tempo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .tempo-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .tempo-value { min-width: 60px; padding: 6px 10px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: all var(--transition-fast); }
+        .tempo-value:active, .tempo-value.tapping { background: var(--accent); transform: scale(1.05); }
+
+        /* Progress Bar */
+        .progress-container { margin-bottom: var(--spacing-md); }
+        .progress-bar { height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; margin-bottom: var(--spacing-sm); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-purple)); border-radius: 3px; transition: width 0.15s ease; width: 0%; }
+        .beat-dots { display: flex; justify-content: center; gap: var(--spacing-sm); }
+        .beat-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bg-tertiary); transition: all 0.1s ease; }
+        .beat-dot.active { background: var(--accent); transform: scale(1.4); }
+        .beat-dot.accent { background: var(--accent-orange); }
+
+        /* Practice Mode */
+        .practice-controls { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm); }
+        .speed-btn { flex: 1; padding: 10px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .speed-btn.active { background: var(--accent); }
+        .speed-btn:active { transform: scale(0.95); }
+        .count-in-btn { padding: 10px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .count-in-btn.active { background: var(--accent-green); }
+
+        .undo-redo-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .undo-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: all var(--transition-fast); }
+        .undo-btn:disabled { opacity: 0.4; }
+        .undo-btn:active:not(:disabled) { transform: scale(0.97); background: var(--bg-tertiary); }
+
+        .sections-strip { display: flex; gap: var(--spacing-sm); overflow-x: auto; padding-bottom: var(--spacing-md); scrollbar-width: none; -ms-overflow-style: none; }
+        .sections-strip::-webkit-scrollbar { display: none; }
+        .section-pill { display: flex; align-items: center; gap: 6px; padding: 10px 16px; background: var(--bg-secondary); border: 2px solid transparent; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+        .section-pill.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
+        .section-pill.editing .section-delete { display: flex; }
+        .section-icon { font-size: 16px; flex-shrink: 0; }
+        .section-delete { display: none; width: 20px; height: 20px; background: var(--accent-pink); border-radius: 50%; align-items: center; justify-content: center; font-size: 12px; margin-left: 4px; flex-shrink: 0; }
+        .add-section-btn { padding: 10px 16px; background: var(--bg-tertiary); border: 2px dashed var(--separator); border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; cursor: pointer; flex-shrink: 0; }
+
+        .chord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+        .chord-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; border: 2px solid transparent; }
+        .chord-card:active { transform: scale(0.96); }
+        .chord-card.playing { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); animation: pulse 0.5s ease infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(10, 132, 255, 0); } }
+        .chord-card.major { border-left: 4px solid var(--accent-green); }
+        .chord-card.minor { border-left: 4px solid var(--accent-purple); }
+        .chord-card.seventh { border-left: 4px solid var(--accent-orange); }
+        .chord-card.diminished { border-left: 4px solid var(--accent-pink); }
+        .chord-card.dragging { opacity: 0.5; transform: scale(1.05); }
+        .chord-card.drag-over { border: 2px dashed var(--accent); background: rgba(10, 132, 255, 0.1); }
+        .chord-drag-handle { position: absolute; top: 8px; left: 28px; color: var(--text-tertiary); cursor: grab; font-size: 14px; opacity: 0.5; transition: opacity 0.2s; }
+        .chord-drag-handle:hover { opacity: 1; }
+        .chord-card.dragging .chord-drag-handle { cursor: grabbing; }
+        .effects-section { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--separator); }
+        .effects-section h4 { font-size: 12px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); text-transform: uppercase; letter-spacing: 0.5px; }
+        .effects-grid { display: grid; gap: var(--spacing-sm); }
+        .effect-control { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .effect-control label { font-size: 13px; color: var(--text-secondary); min-width: 60px; }
+        .effect-slider { flex: 1; height: 4px; -webkit-appearance: none; background: var(--bg-tertiary); border-radius: 2px; }
+        .effect-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
+        .export-card.recording { border-color: var(--accent-pink); animation: recording-pulse 1s ease infinite; }
+        @keyframes recording-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 55, 95, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(255, 55, 95, 0); } }
+        .recording-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 20px; }
+        .recording-overlay.active { display: flex; }
+        .recording-dot { width: 20px; height: 20px; background: var(--accent-pink); border-radius: 50%; animation: blink 1s ease infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .recording-text { color: white; font-size: 18px; }
+        .chord-index { position: absolute; top: 8px; left: 12px; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }
+        .chord-diagram-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-tertiary); border: none; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .chord-name { font-size: 32px; font-weight: 800; margin-bottom: 4px; }
+        .chord-type { font-size: 13px; color: var(--text-secondary); }
+
+        .generate-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--accent), var(--accent-purple)); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: var(--spacing-md); transition: all var(--transition-fast); }
+        .generate-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+        .ai-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); }
+        .ai-btn { padding: 14px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all var(--transition-fast); }
+        .ai-btn:active { transform: scale(0.96); background: var(--bg-tertiary); }
+        .ai-btn:disabled { opacity: 0.5; }
+        .ai-btn.loading { animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .ai-btn .icon { font-size: 18px; }
+
+        /* Produce View */
+        .produce-tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); padding: 4px; }
+        .produce-tab { flex: 1; padding: 12px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .produce-tab.active { background: var(--accent); color: white; }
+        .produce-panel { display: none; }
+        .produce-panel.active { display: block; }
+
+        .mixer-channel { background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
+        .channel-name { font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-sm); }
+        .fader-container { display: flex; align-items: center; gap: var(--spacing-md); }
+        .fader { flex: 1; -webkit-appearance: none; appearance: none; height: 8px; background: var(--bg-tertiary); border-radius: 4px; outline: none; }
+        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader-value { min-width: 50px; text-align: right; font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
+        .toggle-label { font-size: 14px; font-weight: 600; }
+        .toggle-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .toggle-switch { width: 52px; height: 32px; background: var(--bg-tertiary); border-radius: var(--radius-full); position: relative; cursor: pointer; transition: all var(--transition-fast); flex-shrink: 0; }
+        .toggle-switch::after { content: ''; position: absolute; width: 26px; height: 26px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all var(--transition-fast); }
+        .toggle-switch.active { background: var(--accent-green); }
+        .toggle-switch.active::after { left: 23px; }
+
+        .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
+        .export-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; }
+        .export-card:active { transform: scale(0.96); background: var(--bg-tertiary); }
+        .export-card.new { border: 2px solid var(--accent-green); }
+        .export-icon { font-size: 40px; margin-bottom: var(--spacing-sm); }
+        .export-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .export-desc { font-size: 12px; color: var(--text-secondary); }
+        .export-badge { position: absolute; top: 8px; right: 8px; background: var(--accent-green); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-full); }
+
+        .save-load-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
+        .save-btn, .load-btn { padding: 16px; background: var(--bg-secondary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .save-btn:active, .load-btn:active { transform: scale(0.96); background: var(--bg-tertiary); }
+
+        .saved-songs { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .saved-song-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); cursor: pointer; transition: all var(--transition-fast); }
+        .saved-song-item:active { background: var(--bg-tertiary); }
+        .saved-song-name { font-size: 15px; font-weight: 600; }
+        .saved-song-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .saved-song-delete { width: 32px; height: 32px; background: var(--accent-pink); border: none; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* Transport */
+        .transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+        .transport-left, .transport-right { width: 60px; }
+        .transport-center { display: flex; align-items: center; gap: var(--spacing-md); }
+        .transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 20px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .transport-btn:active { transform: scale(0.9); }
+        .transport-btn.active { background: var(--accent); }
+        .play-btn { width: 56px; height: 56px; background: var(--accent); border: none; border-radius: 50%; font-size: 24px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .play-btn:active { transform: scale(0.92); }
+        .play-btn.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
+        .tempo-tap { text-align: center; cursor: pointer; transition: all var(--transition-fast); padding: 4px 8px; border-radius: var(--radius-sm); }
+        .tempo-tap:active, .tempo-tap.tapping { background: var(--accent); transform: scale(1.1); }
+        .tempo-tap span { display: block; }
+        .tempo-tap #tempoValue { font-size: 18px; font-weight: 700; }
+        .tempo-tap .bpm-label { font-size: 10px; color: var(--text-secondary); }
+
+        /* SHEET FLOW */
+        #sheetFlowUI { background: var(--bg-primary); }
+        .sf-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); }
+        .sf-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .sf-header-actions { display: flex; gap: var(--spacing-sm); }
+        .sf-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sf-canvas { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--spacing-lg); position: relative; }
+        .sf-chord-display { text-align: center; margin-bottom: var(--spacing-xl); }
+        .sf-current-chord { font-size: 120px; font-weight: 900; line-height: 1; transition: all 0.2s ease; }
+        .sf-current-chord.playing { animation: pulse 0.5s ease infinite; color: var(--accent); }
+        .sf-chord-label { font-size: 16px; color: var(--text-secondary); margin-top: var(--spacing-md); }
+        .sf-progress { margin-top: var(--spacing-lg); width: 200px; }
+        .sf-beat-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .sf-chord-strip { display: flex; gap: var(--spacing-md); overflow-x: auto; padding: var(--spacing-md) 0; scrollbar-width: none; }
+        .sf-chord-strip::-webkit-scrollbar { display: none; }
+        .sf-strip-chord { flex-shrink: 0; width: 70px; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .sf-strip-chord.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
+        .sf-strip-name { font-size: 20px; font-weight: 700; }
+        .sf-strip-num { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .sf-gesture-hint { display: flex; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); color: var(--text-tertiary); font-size: 12px; }
+
+        /* Sheet Flow Transport */
+        .sf-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: space-around; z-index: 100; }
+        .sf-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .sf-transport-btn:active { transform: scale(0.9); }
+        .sf-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 22px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .sf-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
+        .sf-tempo { font-size: 16px; font-weight: 700; color: var(--text-secondary); min-width: 40px; text-align: center; }
+
+        .sf-panel { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--bg-secondary); z-index: 300; transform: translateX(-100%); transition: transform var(--transition-smooth); display: flex; flex-direction: column; }
+        .sf-panel-right { right: 0; left: auto; transform: translateX(100%); }
+        .sf-panel.open { transform: translateX(0); }
+        .sf-panel-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-md) var(--spacing-md); border-bottom: 1px solid var(--separator); }
+        .sf-panel-title { font-size: 18px; font-weight: 700; }
+        .sf-panel-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-md); }
+        .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .sf-instrument-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
+        .sf-instrument-icon { font-size: 24px; }
+        .sf-instrument-name { flex: 1; font-size: 15px; font-weight: 500; }
+        .sf-instrument-check { color: var(--accent); opacity: 0; }
+        .sf-instrument-item.selected .sf-instrument-check { opacity: 1; }
+        .sf-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 250; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .sf-overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* CARD DECK */
+        #cardDeckUI { background: var(--bg-primary); padding-bottom: calc(var(--safe-bottom) + 80px); }
+        .cd-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); }
+        .cd-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .cd-header-actions { display: flex; gap: var(--spacing-sm); }
+        .cd-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .cd-stack-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); perspective: 1000px; }
+        .cd-card-stack { position: relative; width: 100%; max-width: 350px; height: 380px; }
+        .cd-card { position: absolute; width: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); overflow: hidden; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+        .cd-card.active { z-index: 10; transform: translateY(0) scale(1); opacity: 1; }
+        .cd-card.next { z-index: 5; transform: translateY(20px) scale(0.95); opacity: 0.7; }
+        .cd-card.behind { z-index: 1; transform: translateY(40px) scale(0.9); opacity: 0.4; }
+        .cd-card.hidden-card { z-index: 0; transform: translateY(60px) scale(0.85); opacity: 0; }
+        .cd-card.expanded { position: fixed; top: var(--safe-top); left: var(--spacing-md); right: var(--spacing-md); bottom: calc(var(--safe-bottom) + 100px); width: auto; height: auto; z-index: 400; border-radius: var(--radius-xl); }
+        .cd-card-header { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); border-bottom: 1px solid var(--separator); }
+        .cd-card-icon { font-size: 24px; }
+        .cd-card-label { flex: 1; font-size: 18px; font-weight: 700; }
+        .cd-card-close { display: none; width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; }
+        .cd-card.expanded .cd-card-close { display: flex; align-items: center; justify-content: center; }
+        .cd-card-body { padding: var(--spacing-lg); height: calc(100% - 70px); overflow-y: auto; }
+        .cd-progression-display { text-align: center; padding: var(--spacing-lg) 0; }
+        .cd-big-chord { font-size: 72px; font-weight: 900; margin-bottom: var(--spacing-sm); transition: color 0.2s ease; }
+        .cd-big-chord.playing { color: var(--accent); animation: pulse 0.5s ease infinite; }
+        .cd-chord-info { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .cd-mini-chords { display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap; }
+        .cd-mini-chord { padding: 8px 16px; background: var(--bg-tertiary); border-radius: var(--radius-full); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .cd-mini-chord.active { background: var(--accent); color: white; }
+        .cd-tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
+        .cd-tool-item { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .cd-tool-item:active { transform: scale(0.95); background: var(--bg-elevated); }
+        .cd-tool-item.loading { animation: shimmer 1.5s infinite; }
+        .cd-tool-item .icon { font-size: 28px; }
+        .cd-tool-item .label { font-size: 14px; font-weight: 500; }
+        .cd-nav-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .cd-nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg-tertiary); cursor: pointer; transition: all var(--transition-fast); }
+        .cd-nav-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+        .cd-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 100; }
+        .cd-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 20px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .cd-transport-btn:active { transform: scale(0.9); }
+        .cd-transport-btn.active { background: var(--accent); }
+        .cd-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 24px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
+        .cd-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
+        .cd-tempo { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+
+        /* Bottom Sheets */
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .sheet-overlay.active { opacity: 1; pointer-events: auto; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 600; transform: translateY(100%); transition: transform var(--transition-smooth); max-height: 85vh; display: flex; flex-direction: column; }
+        .bottom-sheet.active { transform: translateY(0); }
+        .sheet-handle { width: 36px; height: 4px; background: var(--separator); border-radius: 2px; margin: var(--spacing-sm) auto; }
+        .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--separator); }
+        .sheet-title { font-size: 18px; font-weight: 700; }
+        .sheet-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sheet-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); padding-bottom: calc(var(--safe-bottom) + var(--spacing-lg)); }
+        .option-list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .option-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .option-item:active { background: var(--bg-elevated); }
+        .option-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
+        .option-icon { font-size: 24px; }
+        .option-text { flex: 1; }
+        .option-title { font-size: 16px; font-weight: 500; }
+        .option-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .option-check { color: var(--accent); font-size: 18px; opacity: 0; }
+        .option-item.selected .option-check { opacity: 1; }
+
+        .settings-group { margin-bottom: var(--spacing-lg); }
+        .settings-group-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
+        .settings-item { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .settings-item:active { background: var(--bg-elevated); }
+        .settings-label { display: flex; align-items: center; gap: var(--spacing-sm); }
+        .settings-icon { font-size: 20px; }
+
+        /* Modals */
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 700; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: var(--bg-secondary); border-radius: var(--radius-xl); width: 100%; max-width: 320px; overflow: hidden; }
+        .modal-header { padding: var(--spacing-lg); text-align: center; border-bottom: 1px solid var(--separator); }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-body { padding: var(--spacing-lg); }
+        .modal-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); outline: none; transition: border-color var(--transition-fast); }
+        .modal-input:focus { border-color: var(--accent); }
+        .modal-footer { display: flex; gap: var(--spacing-sm); padding: var(--spacing-lg); padding-top: 0; }
+        .modal-btn { flex: 1; padding: 14px; border: none; border-radius: var(--radius-md); font-size: 16px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .modal-btn:active { transform: scale(0.97); }
+        .modal-btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); }
+        .modal-btn-primary { background: var(--accent); color: white; }
+
+        .chord-diagram-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .chord-diagram-modal.active { opacity: 1; pointer-events: auto; }
+        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; }
+        .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); }
+        .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
+
+        /* Shortcuts Modal */
+        .shortcuts-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .shortcuts-modal.active { opacity: 1; pointer-events: auto; }
+        .shortcuts-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 360px; max-height: 80vh; overflow-y: auto; }
+        .shortcuts-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-lg); }
+        .shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--separator); }
+        .shortcut-row:last-child { border-bottom: none; }
+        .shortcut-action { font-size: 14px; }
+        .shortcut-key { background: var(--bg-tertiary); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; font-family: monospace; }
+        .shortcuts-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
+
+        /* Count-in Overlay */
+        .count-in-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 900; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .count-in-overlay.active { opacity: 1; pointer-events: auto; }
+        .count-in-number { font-size: 150px; font-weight: 900; color: var(--accent); animation: countPop 0.3s ease; }
+        @keyframes countPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+
+        /* Toast */
+        .toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 24px; border-radius: var(--radius-full); font-size: 14px; font-weight: 500; opacity: 0; pointer-events: none; transition: all 0.3s ease; z-index: 1000; white-space: nowrap; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Onboarding -->
+    <div class="onboarding" id="onboarding">
+        <div class="onboarding-header">
+            <div class="onboarding-logo">🎵</div>
+            <h1 class="onboarding-title">Welcome to ChordFlow</h1>
+            <p class="onboarding-subtitle">AI-powered chord progressions. Choose your interface.</p>
+        </div>
+        <div class="onboarding-modes">
+            <div class="mode-option selected" data-mode="dual" onclick="selectOnboardingMode('dual')">
+                <div class="mode-option-icon">📱</div>
+                <div class="mode-option-content">
+                    <div class="mode-option-title">Dual Mode</div>
+                    <div class="mode-option-desc">Simple Create/Produce toggle. Best for beginners.</div>
+                </div>
+                <div class="mode-option-check">✓</div>
+            </div>
+            <div class="mode-option" data-mode="sheet" onclick="selectOnboardingMode('sheet')">
+                <div class="mode-option-icon">📄</div>
+                <div class="mode-option-content">
+                    <div class="mode-option-title">Sheet Flow</div>
+                    <div class="mode-option-desc">Gesture-based with sliding panels.</div>
+                </div>
+                <div class="mode-option-check">✓</div>
+            </div>
+            <div class="mode-option" data-mode="cards" onclick="selectOnboardingMode('cards')">
+                <div class="mode-option-icon">🃏</div>
+                <div class="mode-option-content">
+                    <div class="mode-option-title">Card Deck</div>
+                    <div class="mode-option-desc">Swipeable cards for different tools.</div>
+                </div>
+                <div class="mode-option-check">✓</div>
+            </div>
+        </div>
+        <div class="onboarding-footer">
+            <button class="onboarding-cta" onclick="completeOnboarding()">🚀 Get Started</button>
+            <button class="onboarding-skip" onclick="skipOnboarding()">I'll explore later</button>
+        </div>
+    </div>
+
+    <!-- Dual Mode UI -->
+    <div id="dualModeUI" class="ui-container">
+        <header class="header">
+            <div class="logo">🎵 ChordFlow</div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome">🥁</button>
+                <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
+                <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
+            </div>
+        </header>
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="setMode('create')" id="createModeBtn">✨ Create</button>
+            <button class="mode-btn" onclick="setMode('produce')" id="produceModeBtn">🎚️ Produce</button>
+        </div>
+        <main class="main-content">
+            <div class="mode-view active" id="createView">
+                <div class="settings-row">
+                    <button class="setting-chip" onclick="openSheet('key')">
+                        <span class="label">Key</span>
+                        <span id="keyDisplay">C Major</span>
+                    </button>
+                    <button class="setting-chip" onclick="openSheet('genre')">
+                        <span class="label">Style</span>
+                        <span id="genreDisplay">Pop</span>
+                    </button>
+                </div>
+                
+                <!-- Tempo Slider -->
+                <div class="tempo-control-row">
+                    <span class="tempo-label">Tempo</span>
+                    <input type="range" class="tempo-slider" id="tempoSlider" min="40" max="200" value="120" oninput="setTempo(this.value)">
+                    <div class="tempo-value" id="tempoValueDisplay" onclick="handleTempoTap()">120</div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                    <div class="beat-dots" id="beatDots">
+                        <div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div>
+                    </div>
+                </div>
+
+                <div class="practice-controls">
+                    <button class="speed-btn" onclick="setSpeed(0.5)" id="speed50">50%</button>
+                    <button class="speed-btn" onclick="setSpeed(0.75)" id="speed75">75%</button>
+                    <button class="speed-btn active" onclick="setSpeed(1)" id="speed100">100%</button>
+                    <button class="count-in-btn" onclick="toggleCountIn()" id="countInBtn">📢 Count</button>
+                </div>
+
+                <div class="undo-redo-row">
+                    <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
+                    <button class="undo-btn" onclick="redo()" id="redoBtn" disabled>↪️ Redo</button>
+                </div>
+                <div class="sections-strip" id="sectionsStrip"></div>
+                <div class="chord-grid" id="chordGrid"></div>
+                <button class="generate-btn" onclick="generateProgression()">🎲 Generate New Progression</button>
+                <div class="ai-grid">
+                    <button class="ai-btn" onclick="aiGenerate('smart')" id="aiMagicBtn"><span class="icon">✨</span> AI Magic</button>
+                    <button class="ai-btn" onclick="aiGenerate('surprise')" id="aiSurpriseBtn"><span class="icon">🎁</span> Surprise</button>
+                    <button class="ai-btn" onclick="aiGenerate('enhance')" id="aiEnhanceBtn"><span class="icon">💎</span> Enhance</button>
+                    <button class="ai-btn" onclick="aiGenerate('genre')" id="aiGenreBtn"><span class="icon">🎷</span> Jazzify</button>
+                </div>
+            </div>
+            <div class="mode-view" id="produceView">
+                <div class="produce-tabs">
+                    <button class="produce-tab active" onclick="setProduceTab('mixer')">🎚️ Mixer</button>
+                    <button class="produce-tab" onclick="setProduceTab('export')">📤 Export</button>
+                    <button class="produce-tab" onclick="setProduceTab('songs')">💾 Songs</button>
+                </div>
+                <div class="produce-panel active" id="mixerPanel">
+                    <div class="mixer-channel">
+                        <div class="channel-name">🎹 Chords</div>
+                        <div class="fader-container">
+                            <input type="range" class="fader" id="chordVolume" min="0" max="100" value="80" oninput="updateFader('chord', this.value)">
+                            <span class="fader-value" id="chordVolumeDisplay">80%</span>
+                        </div>
+                    </div>
+                    <div class="mixer-channel">
+                        <div class="channel-name">🎸 Bass</div>
+                        <div class="fader-container">
+                            <input type="range" class="fader" id="bassVolume" min="0" max="100" value="70" oninput="updateFader('bass', this.value)">
+                            <span class="fader-value" id="bassVolumeDisplay">70%</span>
+                        </div>
+                    </div>
+                    <div class="mixer-channel">
+                        <div class="channel-name">🔊 Master</div>
+                        <div class="fader-container">
+                            <input type="range" class="fader" id="masterVolume" min="0" max="100" value="100" oninput="updateFader('master', this.value)">
+                            <span class="fader-value" id="masterVolumeDisplay">100%</span>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <div><div class="toggle-label">🎸 Bass Notes</div><div class="toggle-desc">Play root on beat 1</div></div>
+                        <div class="toggle-switch active" id="bassToggle" onclick="toggleBass()"></div>
+                    </div>
+                    <div class="toggle-row">
+                        <div><div class="toggle-label">🥁 Metronome</div><div class="toggle-desc">Click on every beat</div></div>
+                        <div class="toggle-switch" id="metronomeToggle" onclick="toggleMetronome()"></div>
+                    </div>
+                </div>
+                <div class="produce-panel" id="exportPanel">
+                    <div class="export-grid">
+                        <div class="export-card new" onclick="exportMIDI()">
+                            <div class="export-icon">🎹</div>
+                            <div class="export-title">MIDI</div>
+                            <div class="export-desc">Universal</div>
+                            <div class="export-badge">WORKS!</div>
+                        </div>
+                        <div class="export-card new" onclick="exportPDF()">
+                            <div class="export-icon">📄</div>
+                            <div class="export-title">PDF</div>
+                            <div class="export-desc">Lead Sheet</div>
+                            <div class="export-badge">WORKS!</div>
+                        </div>
+                        <div class="export-card" onclick="exportFile('wav')">
+                            <div class="export-icon">🎵</div>
+                            <div class="export-title">WAV</div>
+                            <div class="export-desc">Coming Soon</div>
+                        </div>
+                        <div class="export-card" onclick="exportFile('mp3')">
+                            <div class="export-icon">📀</div>
+                            <div class="export-title">MP3</div>
+                            <div class="export-desc">Coming Soon</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="produce-panel" id="songsPanel">
+                    <div class="save-load-grid">
+                        <button class="save-btn" onclick="openSaveModal()">💾 Save Song</button>
+                        <button class="load-btn" onclick="document.getElementById('loadFileInput').click()">📂 Load File</button>
+                    </div>
+                    <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadSongFile(event)">
+                    <div class="saved-songs" id="savedSongsList"></div>
+                </div>
+            </div>
+        </main>
+        <div class="transport">
+            <div class="transport-left">
+                <button class="transport-btn" onclick="openSheet('instrument')">🎹</button>
+            </div>
+            <div class="transport-center">
+                <button class="transport-btn" onclick="stopPlayback()">⏹️</button>
+                <button class="play-btn" onclick="togglePlay()" id="playBtn">▶️</button>
+                <div class="tempo-tap" id="tempoTap" onclick="handleTempoTap()">
+                    <span id="tempoValue">120</span>
+                    <span class="bpm-label">BPM</span>
+                </div>
+            </div>
+            <div class="transport-right">
+                <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn">🔁</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sheet Flow UI -->
+    <div id="sheetFlowUI" class="ui-container">
+        <div class="sf-header">
+            <div class="sf-logo">🎵 ChordFlow</div>
+            <div class="sf-header-actions">
+                <button class="sf-header-btn" onclick="openSheet('key')">🎵</button>
+                <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
+            </div>
+        </div>
+        <div class="sf-canvas" id="sfCanvas">
+            <div class="sf-chord-display">
+                <div class="sf-current-chord" id="sfCurrentChord">Am</div>
+                <div class="sf-chord-label" id="sfChordLabel">A minor • Chord 1 of 4</div>
+                <div class="sf-progress">
+                    <div class="progress-bar"><div class="progress-fill" id="sfProgressFill"></div></div>
+                    <div class="sf-beat-dots" id="sfBeatDots">
+                        <div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="sf-chord-strip" id="sfChordStrip"></div>
+        </div>
+        <div class="sf-gesture-hint"><span>← Instruments</span><span>Sections →</span></div>
+        
+        <!-- Sheet Flow Transport -->
+        <div class="sf-transport">
+            <button class="sf-transport-btn" onclick="openSFPanel('left')">🎹</button>
+            <button class="sf-transport-btn" onclick="generateProgression()">🎲</button>
+            <button class="sf-transport-btn play" onclick="togglePlay()" id="sfPlayBtn">▶️</button>
+            <button class="sf-transport-btn" onclick="aiGenerate('smart')">✨</button>
+            <button class="sf-transport-btn" onclick="openSFPanel('right')">📑</button>
+            <span class="sf-tempo" id="sfTempo">120</span>
+        </div>
+
+        <div class="sf-panel sf-panel-left" id="sfLeftPanel">
+            <div class="sf-panel-header">
+                <div class="sf-panel-title">🎹 Instruments</div>
+                <button class="sf-panel-close" onclick="closeSFPanel('left')">✕</button>
+            </div>
+            <div class="sf-panel-body" id="sfInstrumentList"></div>
+        </div>
+        <div class="sf-panel sf-panel-right" id="sfRightPanel">
+            <div class="sf-panel-header">
+                <div class="sf-panel-title">📑 Sections</div>
+                <button class="sf-panel-close" onclick="closeSFPanel('right')">✕</button>
+            </div>
+            <div class="sf-panel-body" id="sfSectionsList"></div>
+        </div>
+        <div class="sf-overlay" id="sfOverlay" onclick="closeAllSFPanels()"></div>
+    </div>
+
+    <!-- Card Deck UI -->
+    <div id="cardDeckUI" class="ui-container">
+        <div class="cd-header">
+            <div class="cd-logo">🎵 ChordFlow</div>
+            <div class="cd-header-actions">
+                <button class="cd-header-btn" onclick="openSheet('key')">🎵</button>
+                <button class="cd-header-btn" onclick="openSheet('settings')">⚙️</button>
+            </div>
+        </div>
+        <div class="cd-stack-container" id="cdStackContainer">
+            <div class="cd-card-stack" id="cdCardStack"></div>
+        </div>
+        <div class="cd-nav-dots" id="cdNavDots"></div>
+        <div class="cd-transport">
+            <button class="cd-transport-btn active" onclick="toggleLoop()" id="cdLoopBtn">🔁</button>
+            <button class="cd-transport-btn play" onclick="togglePlay()" id="cdPlayBtn">▶️</button>
+            <span class="cd-tempo" id="cdTempo">120 BPM</span>
+        </div>
+    </div>
+
+    <!-- Bottom Sheets -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    
+    <div class="bottom-sheet" id="instrumentSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body"><div class="option-list" id="instrumentList"></div></div>
+    </div>
+    
+    <div class="bottom-sheet" id="keySheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Key</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group-title">Major Keys</div>
+            <div class="option-list" id="majorKeyList"></div>
+            <div class="settings-group-title" style="margin-top: var(--spacing-lg);">Minor Keys</div>
+            <div class="option-list" id="minorKeyList"></div>
+        </div>
+    </div>
+    
+    <div class="bottom-sheet" id="genreSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎨 Genre</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body"><div class="option-list" id="genreList"></div></div>
+    </div>
+    
+    <div class="bottom-sheet" id="settingsSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Interface</div>
+                <div class="settings-item" onclick="openSheet('uiMode')">
+                    <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
+                    <span id="currentUILabel" style="color: var(--text-secondary);">Dual Mode ›</span>
+                </div>
+                <div class="settings-item" onclick="showShortcuts()">
+                    <div class="settings-label"><span class="settings-icon">⌨️</span><span>Keyboard Shortcuts</span></div>
+                    <span style="color: var(--text-secondary);">?</span>
+                </div>
+                <div class="settings-item" onclick="resetOnboarding()">
+                    <div class="settings-label"><span class="settings-icon">🔄</span><span>Reset Onboarding</span></div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">About</div>
+                <div class="settings-item">
+                    <div class="settings-label"><span class="settings-icon">📱</span><span>Version</span></div>
+                    <span id="versionDisplay" style="color: var(--text-secondary);">0.63</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-sheet" id="uiModeSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎨 UI Mode</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="option-list">
+                <div class="option-item" id="uiOptDual" onclick="switchUIMode('dual')">
+                    <span class="option-icon">📱</span>
+                    <div class="option-text"><div class="option-title">Dual Mode</div><div class="option-desc">Create & Produce toggle</div></div>
+                    <span class="option-check">✓</span>
+                </div>
+                <div class="option-item" id="uiOptSheet" onclick="switchUIMode('sheet')">
+                    <span class="option-icon">📄</span>
+                    <div class="option-text"><div class="option-title">Sheet Flow</div><div class="option-desc">Gesture-based panels</div></div>
+                    <span class="option-check">✓</span>
+                </div>
+                <div class="option-item" id="uiOptCards" onclick="switchUIMode('cards')">
+                    <span class="option-icon">🃏</span>
+                    <div class="option-text"><div class="option-title">Card Deck</div><div class="option-desc">Swipeable cards</div></div>
+                    <span class="option-check">✓</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom-sheet" id="songsSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body" id="songsSheetBody"></div>
+    </div>
+
+    <!-- Chord Diagram Modal -->
+    <div class="chord-diagram-modal" id="chordDiagramModal" onclick="closeChordDiagram()">
+        <div class="diagram-card" onclick="event.stopPropagation()">
+            <div class="diagram-chord-name" id="diagramChordName">C</div>
+            <div class="diagram-notes" id="diagramNotes">C - E - G</div>
+            <svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg>
+            <button class="diagram-close" onclick="closeChordDiagram()">Close</button>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div class="modal" id="saveModal">
+        <div class="modal-content">
+            <div class="modal-header"><div class="modal-title">💾 Save Song</div></div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" id="songNameInput" placeholder="Enter song name..." maxlength="50" autocomplete="off">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmSaveSong()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div class="shortcuts-modal" id="shortcutsModal" onclick="closeShortcuts()">
+        <div class="shortcuts-card" onclick="event.stopPropagation()">
+            <div class="shortcuts-title">⌨️ Keyboard Shortcuts</div>
+            <div class="shortcut-row"><span class="shortcut-action">Play / Pause</span><span class="shortcut-key">Space</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Generate Random</span><span class="shortcut-key">G</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">AI Generate</span><span class="shortcut-key">A</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Export MIDI</span><span class="shortcut-key">Ctrl+M</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Export PDF</span><span class="shortcut-key">Ctrl+P</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Save Song</span><span class="shortcut-key">Ctrl+S</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Undo</span><span class="shortcut-key">Ctrl+Z</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Redo</span><span class="shortcut-key">Ctrl+Shift+Z</span></div>
+            <div class="shortcut-row"><span class="shortcut-action">Show Shortcuts</span><span class="shortcut-key">?</span></div>
+            <button class="shortcuts-close" onclick="closeShortcuts()">Close</button>
+        </div>
+    </div>
+
+    <!-- Count-in Overlay -->
+    <div class="count-in-overlay" id="countInOverlay">
+        <div class="count-in-number" id="countInNumber">4</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const VERSION = '0.64';
+        const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
+
+        // Data
+        const instruments = [
+            { id: 'piano', name: 'Grand Piano', icon: '🎹', type: 'triangle', attack: 0.02, release: 1.2 },
+            { id: 'epiano', name: 'Electric Piano', icon: '🎹', type: 'sine', attack: 0.01, release: 0.8 },
+            { id: 'synth', name: 'Synth Pad', icon: '🎛️', type: 'sawtooth', attack: 0.3, release: 1.5 },
+            { id: 'guitar', name: 'Acoustic Guitar', icon: '🎸', type: 'triangle', attack: 0.01, release: 0.5 },
+            { id: 'strings', name: 'Strings', icon: '🎻', type: 'sawtooth', attack: 0.2, release: 1.8 },
+            { id: 'organ', name: 'Organ', icon: '🎹', type: 'square', attack: 0.01, release: 0.3 }
+        ];
+        const genres = [
+            { id: 'pop', name: 'Pop', icon: '🎤' }, { id: 'rock', name: 'Rock', icon: '🎸' },
+            { id: 'jazz', name: 'Jazz', icon: '🎷' }, { id: 'classical', name: 'Classical', icon: '🎻' },
+            { id: 'electronic', name: 'Electronic', icon: '🎛️' }, { id: 'rnb', name: 'R&B', icon: '🎤' },
+            { id: 'folk', name: 'Folk', icon: '🪕' }, { id: 'blues', name: 'Blues', icon: '🎺' }
+        ];
+        const majorKeys = ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab'];
+        const minorKeys = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'Dm', 'Gm', 'Cm', 'Fm', 'Bbm'];
+        const cardTypes = [
+            { type: 'progression', label: 'Chords', icon: '🎵' },
+            { type: 'ai', label: 'AI Tools', icon: '✨' },
+            { type: 'mixer', label: 'Mixer', icon: '🎚️' },
+            { type: 'export', label: 'Export', icon: '📤' }
+        ];
+        const CHORD_NOTES = {
+            'C': ['C4', 'E4', 'G4'], 'Cm': ['C4', 'Eb4', 'G4'], 'C7': ['C4', 'E4', 'G4', 'Bb4'], 'Cmaj7': ['C4', 'E4', 'G4', 'B4'], 'Cm7': ['C4', 'Eb4', 'G4', 'Bb4'],
+            'D': ['D4', 'F#4', 'A4'], 'Dm': ['D4', 'F4', 'A4'], 'D7': ['D4', 'F#4', 'A4', 'C5'], 'Dmaj7': ['D4', 'F#4', 'A4', 'C#5'], 'Dm7': ['D4', 'F4', 'A4', 'C5'],
+            'E': ['E4', 'G#4', 'B4'], 'Em': ['E4', 'G4', 'B4'], 'E7': ['E4', 'G#4', 'B4', 'D5'], 'Emaj7': ['E4', 'G#4', 'B4', 'D#5'], 'Em7': ['E4', 'G4', 'B4', 'D5'],
+            'F': ['F4', 'A4', 'C5'], 'Fm': ['F4', 'Ab4', 'C5'], 'F7': ['F4', 'A4', 'C5', 'Eb5'], 'Fmaj7': ['F4', 'A4', 'C5', 'E5'], 'Fm7': ['F4', 'Ab4', 'C5', 'Eb5'],
+            'G': ['G4', 'B4', 'D5'], 'Gm': ['G4', 'Bb4', 'D5'], 'G7': ['G4', 'B4', 'D5', 'F5'], 'Gmaj7': ['G4', 'B4', 'D5', 'F#5'], 'Gm7': ['G4', 'Bb4', 'D5', 'F5'],
+            'A': ['A4', 'C#5', 'E5'], 'Am': ['A4', 'C5', 'E5'], 'A7': ['A4', 'C#5', 'E5', 'G5'], 'Amaj7': ['A4', 'C#5', 'E5', 'G#5'], 'Am7': ['A4', 'C5', 'E5', 'G5'],
+            'B': ['B4', 'D#5', 'F#5'], 'Bm': ['B4', 'D5', 'F#5'], 'B7': ['B4', 'D#5', 'F#5', 'A5'], 'Bmaj7': ['B4', 'D#5', 'F#5', 'A#5'], 'Bm7': ['B4', 'D5', 'F#5', 'A5'],
+            'Bb': ['Bb4', 'D5', 'F5'], 'Bbm': ['Bb4', 'Db5', 'F5'], 'Bb7': ['Bb4', 'D5', 'F5', 'Ab5'],
+            'Eb': ['Eb4', 'G4', 'Bb4'], 'Ebm': ['Eb4', 'Gb4', 'Bb4'], 'Eb7': ['Eb4', 'G4', 'Bb4', 'Db5'],
+            'Ab': ['Ab4', 'C5', 'Eb5'], 'Abm': ['Ab4', 'Cb5', 'Eb5'],
+            'F#': ['F#4', 'A#4', 'C#5'], 'F#m': ['F#4', 'A4', 'C#5'], 'F#7': ['F#4', 'A#4', 'C#5', 'E5'],
+            'C#': ['C#4', 'E#4', 'G#4'], 'C#m': ['C#4', 'E4', 'G#4'], 'C#7': ['C#4', 'E#4', 'G#4', 'B4'],
+            'Bdim': ['B4', 'D5', 'F5'], 'Cdim': ['C4', 'Eb4', 'Gb4'], 'Ddim': ['D4', 'F4', 'Ab4'],
+            'Caug': ['C4', 'E4', 'G#4'], 'Csus2': ['C4', 'D4', 'G4'], 'Csus4': ['C4', 'F4', 'G4'],
+            'Dsus2': ['D4', 'E4', 'A4'], 'Dsus4': ['D4', 'G4', 'A4'], 'Gsus4': ['G4', 'C5', 'D5'], 'Asus4': ['A4', 'D5', 'E5']
+        };
+        const progressions = {
+            pop: [['C', 'G', 'Am', 'F'], ['G', 'D', 'Em', 'C'], ['C', 'Am', 'F', 'G'], ['D', 'A', 'Bm', 'G'], ['F', 'C', 'G', 'Am']],
+            rock: [['E', 'A', 'B', 'E'], ['G', 'C', 'D', 'G'], ['A', 'D', 'E', 'A'], ['E', 'G', 'A', 'E']],
             jazz: [['Dm7', 'G7', 'Cmaj7', 'Am7'], ['Cmaj7', 'Am7', 'Dm7', 'G7'], ['Fm7', 'Bb7', 'Ebmaj7', 'Cm7']],
             classical: [['C', 'F', 'G', 'C'], ['Am', 'Dm', 'E', 'Am'], ['G', 'D', 'Em', 'C']],
             electronic: [['Am', 'F', 'C', 'G'], ['Em', 'C', 'G', 'D'], ['Dm', 'Am', 'F', 'C']],
@@ -19,54 +845,58 @@
             sections: [{ name: 'Verse', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] }, { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] }, { name: 'Bridge', icon: '🌉', progression: ['F', 'G', 'Am', 'Em'] }],
             currentSection: 0, editingSections: false,
             chordVolume: 80, bassVolume: 70, masterVolume: 100,
-            reverbAmount: 30, delayAmount: 15,
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
             undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
-            isRecording: false, draggedChordIndex: null
+            reverbAmount: 30, delayAmount: 15, isRecording: false
         };
 
         // Audio
-        let synth, bassSynth, metronomeClick, masterGain, reverb, delay, audioInit = false;
-        let recorder = null;
+        let synth, bassSynth, metronomeClick, masterGain, reverb, delay, recorder, audioInit = false;
         let playInterval = null, beatInterval = null;
 
         async function initAudio() {
             if (audioInit) return;
             try {
                 await Tone.start();
-                
-                // Create effects chain
                 reverb = new Tone.Reverb({ decay: 2.5, wet: state.reverbAmount / 100 }).toDestination();
                 delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.3, wet: state.delayAmount / 100 }).connect(reverb);
                 masterGain = new Tone.Gain(1).connect(delay);
-                
+                recorder = new Tone.Recorder();
+                masterGain.connect(recorder);
+                await reverb.ready;
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
                 metronomeClick = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).connect(masterGain);
-                
-                // Initialize recorder
-                recorder = new Tone.Recorder();
-                masterGain.connect(recorder);
-                
                 audioInit = true;
                 updateVolumes();
-                await reverb.ready;
             } catch (e) { console.warn('Audio init failed:', e); }
         }
-        
         function createSynth() {
             if (synth) { try { synth.dispose(); } catch(e) {} }
             const inst = instruments.find(i => i.id === state.instrument) || instruments[0];
             synth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: inst.type }, envelope: { attack: inst.attack, decay: 0.3, sustain: 0.5, release: inst.release } }).connect(masterGain);
             updateVolumes();
         }
-        
         function updateVolumes() {
             if (!audioInit) return;
             const master = state.masterVolume / 100;
             if (synth) synth.volume.value = Tone.gainToDb((state.chordVolume / 100) * master);
             if (bassSynth) bassSynth.volume.value = Tone.gainToDb((state.bassVolume / 100) * master * 0.7);
             if (metronomeClick) metronomeClick.volume.value = Tone.gainToDb(0.3 * master);
+        }
+        function updateFader(type, value) {
+            value = parseInt(value);
+            if (type === 'chord') state.chordVolume = value;
+            else if (type === 'bass') state.bassVolume = value;
+            else if (type === 'master') state.masterVolume = value;
+            updateVolumes();
+            // Update all displays across UI modes
+            const el = document.getElementById(`${type}Volume`);
+            if (el) el.value = value;
+            const display = document.getElementById(`${type}VolumeDisplay`);
+            if (display) display.textContent = value + '%';
+            // Card deck displays
+            document.querySelectorAll(`.cd-${type}-vol`).forEach(el => el.textContent = value + '%');
         }
         
         function updateEffect(type, value) {
@@ -79,22 +909,8 @@
                 if (delay) delay.wet.value = value / 100;
             }
         }
-        
-        function updateFader(type, value) {
-            value = parseInt(value);
-            if (type === 'chord') state.chordVolume = value;
-            else if (type === 'bass') state.bassVolume = value;
-            else if (type === 'master') state.masterVolume = value;
-            updateVolumes();
-            const el = document.getElementById(`${type}Volume`);
-            if (el) el.value = value;
-            const display = document.getElementById(`${type}VolumeDisplay`);
-            if (display) display.textContent = value + '%';
-            document.querySelectorAll(`.cd-${type}-vol`).forEach(el => el.textContent = value + '%');
-        }
 
         function getChordNotes(chord) { return CHORD_NOTES[chord] || CHORD_NOTES[chord.replace('7', '')] || CHORD_NOTES['C']; }
-        
         async function playChord(chord, duration = '2n') {
             await initAudio();
             const notes = getChordNotes(chord);
@@ -106,7 +922,6 @@
                 }
             } catch (e) { console.warn('Chord play error:', e); }
         }
-        
         function playMetronomeTick(accent = false) {
             if (!metronomeClick || !state.metronomeEnabled) return;
             try { metronomeClick.triggerAttackRelease(accent ? 'C4' : 'C5', '32n'); } catch (e) {}
@@ -164,106 +979,6 @@
             if (chord.includes('sus2')) return chord.replace('sus2', '') + ' Sus2';
             if (chord.includes('m')) return chord.replace('m', '') + ' minor';
             return chord + ' major';
-        }
-
-        // Drag and Drop for Chord Reordering
-        function handleDragStart(e, index) {
-            state.draggedChordIndex = index;
-            e.target.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', index);
-        }
-        
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-            document.querySelectorAll('.chord-card').forEach(card => card.classList.remove('drag-over'));
-            state.draggedChordIndex = null;
-        }
-        
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        }
-        
-        function handleDragEnter(e, index) {
-            e.preventDefault();
-            if (state.draggedChordIndex !== null && state.draggedChordIndex !== index) {
-                e.target.closest('.chord-card')?.classList.add('drag-over');
-            }
-        }
-        
-        function handleDragLeave(e) {
-            e.target.closest('.chord-card')?.classList.remove('drag-over');
-        }
-        
-        function handleDrop(e, targetIndex) {
-            e.preventDefault();
-            const sourceIndex = state.draggedChordIndex;
-            if (sourceIndex === null || sourceIndex === targetIndex) return;
-            
-            saveStateForUndo();
-            const progression = state.sections[state.currentSection].progression;
-            const [movedChord] = progression.splice(sourceIndex, 1);
-            progression.splice(targetIndex, 0, movedChord);
-            
-            state.currentChordIndex = 0;
-            renderAll();
-            showToast('🔀 Chords reordered');
-        }
-        
-        // Touch drag support for mobile
-        let touchDragIndex = null;
-        let touchDragElement = null;
-        let touchStartY = 0;
-        
-        function handleTouchDragStart(e, index) {
-            touchDragIndex = index;
-            touchStartY = e.touches[0].clientY;
-            touchDragElement = e.target.closest('.chord-card');
-            if (touchDragElement) {
-                touchDragElement.classList.add('dragging');
-            }
-        }
-        
-        function handleTouchDragMove(e) {
-            if (touchDragIndex === null) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-            const targetCard = elements.find(el => el.classList?.contains('chord-card') && el !== touchDragElement);
-            
-            document.querySelectorAll('.chord-card').forEach(card => card.classList.remove('drag-over'));
-            if (targetCard) {
-                targetCard.classList.add('drag-over');
-            }
-        }
-        
-        function handleTouchDragEnd(e) {
-            if (touchDragIndex === null) return;
-            
-            const touch = e.changedTouches[0];
-            const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-            const targetCard = elements.find(el => el.classList?.contains('chord-card') && el !== touchDragElement);
-            
-            if (targetCard) {
-                const targetIndex = parseInt(targetCard.dataset.index);
-                if (targetIndex !== touchDragIndex) {
-                    saveStateForUndo();
-                    const progression = state.sections[state.currentSection].progression;
-                    const [movedChord] = progression.splice(touchDragIndex, 1);
-                    progression.splice(targetIndex, 0, movedChord);
-                    state.currentChordIndex = 0;
-                    renderAll();
-                    showToast('🔀 Chords reordered');
-                }
-            }
-            
-            document.querySelectorAll('.chord-card').forEach(card => {
-                card.classList.remove('dragging', 'drag-over');
-            });
-            touchDragIndex = null;
-            touchDragElement = null;
         }
 
         // Undo/Redo
@@ -348,6 +1063,7 @@
             const now = Date.now();
             tapTimes = tapTimes.filter(t => now - t < 3000);
             tapTimes.push(now);
+            // Visual feedback for all tappable elements
             ['tempoValueDisplay', 'tempoTap'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { 
@@ -454,68 +1170,41 @@
             downloadFile(midi, 'chordflow.mid', 'audio/midi');
             showToast('🎹 MIDI exported!');
         }
-        
         function exportPDF() {
             const chords = getTransposedProgression(), keyInfo = getKeyInfo();
             const pdf = `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length 400 >> stream\nBT\n/F1 28 Tf 72 720 Td (ChordFlow Lead Sheet) Tj\n/F1 14 Tf 0 -35 Td (Key: ${keyInfo.display} | Tempo: ${state.tempo} BPM) Tj\n/F1 36 Tf 0 -80 Td (${chords.join('  -  ')}) Tj\n/F1 12 Tf 0 -60 Td (Generated by ChordFlow v${VERSION}) Tj\nET\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\nxref\n0 6\ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n700\n%%EOF`;
             downloadFile(new Blob([pdf], { type: 'application/pdf' }), 'chordflow.pdf', 'application/pdf');
             showToast('📄 PDF exported!');
         }
-        
-        // WAV Export using Tone.Recorder
         async function exportWAV() {
-            if (state.isRecording) {
-                showToast('⚠️ Already recording');
-                return;
-            }
-            
+            if (state.isRecording) { showToast('⚠️ Already recording'); return; }
             await initAudio();
-            
-            if (!recorder) {
-                showToast('⚠️ Recorder not available');
-                return;
-            }
+            if (!recorder) { showToast('⚠️ Recorder not available'); return; }
             
             state.isRecording = true;
-            const wavCard = document.getElementById('wavExportCard');
-            if (wavCard) wavCard.classList.add('recording');
             document.getElementById('recordingOverlay').classList.add('active');
             showToast('🎵 Recording started...');
             
-            // Start recording
             recorder.start();
-            
-            // Play through the progression once
             const chords = getTransposedProgression();
             const beatMs = 60000 / state.tempo;
-            const beatsPerChord = 4;
             
             for (let i = 0; i < chords.length; i++) {
                 if (!state.isRecording) break;
                 await playChord(chords[i], '2n');
-                await new Promise(r => setTimeout(r, beatMs * beatsPerChord));
+                await new Promise(r => setTimeout(r, beatMs * 4));
             }
-            
-            // Add a little tail for reverb
             await new Promise(r => setTimeout(r, 1000));
             
-            // Stop recording and get the blob
             const recording = await recorder.stop();
-            
             state.isRecording = false;
-            if (wavCard) wavCard.classList.remove('recording');
             document.getElementById('recordingOverlay').classList.remove('active');
             
-            // Download the WAV file
             const url = URL.createObjectURL(recording);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = 'chordflow.wav';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            a.href = url; a.download = 'chordflow.wav';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
             showToast('🎵 WAV exported!');
         }
         
@@ -611,6 +1300,7 @@
             if (container) container.classList.add('active');
             updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs();
             if (state.uiMode === 'cards') initCardDeck();
+            // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
             if (versionDisplay) versionDisplay.textContent = VERSION;
         }
@@ -650,11 +1340,6 @@
             if (bassVol) bassVol.value = state.bassVolume;
             const masterVol = document.getElementById('masterVolume');
             if (masterVol) masterVol.value = state.masterVolume;
-            
-            const reverbSlider = document.getElementById('reverbAmount');
-            if (reverbSlider) reverbSlider.value = state.reverbAmount;
-            const delaySlider = document.getElementById('delayAmount');
-            if (delaySlider) delaySlider.value = state.delayAmount;
             
             const chordDisplay = document.getElementById('chordVolumeDisplay');
             if (chordDisplay) chordDisplay.textContent = state.chordVolume + '%';
@@ -758,6 +1443,7 @@
             if (sfProgress) sfProgress.style.width = progress + '%';
         }
         function updateBeatDots(beat) {
+            // Dual mode beat dots
             const dualDots = document.getElementById('beatDots');
             if (dualDots) {
                 dualDots.querySelectorAll('.beat-dot').forEach((dot, i) => {
@@ -765,6 +1451,7 @@
                     if (i === beat) { dot.classList.add('active'); if (beat === 0) dot.classList.add('accent'); }
                 });
             }
+            // Sheet flow beat dots
             const sfDots = document.getElementById('sfBeatDots');
             if (sfDots) {
                 sfDots.querySelectorAll('.beat-dot').forEach((dot, i) => {
@@ -774,24 +1461,17 @@
             }
         }
 
-        // Chord Grid with Drag-and-Drop
+        // Chord Grid
         function renderChords() {
             const grid = document.getElementById('chordGrid');
             if (!grid) return;
             const displayChords = getTransposedProgression();
             grid.innerHTML = displayChords.map((chord, i) => `
                 <div class="chord-card ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''}" 
-                     data-index="${i}"
-                     draggable="true"
-                     ondragstart="handleDragStart(event, ${i})"
-                     ondragend="handleDragEnd(event)"
-                     ondragover="handleDragOver(event)"
-                     ondragenter="handleDragEnter(event, ${i})"
-                     ondragleave="handleDragLeave(event)"
-                     ondrop="handleDrop(event, ${i})"
-                     ontouchstart="handleTouchDragStart(event, ${i})"
-                     ontouchmove="handleTouchDragMove(event)"
-                     ontouchend="handleTouchDragEnd(event)"
+                     data-index="${i}" draggable="true"
+                     ondragstart="handleDragStart(event, ${i})" ondragend="handleDragEnd(event)"
+                     ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, ${i})"
+                     ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${i})"
                      onclick="playChordAtIndex(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
@@ -800,6 +1480,25 @@
                     <div class="chord-type">${getChordTypeLabel(chord)}</div>
                 </div>
             `).join('');
+        }
+        
+        // Drag and Drop handlers
+        function handleDragStart(e, index) { e.target.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); }
+        function handleDragEnd(e) { e.target.classList.remove('dragging'); document.querySelectorAll('.chord-card').forEach(c => c.classList.remove('drag-over')); }
+        function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function handleDragEnter(e, index) { e.preventDefault(); const card = e.target.closest('.chord-card'); if (card && !card.classList.contains('dragging')) card.classList.add('drag-over'); }
+        function handleDragLeave(e) { e.target.closest('.chord-card')?.classList.remove('drag-over'); }
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            if (sourceIndex === targetIndex) return;
+            saveStateForUndo();
+            const prog = state.sections[state.currentSection].progression;
+            const [moved] = prog.splice(sourceIndex, 1);
+            prog.splice(targetIndex, 0, moved);
+            state.currentChordIndex = 0;
+            renderAll();
+            showToast('🔀 Chords reordered');
         }
         async function playChordAtIndex(i) { state.currentChordIndex = i; renderAll(); await playChord(getTransposedProgression()[i], '4n'); }
 
@@ -817,6 +1516,7 @@
             if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
             const secList = document.getElementById('sfSectionsList');
             if (secList) secList.innerHTML = '<div class="option-list">' + state.sections.map((s, i) => `<div class="option-item ${state.currentSection === i ? 'selected' : ''}" onclick="selectSection(${i}); closeSFPanel('right')"><span class="option-icon">${s.icon}</span><div class="option-text"><div class="option-title">${s.name}</div></div></div>`).join('') + '</div>';
+            // Update SF transport buttons
             const sfPlayBtn = document.getElementById('sfPlayBtn');
             if (sfPlayBtn) { 
                 sfPlayBtn.textContent = state.isPlaying ? '⏸️' : '▶️'; 
@@ -859,7 +1559,7 @@
                 if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${chord}</div><div class="cd-chord-info">${getChordTypeLabel(chord)} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${c}</div>`).join('')}</div></div>`;
                 else if (card.type === 'ai') body = `<div class="cd-tool-grid"><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('smart')"><span class="icon">✨</span><span class="label">AI Magic</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div></div>`;
                 else if (card.type === 'mixer') body = `<div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.chordVolume}" oninput="updateFader('chord', this.value)"><span class="fader-value cd-chord-vol">${state.chordVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.bassVolume}" oninput="updateFader('bass', this.value)"><span class="fader-value cd-bass-vol">${state.bassVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🔊 Master</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.masterVolume}" oninput="updateFader('master', this.value)"><span class="fader-value cd-master-vol">${state.masterVolume}%</span></div></div>`;
-                else body = `<div class="cd-tool-grid"><div class="cd-tool-item" onclick="event.stopPropagation(); exportMIDI()"><span class="icon">🎹</span><span class="label">MIDI</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportPDF()"><span class="icon">📄</span><span class="label">PDF</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportWAV()"><span class="icon">🎵</span><span class="label">WAV</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSaveModal()"><span class="icon">💾</span><span class="label">Save</span></div></div>`;
+                else body = `<div class="cd-tool-grid"><div class="cd-tool-item" onclick="event.stopPropagation(); exportMIDI()"><span class="icon">🎹</span><span class="label">MIDI</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportPDF()"><span class="icon">📄</span><span class="label">PDF</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSaveModal()"><span class="icon">💾</span><span class="label">Save</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSheet('songs')"><span class="icon">📂</span><span class="label">Load</span></div></div>`;
                 return `<div class="cd-card ${cardClass}" data-type="${card.type}" data-index="${i}"><div class="cd-card-header"><span class="cd-card-icon">${card.icon}</span><span class="cd-card-label">${card.label}</span><button class="cd-card-close" onclick="event.stopPropagation(); cdCollapseCard()">✕</button></div><div class="cd-card-body">${body}</div></div>`;
             }).join('');
             if (dots) dots.innerHTML = cardTypes.map((_, i) => `<div class="cd-nav-dot ${i === state.currentCardIndex ? 'active' : ''}" onclick="cdGoToCard(${i})"></div>`).join('');
@@ -876,7 +1576,7 @@
             container.addEventListener('touchend', e => { 
                 if (cdExpandedCard) return; 
                 const dx = e.changedTouches[0].clientX - cdTouchStartX; 
-                if (cdIsSwiping && Math.abs(dx) > 70) {
+                if (cdIsSwiping && Math.abs(dx) > 70) { // Increased threshold from 50 to 70
                     if (dx < 0) cdNextCard(); else cdPrevCard(); 
                 } 
                 cdIsSwiping = false; 
@@ -934,6 +1634,7 @@
                 }
             }, beatMs);
             
+            // Play first chord immediately
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             renderAll();
         }
@@ -1060,9 +1761,14 @@
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} loaded - Reverb/Delay, Drag-Drop, WAV Export`);
+            console.log(`🎵 ChordFlow v${VERSION} loaded - Bug fixes & polish`);
         }
         init();
     </script>
+    <div id="recordingOverlay" class="recording-overlay">
+        <div class="recording-dot"></div>
+        <div class="recording-text">Recording progression...</div>
+    </div>
 </body>
 </html>
+
