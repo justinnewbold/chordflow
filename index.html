@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.65</title>
+    <title>ChordFlow v0.66</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -779,17 +779,28 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const VERSION = '0.65';
+        const VERSION = '0.66';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
         const instruments = [
-            { id: 'piano', name: 'Grand Piano', icon: '🎹', synthType: 'Synth', options: { oscillator: { type: 'triangle8' }, envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.2 } } },
-            { id: 'epiano', name: 'Electric Piano', icon: '🎹', synthType: 'FMSynth', options: { harmonicity: 3, modulationIndex: 10, envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 } } },
-            { id: 'synth', name: 'Synth Pad', icon: '🎛️', synthType: 'AMSynth', options: { harmonicity: 2, envelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 2 } } },
-            { id: 'guitar', name: 'Acoustic Guitar', icon: '🎸', synthType: 'PluckSynth', options: { attackNoise: 1, dampening: 4000, resonance: 0.98, release: 1 } },
-            { id: 'strings', name: 'Strings', icon: '🎻', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 30, count: 3 }, envelope: { attack: 0.3, decay: 0.1, sustain: 0.9, release: 1.8 } } },
-            { id: 'organ', name: 'Organ', icon: '🎹', synthType: 'Synth', options: { oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 1, release: 0.1 } } }
+            // Keys
+            { id: 'piano', name: 'Grand Piano', icon: '🎹', category: 'keys', synthType: 'Synth', options: { oscillator: { type: 'triangle8' }, envelope: { attack: 0.005, decay: 0.3, sustain: 0.4, release: 1.2 } } },
+            { id: 'epiano', name: 'Electric Piano', icon: '🎹', category: 'keys', synthType: 'FMSynth', options: { harmonicity: 3, modulationIndex: 10, envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 } } },
+            { id: 'organ', name: 'Organ', icon: '🎹', category: 'keys', synthType: 'Synth', options: { oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 1, release: 0.1 } } },
+            { id: 'synth', name: 'Synth Pad', icon: '🎛️', category: 'keys', synthType: 'AMSynth', options: { harmonicity: 2, envelope: { attack: 0.5, decay: 0.3, sustain: 0.8, release: 2 } } },
+            // Guitars
+            { id: 'acoustic', name: 'Acoustic Guitar', icon: '🎸', category: 'guitar', synthType: 'PluckSynth', options: { attackNoise: 1, dampening: 4000, resonance: 0.98 } },
+            { id: 'electric', name: 'Electric Guitar', icon: '🎸', category: 'guitar', synthType: 'Synth', options: { oscillator: { type: 'fatsquare', spread: 20, count: 2 }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.6, release: 0.8 } } },
+            { id: 'guitar7', name: '7-String Guitar', icon: '🎸', category: 'guitar', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 15, count: 2 }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.5, release: 1 } }, lowNote: 'B2' },
+            { id: 'clean', name: 'Clean Electric', icon: '🎸', category: 'guitar', synthType: 'Synth', options: { oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.6 } } },
+            // Bass
+            { id: 'bass4', name: '4-String Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'fatsawtooth', spread: 10, count: 2 }, envelope: { attack: 0.02, decay: 0.2, sustain: 0.8, release: 0.5 }, filterEnvelope: { attack: 0.02, decay: 0.1, sustain: 0.5, release: 0.5, baseFrequency: 200, octaves: 2.5 } }, lowNote: 'E1' },
+            { id: 'bass5', name: '5-String Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'fatsawtooth', spread: 12, count: 2 }, envelope: { attack: 0.02, decay: 0.2, sustain: 0.8, release: 0.5 }, filterEnvelope: { attack: 0.02, decay: 0.1, sustain: 0.5, release: 0.5, baseFrequency: 180, octaves: 2.5 } }, lowNote: 'B0' },
+            { id: 'synbass', name: 'Synth Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.9, release: 0.3 }, filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.3, baseFrequency: 300, octaves: 3 } }, lowNote: 'E1' },
+            // Strings & Other
+            { id: 'strings', name: 'Strings', icon: '🎻', category: 'strings', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 30, count: 3 }, envelope: { attack: 0.3, decay: 0.1, sustain: 0.9, release: 1.8 } } },
+            { id: 'brass', name: 'Brass', icon: '🎺', category: 'brass', synthType: 'Synth', options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 } } }
         ];
         const genres = [
             { id: 'pop', name: 'Pop', icon: '🎤' }, { id: 'rock', name: 'Rock', icon: '🎸' },
@@ -877,7 +888,6 @@
             
             // Create appropriate synth based on instrument type
             if (inst.synthType === 'PluckSynth') {
-                // PluckSynth doesn't support PolySynth, create multiple instances
                 synth = new Tone.PolySynth(Tone.Synth, { 
                     oscillator: { type: 'triangle' }, 
                     envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.5 } 
@@ -886,9 +896,15 @@
                 synth = new Tone.PolySynth(Tone.FMSynth, inst.options).connect(masterGain);
             } else if (inst.synthType === 'AMSynth') {
                 synth = new Tone.PolySynth(Tone.AMSynth, inst.options).connect(masterGain);
+            } else if (inst.synthType === 'MonoSynth') {
+                // MonoSynth for bass - use PolySynth wrapper for chords
+                synth = new Tone.PolySynth(Tone.MonoSynth, inst.options).connect(masterGain);
             } else {
                 synth = new Tone.PolySynth(Tone.Synth, inst.options).connect(masterGain);
             }
+            
+            // Store current instrument info for note adjustment
+            synth._instrumentInfo = inst;
             updateVolumes();
         }
         function updateVolumes() {
@@ -1775,7 +1791,7 @@
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Enhanced instrument sounds`);
+            console.log(`🎵 ChordFlow v${VERSION} - Extended instruments: 7-string, bass, brass`);
         }
         init();
     </script>
