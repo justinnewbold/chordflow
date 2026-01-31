@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.68</title>
+    <title>ChordFlow v0.69</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -379,6 +379,46 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
         }
+
+        /* Learn Songs Tab Styles */
+        .songs-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .song-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-md); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .song-card:active { transform: scale(0.98); }
+        .song-card.selected { border-color: var(--accent); background: rgba(10, 132, 255, 0.1); }
+        .song-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm); }
+        .song-title { font-size: 18px; font-weight: 700; }
+        .song-difficulty { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-full); background: var(--bg-tertiary); }
+        .song-difficulty.beginner { background: var(--accent-green); color: white; }
+        .song-difficulty.intermediate { background: var(--accent-orange); color: white; }
+        .song-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .song-chords { display: flex; flex-wrap: wrap; gap: 6px; }
+        .song-chord-pill { background: var(--bg-tertiary); padding: 4px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; }
+        
+        /* Song Player View */
+        .song-player { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-md); }
+        .song-player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-md); }
+        .song-player-title { font-size: 22px; font-weight: 800; }
+        .song-player-close { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary); }
+        .song-info-row { display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-md); flex-wrap: wrap; }
+        .song-info-chip { background: var(--bg-tertiary); padding: 8px 14px; border-radius: var(--radius-md); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .song-lyrics-container { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md); max-height: 300px; overflow-y: auto; }
+        .lyric-line { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius-sm); transition: all var(--transition-fast); }
+        .lyric-line.active { background: rgba(10, 132, 255, 0.2); }
+        .lyric-chord { color: var(--accent); font-weight: 700; font-size: 16px; min-width: 40px; }
+        .lyric-text { color: var(--text-primary); font-size: 15px; }
+        .song-tips { background: rgba(48, 209, 88, 0.1); border: 1px solid var(--accent-green); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-md); }
+        .song-tips-title { font-size: 14px; font-weight: 700; color: var(--accent-green); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .song-tips-text { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .song-controls { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+        .song-control-btn { flex: 1; min-width: 100px; padding: 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all var(--transition-fast); }
+        .song-control-btn:active { transform: scale(0.96); }
+        .song-control-btn.primary { background: var(--accent); color: white; }
+        .song-control-btn.playing { background: var(--accent-orange); }
+        
+        /* Filter chips for songs */
+        .song-filters { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-sm); }
+        .filter-chip { padding: 8px 16px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
+        .filter-chip.active { background: var(--accent); color: white; }
     </style>
 </head>
 <body>
@@ -488,6 +528,7 @@
                     <button class="produce-tab active" onclick="setProduceTab('mixer')">🎚️ Mixer</button>
                     <button class="produce-tab" onclick="setProduceTab('export')">📤 Export</button>
                     <button class="produce-tab" onclick="setProduceTab('songs')">💾 Songs</button>
+                    <button class="produce-tab" onclick="setProduceTab('learn')">📚 Learn</button>
                 </div>
                 <div class="produce-panel active" id="mixerPanel">
                     <div class="mixer-channel">
@@ -565,6 +606,15 @@
                     </div>
                     <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadSongFile(event)">
                     <div class="saved-songs" id="savedSongsList"></div>
+                </div>
+                <div class="produce-panel" id="learnPanel">
+                    <div class="song-filters" id="songFilters">
+                        <button class="filter-chip active" onclick="filterSongs('all')">All</button>
+                        <button class="filter-chip" onclick="filterSongs('beginner')">🟢 Beginner</button>
+                        <button class="filter-chip" onclick="filterSongs('intermediate')">🟠 Intermediate</button>
+                    </div>
+                    <div id="songPlayerView" style="display: none;"></div>
+                    <div class="songs-list" id="learnSongsList"></div>
                 </div>
             </div>
         </main>
@@ -864,6 +914,283 @@
             'Caug': ['C4', 'E4', 'G#4'], 'Csus2': ['C4', 'D4', 'G4'], 'Csus4': ['C4', 'F4', 'G4'],
             'Dsus2': ['D4', 'E4', 'A4'], 'Dsus4': ['D4', 'G4', 'A4'], 'Gsus4': ['G4', 'C5', 'D5'], 'Asus4': ['A4', 'D5', 'E5']
         };
+
+        // PUBLIC DOMAIN SONGS DATABASE
+        const publicDomainSongs = [
+            {
+                id: 'twinkle', title: 'Twinkle Twinkle Little Star', difficulty: 'Beginner',
+                tempo: 80, timeSignature: '4/4', key: 'C', year: '1761',
+                origin: 'French melody, English lyrics by Jane Taylor',
+                chords: ['C', 'F', 'C', 'G', 'C', 'F', 'C', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'Twinkle twinkle' }, { chord: 'F', text: 'little' },
+                    { chord: 'C', text: 'star' }, { chord: 'G', text: 'How I wonder' },
+                    { chord: 'C', text: 'what you' }, { chord: 'F', text: 'are' },
+                    { chord: 'C', text: 'Up above the' }, { chord: 'G', text: 'world so' },
+                    { chord: 'C', text: 'high' }
+                ],
+                tips: 'Perfect for beginners! Simple C-F-G progression. Practice switching between C and F first.'
+            },
+            {
+                id: 'amazing_grace', title: 'Amazing Grace', difficulty: 'Beginner',
+                tempo: 72, timeSignature: '3/4', key: 'G', year: '1779',
+                origin: 'Lyrics by John Newton, Traditional American melody',
+                chords: ['G', 'G', 'C', 'G', 'G', 'D', 'G', 'G', 'C', 'G', 'D', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Amazing' }, { chord: 'G', text: 'grace how' },
+                    { chord: 'C', text: 'sweet the' }, { chord: 'G', text: 'sound' },
+                    { chord: 'G', text: 'That saved a' }, { chord: 'D', text: 'wretch like' },
+                    { chord: 'G', text: 'me' }, { chord: 'G', text: 'I once was' },
+                    { chord: 'C', text: 'lost but' }, { chord: 'G', text: 'now am' },
+                    { chord: 'D', text: 'found was' }, { chord: 'G', text: 'blind but now I see' }
+                ],
+                tips: '3/4 waltz time - count 1-2-3. The G-C-D progression is the foundation of countless songs!'
+            },
+            {
+                id: 'happy_birthday', title: 'Happy Birthday', difficulty: 'Beginner',
+                tempo: 100, timeSignature: '3/4', key: 'C', year: '1893 (Public Domain since 2016)',
+                origin: 'Patty and Mildred Hill',
+                chords: ['C', 'C', 'G', 'G', 'C', 'C', 'F', 'C', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'Happy birthday to' }, { chord: 'C', text: 'you Happy' },
+                    { chord: 'G', text: 'birthday to' }, { chord: 'G', text: 'you Happy' },
+                    { chord: 'C', text: 'birthday dear' }, { chord: 'C', text: '(name) Happy' },
+                    { chord: 'F', text: 'birth' }, { chord: 'C', text: 'day' },
+                    { chord: 'G', text: 'to' }, { chord: 'C', text: 'you' }
+                ],
+                tips: 'Everyone should know this one! Great for party performances. In 3/4 time.'
+            },
+            {
+                id: 'oh_susanna', title: 'Oh! Susanna', difficulty: 'Beginner',
+                tempo: 112, timeSignature: '4/4', key: 'C', year: '1848',
+                origin: 'Stephen Foster',
+                chords: ['C', 'G', 'C', 'G', 'C', 'F', 'C', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'I come from Alabama with a' }, { chord: 'G', text: 'banjo on my' },
+                    { chord: 'C', text: 'knee I\'m going to Louisiana my' }, { chord: 'G', text: 'true love for to' },
+                    { chord: 'C', text: 'see Oh' }, { chord: 'F', text: 'Susanna oh' },
+                    { chord: 'C', text: 'don\'t you cry for' }, { chord: 'G', text: 'me For I' },
+                    { chord: 'C', text: 'come from Alabama with a banjo on my knee' }
+                ],
+                tips: 'Classic American folk song. Great for practicing strumming patterns in 4/4 time.'
+            },
+            {
+                id: 'when_saints', title: 'When The Saints Go Marching In', difficulty: 'Beginner',
+                tempo: 108, timeSignature: '4/4', key: 'G', year: '1896',
+                origin: 'Traditional Gospel/Jazz Standard',
+                chords: ['G', 'G', 'G', 'D', 'G', 'G', 'C', 'G', 'D', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Oh when the' }, { chord: 'G', text: 'saints go' },
+                    { chord: 'G', text: 'marching' }, { chord: 'D', text: 'in Oh when the' },
+                    { chord: 'G', text: 'saints go' }, { chord: 'G', text: 'marching' },
+                    { chord: 'C', text: 'in Oh Lord I' }, { chord: 'G', text: 'want to' },
+                    { chord: 'D', text: 'be in that' }, { chord: 'G', text: 'number' }
+                ],
+                tips: 'Perfect for learning to play with a swing feel. Try accenting beats 2 and 4!'
+            },
+            {
+                id: 'aura_lee', title: 'Aura Lee (Love Me Tender melody)', difficulty: 'Intermediate',
+                tempo: 76, timeSignature: '4/4', key: 'C', year: '1861',
+                origin: 'W.W. Fosdick & George R. Poulton (later adapted by Elvis)',
+                chords: ['C', 'D7', 'G7', 'C', 'C', 'E7', 'Am', 'C', 'G7', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'As the black bird' }, { chord: 'D7', text: 'in the spring' },
+                    { chord: 'G7', text: 'neath the willow' }, { chord: 'C', text: 'tree' },
+                    { chord: 'C', text: 'Sat and piped I' }, { chord: 'E7', text: 'heard him' },
+                    { chord: 'Am', text: 'sing Singing' }, { chord: 'C', text: 'Aura' },
+                    { chord: 'G7', text: 'Lee' }, { chord: 'C', text: '' }
+                ],
+                tips: 'Introduces 7th chords! Elvis used this melody for "Love Me Tender". Great for learning D7, G7, E7.'
+            },
+            {
+                id: 'home_range', title: 'Home On The Range', difficulty: 'Beginner',
+                tempo: 88, timeSignature: '3/4', key: 'G', year: '1870s',
+                origin: 'Dr. Brewster M. Higley, Kansas',
+                chords: ['G', 'C', 'G', 'D7', 'G', 'C', 'G', 'D7', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Oh give me a' }, { chord: 'C', text: 'home where the' },
+                    { chord: 'G', text: 'buffalo roam Where the' }, { chord: 'D7', text: 'deer and the antelope' },
+                    { chord: 'G', text: 'play Where' }, { chord: 'C', text: 'seldom is heard a dis' },
+                    { chord: 'G', text: 'couraging word And the' }, { chord: 'D7', text: 'skies are not cloudy all' },
+                    { chord: 'G', text: 'day' }
+                ],
+                tips: 'State song of Kansas. Beautiful waltz time (3/4). Practice the G-C-D7 progression.'
+            },
+            {
+                id: 'red_river', title: 'Red River Valley', difficulty: 'Beginner',
+                tempo: 84, timeSignature: '4/4', key: 'G', year: '1890s',
+                origin: 'Traditional American Folk Song',
+                chords: ['G', 'D7', 'G', 'C', 'G', 'D7', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'From this valley they' }, { chord: 'D7', text: 'say you are' },
+                    { chord: 'G', text: 'going We will miss your bright' }, { chord: 'C', text: 'eyes and sweet' },
+                    { chord: 'G', text: 'smile For they say you are' }, { chord: 'D7', text: 'taking the sunshine That has' },
+                    { chord: 'G', text: 'brightened our pathway a while' }
+                ],
+                tips: 'Classic folk song with a simple chord progression. Great for fingerpicking!'
+            },
+            {
+                id: 'greensleeves', title: 'Greensleeves', difficulty: 'Intermediate',
+                tempo: 72, timeSignature: '3/4', key: 'Am', year: '1580 (Traditional English)',
+                origin: 'English Renaissance, Author Unknown',
+                chords: ['Am', 'G', 'Am', 'E', 'Am', 'G', 'Am', 'E', 'Am', 'C', 'G', 'Am', 'E', 'Am'],
+                lyrics: [
+                    { chord: 'Am', text: 'Alas my love you' }, { chord: 'G', text: 'do me' },
+                    { chord: 'Am', text: 'wrong To cast me' }, { chord: 'E', text: 'off discourteously' },
+                    { chord: 'Am', text: 'And I have loved you' }, { chord: 'G', text: 'oh so' },
+                    { chord: 'Am', text: 'long De' }, { chord: 'E', text: 'lighting in your' },
+                    { chord: 'Am', text: 'company Green' }, { chord: 'C', text: 'sleeves was' },
+                    { chord: 'G', text: 'all my' }, { chord: 'Am', text: 'joy Green' },
+                    { chord: 'E', text: 'sleeves was my de' }, { chord: 'Am', text: 'light' }
+                ],
+                tips: 'Classic minor key song. The Am-G-Am-E pattern is foundational. Also known as "What Child Is This".'
+            },
+            {
+                id: 'scarborough', title: 'Scarborough Fair', difficulty: 'Intermediate',
+                tempo: 66, timeSignature: '3/4', key: 'Am', year: 'Traditional (Medieval)',
+                origin: 'English Traditional Ballad',
+                chords: ['Am', 'G', 'Am', 'C', 'Am', 'G', 'Am', 'C', 'G', 'Am'],
+                lyrics: [
+                    { chord: 'Am', text: 'Are you going to' }, { chord: 'G', text: 'Scarborough' },
+                    { chord: 'Am', text: 'Fair Parsley' }, { chord: 'C', text: 'sage rose' },
+                    { chord: 'Am', text: 'mary and' }, { chord: 'G', text: 'thyme Re' },
+                    { chord: 'Am', text: 'member me to' }, { chord: 'C', text: 'one who lives' },
+                    { chord: 'G', text: 'there She' }, { chord: 'Am', text: 'once was a true love of mine' }
+                ],
+                tips: 'Beautiful modal melody. Made famous by Simon & Garfunkel. Great for fingerpicking in 3/4.'
+            },
+            {
+                id: 'danny_boy', title: 'Danny Boy (Londonderry Air)', difficulty: 'Intermediate',
+                tempo: 60, timeSignature: '4/4', key: 'C', year: '1913 (Melody ancient)',
+                origin: 'Traditional Irish, Lyrics by Frederic Weatherly',
+                chords: ['C', 'F', 'C', 'Am', 'G', 'C', 'F', 'C', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'Oh Danny' }, { chord: 'F', text: 'Boy the pipes the' },
+                    { chord: 'C', text: 'pipes are' }, { chord: 'Am', text: 'calling From glen to' },
+                    { chord: 'G', text: 'glen and' }, { chord: 'C', text: 'down the mountain' },
+                    { chord: 'F', text: 'side The summers' }, { chord: 'C', text: 'gone and all the' },
+                    { chord: 'G', text: 'roses' }, { chord: 'C', text: 'falling' }
+                ],
+                tips: 'Beloved Irish ballad. Take it slow and let the melody breathe. Beautiful chord transitions.'
+            },
+            {
+                id: 'auld_lang', title: 'Auld Lang Syne', difficulty: 'Beginner',
+                tempo: 92, timeSignature: '4/4', key: 'G', year: '1788',
+                origin: 'Robert Burns, Traditional Scottish',
+                chords: ['G', 'D', 'G', 'C', 'G', 'D', 'G', 'C', 'G', 'D', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Should auld acquaintance' }, { chord: 'D', text: 'be forgot and' },
+                    { chord: 'G', text: 'never brought to' }, { chord: 'C', text: 'mind Should' },
+                    { chord: 'G', text: 'auld acquaintance' }, { chord: 'D', text: 'be forgot and' },
+                    { chord: 'G', text: 'days of auld lang' }, { chord: 'C', text: 'syne For' },
+                    { chord: 'G', text: 'auld lang' }, { chord: 'D', text: 'syne my' },
+                    { chord: 'G', text: 'dear' }
+                ],
+                tips: 'Perfect for New Years! Simple G-C-D progression. Everyone sings along!'
+            },
+            {
+                id: 'silent_night', title: 'Silent Night', difficulty: 'Beginner',
+                tempo: 72, timeSignature: '3/4', key: 'C', year: '1818',
+                origin: 'Franz Xaver Gruber & Joseph Mohr',
+                chords: ['C', 'C', 'G', 'C', 'F', 'C', 'F', 'C', 'G', 'C', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'Silent night' }, { chord: 'C', text: 'Holy night' },
+                    { chord: 'G', text: 'All is calm' }, { chord: 'C', text: 'All is bright' },
+                    { chord: 'F', text: 'Round yon virgin' }, { chord: 'C', text: 'mother and child' },
+                    { chord: 'F', text: 'Holy infant so' }, { chord: 'C', text: 'tender and mild' },
+                    { chord: 'G', text: 'Sleep in heavenly' }, { chord: 'C', text: 'peace' },
+                    { chord: 'G', text: 'Sleep in heavenly' }, { chord: 'C', text: 'peace' }
+                ],
+                tips: 'Beautiful Christmas classic in 3/4 waltz time. Let the chords ring!'
+            },
+            {
+                id: 'swing_low', title: 'Swing Low, Sweet Chariot', difficulty: 'Beginner',
+                tempo: 72, timeSignature: '4/4', key: 'D', year: '1862',
+                origin: 'Wallis Willis (African American Spiritual)',
+                chords: ['D', 'G', 'D', 'A', 'D', 'G', 'D', 'A', 'D'],
+                lyrics: [
+                    { chord: 'D', text: 'Swing low sweet' }, { chord: 'G', text: 'chariot' },
+                    { chord: 'D', text: 'Coming for to carry me' }, { chord: 'A', text: 'home Swing' },
+                    { chord: 'D', text: 'low sweet' }, { chord: 'G', text: 'chariot' },
+                    { chord: 'D', text: 'Coming for to' }, { chord: 'A', text: 'carry me' },
+                    { chord: 'D', text: 'home' }
+                ],
+                tips: 'Powerful spiritual. D-G-A is the same pattern as G-C-D in a different key. Great for learning transposition!'
+            },
+            {
+                id: 'clementine', title: 'Oh My Darling, Clementine', difficulty: 'Beginner',
+                tempo: 100, timeSignature: '3/4', key: 'C', year: '1884',
+                origin: 'Percy Montrose (American Folk)',
+                chords: ['C', 'G', 'G', 'C', 'C', 'G', 'G', 'C'],
+                lyrics: [
+                    { chord: 'C', text: 'In a cavern in a canyon' }, { chord: 'G', text: 'Excavating for a mine' },
+                    { chord: 'G', text: 'Dwelt a miner forty niner' }, { chord: 'C', text: 'And his daughter Clementine' },
+                    { chord: 'C', text: 'Oh my darling oh my darling' }, { chord: 'G', text: 'Oh my darling Clementine' },
+                    { chord: 'G', text: 'You are lost and gone forever' }, { chord: 'C', text: 'Dreadful sorry Clementine' }
+                ],
+                tips: 'Simple 2-chord song in 3/4. Perfect for absolute beginners learning C and G!'
+            },
+            {
+                id: 'kumbaya', title: 'Kumbaya', difficulty: 'Beginner',
+                tempo: 80, timeSignature: '4/4', key: 'D', year: '1930s (Spiritual)',
+                origin: 'African American Spiritual',
+                chords: ['D', 'G', 'D', 'A', 'D', 'G', 'D', 'A', 'D'],
+                lyrics: [
+                    { chord: 'D', text: 'Kumbaya my Lord' }, { chord: 'G', text: 'Kum ba' },
+                    { chord: 'D', text: 'ya Kumbaya my Lord' }, { chord: 'A', text: 'Kum ba' },
+                    { chord: 'D', text: 'ya Kumbaya my Lord' }, { chord: 'G', text: 'Kum ba' },
+                    { chord: 'D', text: 'ya Oh' }, { chord: 'A', text: 'Lord Kum ba' },
+                    { chord: 'D', text: 'ya' }
+                ],
+                tips: 'Classic campfire song! D-G-A progression. "Kumbaya" means "Come by here" in Gullah.'
+            },
+            {
+                id: 'she_comin', title: 'She\'ll Be Comin\' Round the Mountain', difficulty: 'Beginner',
+                tempo: 120, timeSignature: '4/4', key: 'G', year: '1890s',
+                origin: 'Traditional American',
+                chords: ['G', 'G', 'D', 'D', 'G', 'C', 'G', 'D', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'She\'ll be comin round the' }, { chord: 'G', text: 'mountain when she comes' },
+                    { chord: 'D', text: 'She\'ll be comin round the' }, { chord: 'D', text: 'mountain when she comes' },
+                    { chord: 'G', text: 'She\'ll be comin round the' }, { chord: 'C', text: 'mountain she\'ll be comin round the' },
+                    { chord: 'G', text: 'mountain she\'ll be' }, { chord: 'D', text: 'comin round the' },
+                    { chord: 'G', text: 'mountain when she comes' }
+                ],
+                tips: 'Fun sing-along song! Great for practicing quick chord changes. Add verses with different actions!'
+            },
+            {
+                id: 'jingle_bells', title: 'Jingle Bells', difficulty: 'Beginner',
+                tempo: 116, timeSignature: '4/4', key: 'G', year: '1857',
+                origin: 'James Lord Pierpont',
+                chords: ['G', 'G', 'G', 'C', 'G', 'D', 'G', 'G', 'C', 'G', 'A7', 'D7', 'G', 'C', 'G', 'D', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Dashing through the' }, { chord: 'G', text: 'snow In a' },
+                    { chord: 'G', text: 'one horse open' }, { chord: 'C', text: 'sleigh O\'er the' },
+                    { chord: 'G', text: 'fields we go' }, { chord: 'D', text: 'Laughing all the' },
+                    { chord: 'G', text: 'way' }, { chord: 'G', text: 'Jingle bells jingle bells' },
+                    { chord: 'C', text: 'jingle all the' }, { chord: 'G', text: 'way Oh what fun it' },
+                    { chord: 'A7', text: 'is to ride in a' }, { chord: 'D7', text: 'one horse open sleigh' },
+                    { chord: 'G', text: 'Jingle bells jingle bells' }, { chord: 'C', text: 'jingle all the' },
+                    { chord: 'G', text: 'way Oh what fun it' }, { chord: 'D', text: 'is to ride in a' },
+                    { chord: 'G', text: 'one horse open sleigh' }
+                ],
+                tips: 'Holiday classic! Originally written for Thanksgiving. Has A7 and D7 for extra practice.'
+            },
+            {
+                id: 'down_valley', title: 'Down In The Valley', difficulty: 'Beginner',
+                tempo: 76, timeSignature: '3/4', key: 'G', year: '1840s',
+                origin: 'Appalachian Folk Song',
+                chords: ['G', 'G', 'D', 'D', 'D', 'D', 'G', 'G'],
+                lyrics: [
+                    { chord: 'G', text: 'Down in the' }, { chord: 'G', text: 'valley the valley so' },
+                    { chord: 'D', text: 'low Hang your head' }, { chord: 'D', text: 'over hear the wind' },
+                    { chord: 'D', text: 'blow Hear the wind' }, { chord: 'D', text: 'blow dear hear the wind' },
+                    { chord: 'G', text: 'blow Hang your head' }, { chord: 'G', text: 'over hear the wind blow' }
+                ],
+                tips: 'Beautiful slow waltz with only 2 chords! Perfect for practicing holding chords longer.'
+            }
+        ];
+
         const progressions = {
             pop: [['C', 'G', 'Am', 'F'], ['G', 'D', 'Em', 'C'], ['C', 'Am', 'F', 'G'], ['D', 'A', 'Bm', 'G'], ['F', 'C', 'G', 'Am']],
             rock: [['E', 'A', 'B', 'E'], ['G', 'C', 'D', 'G'], ['A', 'D', 'E', 'A'], ['E', 'G', 'A', 'E']],
@@ -1343,7 +1670,7 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            closeSaveModal(); renderSavedSongs(); showToast(`💾 Saved "${name}"`);
+            closeSaveModal(); renderSavedSongs(); renderLearnSongs(); showToast(`💾 Saved "${name}"`);
         }
         function loadSong(index) {
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
@@ -1358,7 +1685,7 @@
             const name = songs[index]?.name;
             songs.splice(index, 1);
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            renderSavedSongs(); showToast(`🗑️ Deleted "${name}"`);
+            renderSavedSongs(); renderLearnSongs(); showToast(`🗑️ Deleted "${name}"`);
         }
         function loadSongFile(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -1414,7 +1741,7 @@
             document.querySelectorAll('.ui-container').forEach(c => c.classList.remove('active'));
             const container = document.getElementById(uiMap[state.uiMode]);
             if (container) container.classList.add('active');
-            updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs();
+            updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
             if (state.uiMode === 'cards') initCardDeck();
             // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
@@ -1531,6 +1858,13 @@
         function setProduceTab(tab) {
             state.produceTab = tab;
             document.querySelectorAll('.produce-tab').forEach(t => t.classList.remove('active'));
+            // Close song player when switching tabs
+            if (tab !== 'learn') {
+                const view = document.getElementById('songPlayerView');
+                const list = document.getElementById('learnSongsList');
+                if (view) view.style.display = 'none';
+                if (list) list.style.display = 'flex';
+            }
             document.querySelectorAll('.produce-panel').forEach(p => p.classList.remove('active'));
             const tabBtn = document.querySelector(`.produce-tab[onclick*="${tab}"]`);
             if (tabBtn) tabBtn.classList.add('active');
@@ -1821,7 +2155,7 @@
             if (type === 'instrument') renderInstrumentOptions();
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
-            if (type === 'songs') renderSavedSongs();
+            if (type === 'songs') renderSavedSongs(); renderLearnSongs();
         }
         function closeSheet() { 
             const overlay = document.getElementById('sheetOverlay');
