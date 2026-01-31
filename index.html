@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.66</title>
+    <title>ChordFlow v0.67</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -779,7 +779,7 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const VERSION = '0.66';
+        const VERSION = '0.67';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -798,15 +798,34 @@
             { id: 'bass4', name: '4-String Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'fatsawtooth', spread: 10, count: 2 }, envelope: { attack: 0.02, decay: 0.2, sustain: 0.8, release: 0.5 }, filterEnvelope: { attack: 0.02, decay: 0.1, sustain: 0.5, release: 0.5, baseFrequency: 200, octaves: 2.5 } }, lowNote: 'E1' },
             { id: 'bass5', name: '5-String Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'fatsawtooth', spread: 12, count: 2 }, envelope: { attack: 0.02, decay: 0.2, sustain: 0.8, release: 0.5 }, filterEnvelope: { attack: 0.02, decay: 0.1, sustain: 0.5, release: 0.5, baseFrequency: 180, octaves: 2.5 } }, lowNote: 'B0' },
             { id: 'synbass', name: 'Synth Bass', icon: '🎸', category: 'bass', synthType: 'MonoSynth', options: { oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.9, release: 0.3 }, filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.3, baseFrequency: 300, octaves: 3 } }, lowNote: 'E1' },
-            // Strings & Other
+            // Strings
             { id: 'strings', name: 'Strings', icon: '🎻', category: 'strings', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 30, count: 3 }, envelope: { attack: 0.3, decay: 0.1, sustain: 0.9, release: 1.8 } } },
-            { id: 'brass', name: 'Brass', icon: '🎺', category: 'brass', synthType: 'Synth', options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 } } }
+            { id: 'cello', name: 'Cello', icon: '🎻', category: 'strings', synthType: 'Synth', options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.15, decay: 0.2, sustain: 0.85, release: 1.2 } } },
+            { id: 'viola', name: 'Viola', icon: '🎻', category: 'strings', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 20, count: 2 }, envelope: { attack: 0.2, decay: 0.15, sustain: 0.8, release: 1 } } },
+            // Brass
+            { id: 'brass', name: 'Brass Section', icon: '🎺', category: 'brass', synthType: 'Synth', options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 } } },
+            { id: 'trumpet', name: 'Trumpet', icon: '🎺', category: 'brass', synthType: 'Synth', options: { oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.7, release: 0.3 } } },
+            { id: 'trombone', name: 'Trombone', icon: '🎺', category: 'brass', synthType: 'Synth', options: { oscillator: { type: 'sawtooth' }, envelope: { attack: 0.08, decay: 0.2, sustain: 0.75, release: 0.4 } } },
+            // Woodwinds
+            { id: 'flute', name: 'Flute', icon: '🎵', category: 'woodwind', synthType: 'Synth', options: { oscillator: { type: 'sine' }, envelope: { attack: 0.1, decay: 0.1, sustain: 0.9, release: 0.5 } } },
+            { id: 'clarinet', name: 'Clarinet', icon: '🎵', category: 'woodwind', synthType: 'Synth', options: { oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.15, sustain: 0.8, release: 0.4 } } },
+            { id: 'sax', name: 'Saxophone', icon: '🎷', category: 'woodwind', synthType: 'Synth', options: { oscillator: { type: 'fatsawtooth', spread: 15, count: 2 }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.7, release: 0.5 } } },
+            // World
+            { id: 'ukulele', name: 'Ukulele', icon: '🪕', category: 'world', synthType: 'PluckSynth', options: { attackNoise: 0.8, dampening: 5000, resonance: 0.95 } },
+            { id: 'banjo', name: 'Banjo', icon: '🪕', category: 'world', synthType: 'PluckSynth', options: { attackNoise: 1.5, dampening: 6000, resonance: 0.9 } },
+            { id: 'harmonica', name: 'Harmonica', icon: '🎵', category: 'world', synthType: 'Synth', options: { oscillator: { type: 'square' }, envelope: { attack: 0.02, decay: 0.1, sustain: 0.8, release: 0.2 } } },
+            { id: 'marimba', name: 'Marimba', icon: '🎵', category: 'world', synthType: 'Synth', options: { oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.5, sustain: 0.1, release: 0.8 } } },
+            { id: 'kalimba', name: 'Kalimba', icon: '🎵', category: 'world', synthType: 'Synth', options: { oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 0.8, sustain: 0.05, release: 1 } } }
         ];
         const genres = [
             { id: 'pop', name: 'Pop', icon: '🎤' }, { id: 'rock', name: 'Rock', icon: '🎸' },
+            { id: 'metal', name: 'Metal', icon: '🤘' }, { id: 'punk', name: 'Punk', icon: '⚡' },
             { id: 'jazz', name: 'Jazz', icon: '🎷' }, { id: 'classical', name: 'Classical', icon: '🎻' },
-            { id: 'electronic', name: 'Electronic', icon: '🎛️' }, { id: 'rnb', name: 'R&B', icon: '🎤' },
-            { id: 'folk', name: 'Folk', icon: '🪕' }, { id: 'blues', name: 'Blues', icon: '🎺' }
+            { id: 'electronic', name: 'Electronic', icon: '🎛️' }, { id: 'lofi', name: 'Lo-Fi', icon: '☕' },
+            { id: 'rnb', name: 'R&B', icon: '🎤' }, { id: 'gospel', name: 'Gospel', icon: '🙏' },
+            { id: 'folk', name: 'Folk', icon: '🪕' }, { id: 'blues', name: 'Blues', icon: '🎺' },
+            { id: 'reggae', name: 'Reggae', icon: '🌴' }, { id: 'latin', name: 'Latin', icon: '💃' },
+            { id: 'country', name: 'Country', icon: '🤠' }
         ];
         const majorKeys = ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab'];
         const minorKeys = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'Dm', 'Gm', 'Cm', 'Fm', 'Bbm'];
@@ -841,7 +860,14 @@
             electronic: [['Am', 'F', 'C', 'G'], ['Em', 'C', 'G', 'D'], ['Dm', 'Am', 'F', 'C']],
             rnb: [['Cmaj7', 'Fmaj7', 'Am7', 'G7'], ['Dm7', 'G7', 'Cmaj7', 'Am7']],
             folk: [['G', 'C', 'D', 'G'], ['D', 'G', 'A', 'D'], ['C', 'F', 'G', 'C']],
-            blues: [['E7', 'A7', 'E7', 'B7'], ['A7', 'D7', 'A7', 'E7']]
+            blues: [['E7', 'A7', 'E7', 'B7'], ['A7', 'D7', 'A7', 'E7'], ['G7', 'C7', 'G7', 'D7']],
+            metal: [['Em', 'C', 'G', 'D'], ['Am', 'F', 'C', 'G'], ['Bm', 'G', 'D', 'A'], ['Em', 'D', 'C', 'B7']],
+            punk: [['G', 'D', 'Em', 'C'], ['A', 'D', 'E', 'A'], ['C', 'G', 'Am', 'F'], ['E', 'B', 'C#m', 'A']],
+            lofi: [['Cmaj7', 'Am7', 'Fmaj7', 'G7'], ['Dm7', 'G7', 'Cmaj7', 'Am7'], ['Em7', 'Am7', 'Dm7', 'G7']],
+            gospel: [['C', 'Am', 'F', 'G'], ['G', 'Em', 'C', 'D'], ['F', 'C', 'G', 'Am'], ['Cmaj7', 'Am7', 'Fmaj7', 'G7']],
+            reggae: [['C', 'G', 'Am', 'F'], ['G', 'D', 'Em', 'C'], ['Am', 'Dm', 'G', 'C'], ['F', 'C', 'G', 'Am']],
+            latin: [['Am', 'Dm', 'E7', 'Am'], ['Dm', 'G7', 'Cmaj7', 'A7'], ['Em', 'Am', 'B7', 'Em'], ['Cm', 'Fm', 'G7', 'Cm']],
+            country: [['G', 'C', 'D', 'G'], ['D', 'G', 'A', 'D'], ['C', 'G', 'D', 'G'], ['A', 'D', 'E', 'A']]
         };
 
         // State
@@ -858,7 +884,8 @@
             chordVolume: 80, bassVolume: 70, masterVolume: 100,
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
             undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
-            reverbAmount: 30, delayAmount: 15, isRecording: false
+            reverbAmount: 30, delayAmount: 15, isRecording: false,
+            playMode: 'block', arpeggioSpeed: 100
         };
 
         // Audio
@@ -945,7 +972,25 @@
             await initAudio();
             const notes = getChordNotes(chord);
             try {
-                synth.triggerAttackRelease(notes, duration);
+                if (state.playMode === 'arpeggio') {
+                    // Arpeggio mode - play notes one at a time
+                    const noteDelay = state.arpeggioSpeed / 1000;
+                    notes.forEach((note, i) => {
+                        setTimeout(() => {
+                            synth.triggerAttackRelease(note, '8n');
+                        }, i * state.arpeggioSpeed);
+                    });
+                } else if (state.playMode === 'strum') {
+                    // Strum mode - quick cascade
+                    notes.forEach((note, i) => {
+                        setTimeout(() => {
+                            synth.triggerAttackRelease(note, duration);
+                        }, i * 30);
+                    });
+                } else {
+                    // Block chord (default)
+                    synth.triggerAttackRelease(notes, duration);
+                }
                 if (state.bassEnabled && bassSynth) {
                     const root = notes[0].replace(/\d/, '') + '2';
                     bassSynth.triggerAttackRelease(root, '4n');
@@ -1393,6 +1438,14 @@
             if (toggle) toggle.classList.toggle('active', state.bassEnabled); 
             showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF'); 
         }
+        function setPlayMode(mode) {
+            state.playMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+            if (btn) btn.classList.add('active');
+            const icons = { block: '🎹', strum: '🎸', arpeggio: '🎵' };
+            showToast(icons[mode] + ' ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode');
+        }
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
             const toggle = document.getElementById('metronomeToggle');
@@ -1791,7 +1844,7 @@
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Extended instruments: 7-string, bass, brass`);
+            console.log(`🎵 ChordFlow v${VERSION} - More instruments, genres, play modes`);
         }
         init();
     </script>
