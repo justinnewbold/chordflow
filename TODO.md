@@ -1,40 +1,40 @@
 # ChordFlow Roadmap
 
-## Current Version: 0.66
+## Current Version: 0.68
 
 ---
 
 ## 🎯 Quick Wins
 
 ### More Instruments
-- [ ] Drums/Percussion patterns
-- [ ] Cello, Viola
-- [ ] Flute, Clarinet, Saxophone
-- [ ] Ukulele
-- [ ] Banjo
-- [ ] Harmonica
+- [x] ~~Drums/Percussion patterns~~ (partial - need full drum kit)
+- [x] Cello, Viola ✅ v0.67
+- [x] Flute, Clarinet, Saxophone ✅ v0.67
+- [x] Ukulele ✅ v0.67
+- [x] Banjo ✅ v0.67
+- [x] Harmonica ✅ v0.67
 
 ### Playback Enhancements
-- [ ] Strum patterns for guitar (up/down strumming)
-- [ ] Arpeggio mode (play notes one at a time)
-- [ ] Swing/shuffle feel
-- [ ] Different time signatures (3/4 waltz, 6/8)
+- [x] Strum patterns for guitar ✅ v0.67
+- [x] Arpeggio mode ✅ v0.67
+- [x] Swing/shuffle feel ✅ v0.68
+- [x] Different time signatures (3/4, 6/8) ✅ v0.68
 
 ### More Genres
-- [ ] Metal, Punk
-- [ ] Reggae
-- [ ] Latin/Bossa Nova
-- [ ] Gospel
-- [ ] Lo-fi/Chill
+- [x] Metal, Punk ✅ v0.67
+- [x] Reggae ✅ v0.67
+- [x] Latin/Bossa Nova ✅ v0.67
+- [x] Gospel ✅ v0.67
+- [x] Lo-fi/Chill ✅ v0.67
 
 ---
 
 ## 🎨 UI/UX Improvements
 
 ### Chord Diagrams
-- [ ] Bass tab diagrams
+- [x] Bass tab diagrams ✅ v0.68
 - [ ] 7-string guitar diagrams
-- [ ] Piano keyboard visualization
+- [x] Piano keyboard visualization ✅ v0.68
 
 ### Visual Enhancements
 - [ ] Visual metronome - animated beat indicator
@@ -86,6 +86,17 @@
 
 ## ✅ Completed
 
+### v0.68
+- [x] Time signatures (4/4, 3/4, 6/8)
+- [x] Swing/shuffle slider
+- [x] Piano keyboard chord visualization
+- [x] Bass tab chord diagrams
+
+### v0.67
+- [x] +12 instruments (cello, viola, trumpet, trombone, flute, clarinet, sax, ukulele, banjo, harmonica, marimba, kalimba)
+- [x] +7 genres (metal, punk, lofi, gospel, reggae, latin, country)
+- [x] Block/Strum/Arpeggio play modes
+
 ### v0.66
 - [x] 7-String Guitar
 - [x] 4-String Bass
@@ -102,17 +113,4 @@
 - [x] Reverb/Delay effects
 - [x] Drag-and-drop chord reordering
 - [x] WAV export
-
-### v0.63 and earlier
-- [x] 3 UI modes (Dual, Sheet Flow, Card Deck)
-- [x] AI chord generation (Gemini API)
-- [x] MIDI export
-- [x] PDF export
-- [x] Song sections (Verse/Chorus/Bridge)
-- [x] Metronome
-- [x] Undo/Redo
-- [x] Save/Load songs
-- [x] Key transposition
-- [x] Tempo control with tap tempo
-- [x] Bass line toggle
 
