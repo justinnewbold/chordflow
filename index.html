@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.69</title>
+    <title>ChordFlow v0.70</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -419,6 +419,45 @@
         .song-filters { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-sm); }
         .filter-chip { padding: 8px 16px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
         .filter-chip.active { background: var(--accent); color: white; }
+
+        /* Visual Metronome */
+        .visual-metronome { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); height: 40px; }
+        .metro-pendulum { width: 4px; height: 32px; background: var(--accent); border-radius: 2px; transform-origin: bottom center; transition: transform 0.1s ease; opacity: 0.3; }
+        .metro-pendulum.tick { opacity: 1; animation: metroPop 0.3s ease; }
+        .metro-pendulum.accent { background: var(--accent-orange); }
+        @keyframes metroPop { 0% { transform: scaleY(0.5); } 50% { transform: scaleY(1.3); } 100% { transform: scaleY(1); } }
+        .metro-beat-num { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: all 0.1s ease; }
+        .metro-beat-num.active { background: var(--accent); color: white; transform: scale(1.2); }
+        .metro-beat-num.accent { background: var(--accent-orange); }
+        .metro-flash { position: fixed; inset: 0; background: rgba(10, 132, 255, 0.08); pointer-events: none; opacity: 0; z-index: 50; transition: opacity 0.05s ease; }
+        .metro-flash.flash { opacity: 1; }
+
+        /* Scale Degree Labels */
+        .chord-degree { font-size: 11px; color: var(--accent-purple); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px; }
+
+        /* Custom Chord Input */
+        .custom-chord-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .custom-chord-input { flex: 1; padding: 12px 16px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); font-weight: 600; outline: none; transition: border-color var(--transition-fast); }
+        .custom-chord-input:focus { border-color: var(--accent); }
+        .custom-chord-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+        .custom-chord-add-btn { padding: 12px 20px; background: var(--accent-green); border: none; border-radius: var(--radius-md); color: white; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
+        .custom-chord-add-btn:active { transform: scale(0.95); }
+        .custom-chord-replace-btn { padding: 12px 16px; background: var(--accent-purple); border: none; border-radius: var(--radius-md); color: white; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
+        .custom-chord-replace-btn:active { transform: scale(0.95); }
+
+        /* AI Transform Buttons */
+        .ai-transform-row { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .ai-transform-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast); }
+        .ai-transform-btn:active { transform: scale(0.96); }
+        .ai-transform-btn.loading { animation: shimmer 1.5s infinite; }
+        .ai-transform-btn.jazzy { border-color: var(--accent-purple); }
+        .ai-transform-btn.jazzy:hover { background: rgba(191, 90, 242, 0.1); }
+        .ai-transform-btn.simplify { border-color: var(--accent-green); }
+        .ai-transform-btn.simplify:hover { background: rgba(48, 209, 88, 0.1); }
+
+        /* Theory Hint */
+        .theory-hint { background: rgba(191, 90, 242, 0.08); border: 1px solid rgba(191, 90, 242, 0.3); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); margin-bottom: var(--spacing-md); font-size: 13px; color: var(--text-secondary); line-height: 1.4; display: flex; align-items: flex-start; gap: var(--spacing-sm); }
+        .theory-hint .hint-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
     </style>
 </head>
 <body>
@@ -495,6 +534,14 @@
                     <div class="tempo-value" id="tempoValueDisplay" onclick="handleTempoTap()">120</div>
                 </div>
 
+                <!-- Visual Metronome -->
+                <div class="visual-metronome" id="visualMetronome">
+                    <div class="metro-beat-num" data-beat="0">1</div>
+                    <div class="metro-beat-num" data-beat="1">2</div>
+                    <div class="metro-beat-num" data-beat="2">3</div>
+                    <div class="metro-beat-num" data-beat="3">4</div>
+                </div>
+
                 <div class="progress-container">
                     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                     <div class="beat-dots" id="beatDots">
@@ -514,13 +561,33 @@
                     <button class="undo-btn" onclick="redo()" id="redoBtn" disabled>↪️ Redo</button>
                 </div>
                 <div class="sections-strip" id="sectionsStrip"></div>
+
+                <!-- Theory Hint -->
+                <div class="theory-hint" id="theoryHint" style="display:none;">
+                    <span class="hint-icon">🎓</span>
+                    <span id="theoryHintText"></span>
+                </div>
+
                 <div class="chord-grid" id="chordGrid"></div>
+
+                <!-- Custom Chord Input -->
+                <div class="custom-chord-row">
+                    <input type="text" class="custom-chord-input" id="customChordInput" placeholder="Type chord (e.g. Am7, Fmaj7, Bdim)" autocomplete="off" spellcheck="false">
+                    <button class="custom-chord-add-btn" onclick="addCustomChord()">+ Add</button>
+                    <button class="custom-chord-replace-btn" onclick="replaceWithCustomChords()">Set All</button>
+                </div>
+
                 <button class="generate-btn" onclick="generateProgression()">🎲 Generate New Progression</button>
                 <div class="ai-grid">
                     <button class="ai-btn" onclick="aiGenerate('smart')" id="aiMagicBtn"><span class="icon">✨</span> AI Magic</button>
                     <button class="ai-btn" onclick="aiGenerate('surprise')" id="aiSurpriseBtn"><span class="icon">🎁</span> Surprise</button>
                     <button class="ai-btn" onclick="aiGenerate('enhance')" id="aiEnhanceBtn"><span class="icon">💎</span> Enhance</button>
                     <button class="ai-btn" onclick="aiGenerate('genre')" id="aiGenreBtn"><span class="icon">🎷</span> Jazzify</button>
+                </div>
+                <!-- AI Transform Buttons -->
+                <div class="ai-transform-row">
+                    <button class="ai-transform-btn jazzy" onclick="aiTransform('jazzy')" id="aiJazzyBtn">🎷 Make It Jazzy</button>
+                    <button class="ai-transform-btn simplify" onclick="aiTransform('simplify')" id="aiSimplifyBtn">✨ Simplify</button>
                 </div>
             </div>
             <div class="mode-view" id="produceView">
@@ -840,8 +907,11 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- Visual Metronome Flash Overlay -->
+    <div class="metro-flash" id="metroFlash"></div>
+
     <script>
-        const VERSION = '0.68';
+        const VERSION = '0.70';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -1929,6 +1999,8 @@
                     if (i === beat) { dot.classList.add('active'); if (beat === 0) dot.classList.add('accent'); }
                 });
             }
+            // Visual metronome
+            updateVisualMetronome(beat);
         }
 
         // Chord Grid
@@ -1936,8 +2008,10 @@
             const grid = document.getElementById('chordGrid');
             if (!grid) return;
             const displayChords = getTransposedProgression();
-            grid.innerHTML = displayChords.map((chord, i) => `
-                <div class="chord-card ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''}" 
+            grid.innerHTML = displayChords.map((chord, i) => {
+                const degree = getScaleDegree(chord, state.key);
+                return `
+                <div class="chord-card ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''}"
                      data-index="${i}" draggable="true"
                      ondragstart="handleDragStart(event, ${i})" ondragend="handleDragEnd(event)"
                      ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, ${i})"
@@ -1948,8 +2022,9 @@
                     <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram('${chord}')">🎸</button>
                     <div class="chord-name">${chord}</div>
                     <div class="chord-type">${getChordTypeLabel(chord)}</div>
-                </div>
-            `).join('');
+                    ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
+                </div>`;
+            }).join('');
         }
         
         // Drag and Drop handlers
@@ -2136,13 +2211,375 @@
             if (state.isPlaying) startPlayback();
         }
 
+        // ============ LEARN SONGS ============
+        let learnSongsFilter = 'all';
+
+        function renderLearnSongs() {
+            const list = document.getElementById('learnSongsList');
+            if (!list) return;
+            const filtered = learnSongsFilter === 'all'
+                ? publicDomainSongs
+                : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSongsFilter);
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                return;
+            }
+            list.innerHTML = filtered.map(song => {
+                const uniqueChords = [...new Set(song.chords)];
+                return `<div class="song-card" onclick="openSongPlayer('${song.id}')">
+                    <div class="song-header">
+                        <div class="song-title">${song.title}</div>
+                        <span class="song-difficulty ${song.difficulty.toLowerCase()}">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta">Key of ${song.key} | ${song.timeSignature} | ${song.tempo} BPM | ${song.year}</div>
+                    <div class="song-chords">${uniqueChords.map(c => `<span class="song-chord-pill">${c}</span>`).join('')}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function filterSongs(filter) {
+            learnSongsFilter = filter;
+            document.querySelectorAll('#songFilters .filter-chip').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter === 'all' ? 'all' : filter));
+            });
+            renderLearnSongs();
+        }
+
+        // ============ SONG PLAYER VIEW ============
+        let currentLearnSong = null;
+        let learnSongPlaying = false;
+        let learnSongInterval = null;
+        let learnSongChordIndex = 0;
+
+        function openSongPlayer(songId) {
+            const song = publicDomainSongs.find(s => s.id === songId);
+            if (!song) return;
+            currentLearnSong = song;
+            learnSongChordIndex = 0;
+            learnSongPlaying = false;
+
+            const view = document.getElementById('songPlayerView');
+            const list = document.getElementById('learnSongsList');
+            if (!view || !list) return;
+
+            list.style.display = 'none';
+            view.style.display = 'block';
+
+            const uniqueChords = [...new Set(song.chords)];
+            view.innerHTML = `
+                <div class="song-player">
+                    <div class="song-player-header">
+                        <div class="song-player-title">${song.title}</div>
+                        <button class="song-player-close" onclick="closeSongPlayer()">✕</button>
+                    </div>
+                    <div class="song-info-row">
+                        <span class="song-info-chip">🎵 ${song.key}</span>
+                        <span class="song-info-chip">🎼 ${song.timeSignature}</span>
+                        <span class="song-info-chip">🥁 ${song.tempo} BPM</span>
+                        <span class="song-info-chip ${song.difficulty.toLowerCase()}" style="color:white;">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta" style="margin-bottom:var(--spacing-md);">${song.origin} (${song.year})</div>
+                    <div class="song-lyrics-container" id="songLyrics">
+                        ${song.lyrics.map((l, i) => `
+                            <div class="lyric-line" id="lyricLine${i}">
+                                <span class="lyric-chord">[${l.chord}]</span>
+                                <span class="lyric-text">${l.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="song-tips">
+                        <div class="song-tips-title">💡 Tips</div>
+                        <div class="song-tips-text">${song.tips}</div>
+                    </div>
+                    <div class="song-controls">
+                        <button class="song-control-btn primary" id="learnPlayBtn" onclick="toggleLearnSongPlay()">▶️ Play Along</button>
+                        <button class="song-control-btn" onclick="loadLearnSongToEditor()">📝 Load to Editor</button>
+                    </div>
+                </div>`;
+        }
+
+        function closeSongPlayer() {
+            stopLearnSongPlay();
+            const view = document.getElementById('songPlayerView');
+            const list = document.getElementById('learnSongsList');
+            if (view) view.style.display = 'none';
+            if (list) list.style.display = 'flex';
+            currentLearnSong = null;
+        }
+
+        async function toggleLearnSongPlay() {
+            if (!currentLearnSong) return;
+            await initAudio();
+            if (learnSongPlaying) {
+                stopLearnSongPlay();
+                return;
+            }
+            learnSongPlaying = true;
+            learnSongChordIndex = 0;
+            const btn = document.getElementById('learnPlayBtn');
+            if (btn) { btn.textContent = '⏸️ Pause'; btn.classList.add('playing'); }
+
+            const beatMs = 60000 / currentLearnSong.tempo;
+            const beatsPerChord = currentLearnSong.timeSignature === '3/4' ? 3 : 4;
+
+            // Play first chord
+            highlightLyricLine(0);
+            playChord(currentLearnSong.lyrics[0].chord, '2n');
+
+            learnSongInterval = setInterval(() => {
+                learnSongChordIndex++;
+                if (learnSongChordIndex >= currentLearnSong.lyrics.length) {
+                    stopLearnSongPlay();
+                    return;
+                }
+                highlightLyricLine(learnSongChordIndex);
+                playChord(currentLearnSong.lyrics[learnSongChordIndex].chord, '2n');
+            }, beatMs * beatsPerChord);
+        }
+
+        function stopLearnSongPlay() {
+            learnSongPlaying = false;
+            if (learnSongInterval) { clearInterval(learnSongInterval); learnSongInterval = null; }
+            const btn = document.getElementById('learnPlayBtn');
+            if (btn) { btn.textContent = '▶️ Play Along'; btn.classList.remove('playing'); }
+            document.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active'));
+        }
+
+        function highlightLyricLine(index) {
+            document.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active'));
+            const line = document.getElementById(`lyricLine${index}`);
+            if (line) {
+                line.classList.add('active');
+                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function loadLearnSongToEditor() {
+            if (!currentLearnSong) return;
+            saveStateForUndo();
+            state.sections = [{
+                name: currentLearnSong.title.substring(0, 20),
+                icon: '📚',
+                progression: [...new Set(currentLearnSong.chords)]
+            }];
+            state.key = currentLearnSong.key.includes('m') ? currentLearnSong.key : currentLearnSong.key;
+            state.baseTempo = currentLearnSong.tempo;
+            state.tempo = currentLearnSong.tempo;
+            state.timeSignature = currentLearnSong.timeSignature;
+            state.currentSection = 0;
+            state.currentChordIndex = 0;
+            closeSongPlayer();
+            setMode('create');
+            setProduceTab('mixer');
+            renderAll();
+            showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
+        }
+
+        // ============ CUSTOM CHORD INPUT ============
+        function addCustomChord() {
+            const input = document.getElementById('customChordInput');
+            if (!input) return;
+            const chord = input.value.trim();
+            if (!chord) { showToast('⚠️ Enter a chord name'); return; }
+            if (!isValidChord(chord)) { showToast('⚠️ Unknown chord: ' + chord); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression.push(chord);
+            input.value = '';
+            renderAll();
+            showToast(`➕ Added ${chord}`);
+        }
+
+        function replaceWithCustomChords() {
+            const input = document.getElementById('customChordInput');
+            if (!input) return;
+            const raw = input.value.trim();
+            if (!raw) { showToast('⚠️ Enter chords separated by spaces or commas'); return; }
+            const chords = raw.split(/[\s,|→-]+/).filter(c => c.length > 0);
+            const valid = chords.filter(c => isValidChord(c));
+            if (valid.length === 0) { showToast('⚠️ No valid chords found'); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = valid;
+            state.currentChordIndex = 0;
+            input.value = '';
+            renderAll();
+            showToast(`🎵 Set ${valid.length} chords: ${valid.join(' ')}`);
+        }
+
+        function isValidChord(chord) {
+            // Check if we have notes for it or a stripped version
+            if (CHORD_NOTES[chord]) return true;
+            const stripped = chord.replace(/7|maj7|m7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+            if (CHORD_NOTES[stripped] || CHORD_NOTES[stripped + 'm'] || ALL_NOTES.includes(normalizeNote(stripped))) return true;
+            return false;
+        }
+
+        // Handle Enter key for custom chord input
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('customChordInput');
+            if (input) {
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (input.value.includes(' ') || input.value.includes(',')) replaceWithCustomChords();
+                        else addCustomChord();
+                    }
+                });
+            }
+        });
+
+        // ============ SCALE DEGREES & MUSIC THEORY ============
+        const SCALE_DEGREES_MAJOR = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+        const SCALE_DEGREES_MINOR = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+
+        function getScaleDegree(chord, key) {
+            const isMinorKey = key.includes('m');
+            const keyRoot = normalizeNote(key.replace('m', ''));
+            const chordRoot = chord.match(/^([A-G][#b]?)/)?.[1];
+            if (!chordRoot) return '';
+            const normChordRoot = normalizeNote(chordRoot);
+            const keyIdx = ALL_NOTES.indexOf(keyRoot);
+            const chordIdx = ALL_NOTES.indexOf(normChordRoot);
+            if (keyIdx === -1 || chordIdx === -1) return '';
+
+            const interval = (chordIdx - keyIdx + 12) % 12;
+            const degreeMap = { 0: 0, 2: 1, 4: 2, 5: 3, 7: 4, 9: 5, 11: 6 };
+            // Also map common chromatic notes
+            const chromMap = { 1: '♭II', 3: '♭III', 6: '♭V', 8: '♭VI', 10: '♭VII' };
+
+            const degreeIdx = degreeMap[interval];
+            if (degreeIdx !== undefined) {
+                const degrees = isMinorKey ? SCALE_DEGREES_MINOR : SCALE_DEGREES_MAJOR;
+                let degree = degrees[degreeIdx];
+                // Adjust for chord quality
+                const isMinorChord = chord.includes('m') && !chord.includes('maj');
+                const is7th = chord.includes('7');
+                const isDim = chord.includes('dim');
+                if (isMinorChord && !isMinorKey && degreeIdx !== 1 && degreeIdx !== 2 && degreeIdx !== 5) {
+                    degree = degree.toLowerCase();
+                }
+                if (is7th) degree += '7';
+                if (isDim) degree = degree.toLowerCase() + '°';
+                return degree;
+            }
+            return chromMap[interval] || '';
+        }
+
+        function getTheoryHint(chords, key) {
+            const isMinor = key.includes('m');
+            const degrees = chords.map(c => getScaleDegree(c, key)).filter(Boolean);
+            if (degrees.length < 2) return '';
+
+            // Detect common patterns
+            const degreeStr = degrees.join('-');
+            if (degreeStr.includes('I-V-vi-IV') || degreeStr.includes('I-V-VI-IV')) return 'The "Axis of Awesome" progression - used in hundreds of pop hits!';
+            if (degreeStr.includes('I-IV-V')) return 'Classic I-IV-V: The foundation of rock, blues, and country music.';
+            if (degreeStr.includes('vi-IV-I-V') || degreeStr.includes('VI-IV-I-V')) return 'The "sensitive" progression - common in emotional pop ballads.';
+            if (degreeStr.includes('I-vi-IV-V')) return 'The "50s progression" - think doo-wop and early rock & roll.';
+            if (degreeStr.includes('ii-V-I') || degreeStr.includes('II-V-I')) return 'The ii-V-I: The most important progression in jazz!';
+            if (degreeStr.includes('i-VI-III-VII')) return 'Andalusian cadence - common in flamenco and minor key rock.';
+            if (degreeStr.includes('I-IV-vi-V')) return 'A bright, optimistic progression popular in modern pop.';
+            if (chords.every(c => !c.includes('m') || c.includes('maj'))) return 'All major chords create a bright, uplifting feel.';
+            if (chords.every(c => c.includes('m') && !c.includes('maj'))) return 'All minor chords create a dark, introspective mood.';
+            if (chords.some(c => c.includes('7'))) return 'The 7th chords add color and tension - common in jazz and blues.';
+            return `Key of ${isMinor ? key.replace('m','') + ' minor' : key + ' major'}: ${degrees.join(' → ')}`;
+        }
+
+        // ============ VISUAL METRONOME ============
+        function updateVisualMetronome(beat) {
+            const metro = document.getElementById('visualMetronome');
+            if (!metro) return;
+
+            const beatNums = metro.querySelectorAll('.metro-beat-num');
+            beatNums.forEach((el, i) => {
+                el.classList.remove('active', 'accent');
+                if (i === beat) {
+                    el.classList.add('active');
+                    if (beat === 0) el.classList.add('accent');
+                }
+            });
+
+            // Flash screen on downbeat
+            if (beat === 0) {
+                const flash = document.getElementById('metroFlash');
+                if (flash) {
+                    flash.classList.add('flash');
+                    setTimeout(() => flash.classList.remove('flash'), 100);
+                }
+            }
+        }
+
+        // ============ AI TRANSFORM (Jazzy / Simplify) ============
+        async function aiTransform(type) {
+            if (state.aiLoading) return;
+            state.aiLoading = true;
+            const btn = document.getElementById(type === 'jazzy' ? 'aiJazzyBtn' : 'aiSimplifyBtn');
+            if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+            saveStateForUndo();
+
+            const currentChords = getTransposedProgression().join(' ');
+            const keyInfo = getKeyInfo();
+            let prompt = '';
+            if (type === 'jazzy') {
+                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
+            } else {
+                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
+            }
+
+            showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
+            const response = await callGeminiAI(prompt);
+            const chords = response ? parseChordResponse(response) : null;
+
+            if (chords && chords.length >= 3) {
+                state.sections[state.currentSection].progression = chords;
+                state.currentChordIndex = 0;
+                renderAll();
+                showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
+            } else {
+                // Fallback: do it locally
+                if (type === 'jazzy') {
+                    const jazzified = getTransposedProgression().map(c => {
+                        if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
+                        if (c.includes('m') && !c.includes('maj')) return c + '7';
+                        return c + 'maj7';
+                    });
+                    state.sections[state.currentSection].progression = jazzified;
+                } else {
+                    const simplified = getTransposedProgression().map(c => {
+                        return c.replace(/maj7|m7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+                    });
+                    state.sections[state.currentSection].progression = simplified;
+                }
+                state.currentChordIndex = 0;
+                renderAll();
+                showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
+            }
+
+            state.aiLoading = false;
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+        }
+
         function renderAll() {
             renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
-            const keyDisplay = document.getElementById('keyDisplay'); 
+            renderTheoryHint();
+            const keyDisplay = document.getElementById('keyDisplay');
             if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
-            const genreDisplay = document.getElementById('genreDisplay'); 
+            const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+        }
+
+        function renderTheoryHint() {
+            const hint = document.getElementById('theoryHint');
+            const text = document.getElementById('theoryHintText');
+            if (!hint || !text) return;
+            const chords = getTransposedProgression();
+            const hintStr = getTheoryHint(chords, state.key);
+            if (hintStr) {
+                text.textContent = hintStr;
+                hint.style.display = 'flex';
+            } else {
+                hint.style.display = 'none';
+            }
         }
 
         // Bottom Sheets
@@ -2231,7 +2668,7 @@
         function init() {
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Time sigs, swing, piano/bass diagrams`);
+            console.log(`🎵 ChordFlow v${VERSION} - Learn songs, custom chords, scale degrees, visual metronome, AI transform`);
         }
         init();
     </script>

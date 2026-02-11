@@ -1,6 +1,6 @@
 # ChordFlow Roadmap
 
-## Current Version: 0.68
+## Current Version: 0.70
 
 ---
 
@@ -37,8 +37,8 @@
 - [x] Piano keyboard visualization ✅ v0.68
 
 ### Visual Enhancements
-- [ ] Visual metronome - animated beat indicator
-- [ ] Flash screen on downbeat option
+- [x] Visual metronome - animated beat indicator ✅ v0.70
+- [x] Flash screen on downbeat option ✅ v0.70
 - [ ] Dark/Light theme toggle
 
 ---
@@ -46,12 +46,12 @@
 ## 🔧 Power Features
 
 ### Chord Editing
-- [ ] Custom chord input - type any chord manually
-- [ ] Add/edit individual chords in progression
+- [x] Custom chord input - type any chord manually ✅ v0.70
+- [x] Add/edit individual chords in progression ✅ v0.70
 
 ### AI Enhancements
-- [ ] Chord substitutions - AI suggest alternatives
-- [ ] "Make it jazzy" / "Simplify" buttons
+- [x] Chord substitutions - AI suggest alternatives ✅ v0.70
+- [x] "Make it jazzy" / "Simplify" buttons ✅ v0.70
 
 ### Practice Mode
 - [ ] Gradually speed up tempo
@@ -75,8 +75,8 @@
 ## 🎓 Learning Features
 
 ### Music Theory
-- [ ] Show scale degrees (I, IV, V, vi)
-- [ ] Explain why chords work together
+- [x] Show scale degrees (I, IV, V, vi) ✅ v0.70
+- [x] Explain why chords work together ✅ v0.70
 
 ### Ear Training
 - [ ] Guess the chord game
@@ -85,6 +85,19 @@
 ---
 
 ## ✅ Completed
+
+### v0.70
+- [x] Fix Learn Songs rendering (renderLearnSongs / filterSongs)
+- [x] Song Player View with lyrics, play-along, and load-to-editor
+- [x] Custom chord input (add individual chords or set all at once)
+- [x] Scale degree labels on chord cards (I, IV, V, vi etc.)
+- [x] Music theory hints (explains why chords work together)
+- [x] Visual metronome with animated beat indicator
+- [x] Flash screen on downbeat
+- [x] "Make it Jazzy" / "Simplify" AI chord transformation buttons
+
+### v0.69
+- [x] Learn Songs feature with 20 public domain songs
 
 ### v0.68
 - [x] Time signatures (4/4, 3/4, 6/8)
