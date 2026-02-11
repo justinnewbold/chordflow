@@ -1,6 +1,6 @@
 # ChordFlow Roadmap
 
-## Current Version: 0.70
+## Current Version: 0.71
 
 ---
 
@@ -33,13 +33,13 @@
 
 ### Chord Diagrams
 - [x] Bass tab diagrams ✅ v0.68
-- [ ] 7-string guitar diagrams
+- [x] 7-string guitar diagrams ✅ v0.71
 - [x] Piano keyboard visualization ✅ v0.68
 
 ### Visual Enhancements
 - [x] Visual metronome - animated beat indicator ✅ v0.70
 - [x] Flash screen on downbeat option ✅ v0.70
-- [ ] Dark/Light theme toggle
+- [x] Dark/Light theme toggle ✅ v0.71
 
 ---
 
@@ -54,12 +54,12 @@
 - [x] "Make it jazzy" / "Simplify" buttons ✅ v0.70
 
 ### Practice Mode
-- [ ] Gradually speed up tempo
-- [ ] Loop specific section
-- [ ] A-B repeat
+- [x] Gradually speed up tempo ✅ v0.71
+- [x] Loop specific section ✅ v0.71
+- [x] A-B repeat ✅ v0.71
 
 ### Sharing
-- [ ] Share progression via link
+- [x] Share progression via link ✅ v0.71
 - [ ] QR code to share
 
 ---
@@ -68,7 +68,7 @@
 
 - [ ] Haptic feedback on beat
 - [ ] Lock screen / background audio
-- [ ] Offline mode (PWA enhancements)
+- [x] Offline mode (PWA enhancements) ✅ v0.71
 
 ---
 
@@ -79,12 +79,22 @@
 - [x] Explain why chords work together ✅ v0.70
 
 ### Ear Training
-- [ ] Guess the chord game
-- [ ] Interval recognition
+- [x] Guess the chord game ✅ v0.71
+- [x] Interval recognition ✅ v0.71
 
 ---
 
 ## ✅ Completed
+
+### v0.71
+- [x] Practice Mode: Auto speed-up tempo (+3/+5/+10 BPM per loop)
+- [x] A-B Loop: Set start/end points to loop a section
+- [x] Dark/Light theme toggle with full CSS variable theming
+- [x] Ear Training: Guess the chord game with scoring and streaks
+- [x] Interval Recognition: Name the interval between two notes
+- [x] Share progression via URL (encode chords, key, genre, tempo)
+- [x] 7-string guitar chord diagrams
+- [x] Enhanced PWA: offline caching of app shell, stale-while-revalidate
 
 ### v0.70
 - [x] Fix Learn Songs rendering (renderLearnSongs / filterSongs)
@@ -126,4 +136,3 @@
 - [x] Reverb/Delay effects
 - [x] Drag-and-drop chord reordering
 - [x] WAV export
-
