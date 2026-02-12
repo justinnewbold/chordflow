@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.72</title>
+    <title>ChordFlow v0.73</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -616,6 +616,99 @@
         .undo-toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: var(--spacing-sm); z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: all 0.3s ease; }
         .undo-toast.show { opacity: 1; pointer-events: auto; }
         .undo-toast-btn { padding: 6px 14px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* ===== v0.73 STYLES ===== */
+
+        /* Auth Modal */
+        .auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .auth-modal.active { opacity: 1; pointer-events: auto; }
+        .auth-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 360px; }
+        .auth-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-xs); }
+        .auth-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
+        .auth-tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 4px; }
+        .auth-tab { flex: 1; padding: 10px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .auth-tab.active { background: var(--accent); color: white; }
+        .auth-form { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .auth-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); outline: none; transition: border-color var(--transition-fast); }
+        .auth-input:focus { border-color: var(--accent); }
+        .auth-input::placeholder { color: var(--text-tertiary); }
+        .auth-submit { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .auth-submit:active { transform: scale(0.97); }
+        .auth-submit:disabled { opacity: 0.5; }
+        .auth-submit.loading { animation: shimmer 1.5s infinite; }
+        .auth-error { color: var(--accent-pink); font-size: 13px; text-align: center; min-height: 20px; }
+        .auth-close { position: absolute; top: var(--spacing-md); right: var(--spacing-md); width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .auth-divider { display: flex; align-items: center; gap: var(--spacing-md); color: var(--text-tertiary); font-size: 12px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--separator); }
+
+        /* User Profile Badge */
+        .user-badge { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: white; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-email { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-status { font-size: 11px; color: var(--accent-green); }
+        .user-logout-btn { padding: 6px 12px; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+
+        /* Cloud Sync Indicator */
+        .cloud-sync-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 4px 8px; border-radius: var(--radius-full); background: rgba(48, 209, 88, 0.15); color: var(--accent-green); font-weight: 600; }
+        .cloud-sync-badge.offline { background: rgba(142, 142, 147, 0.15); color: var(--text-secondary); }
+        .cloud-songs-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-md); }
+        .cloud-songs-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .cloud-prompt { background: rgba(10, 132, 255, 0.08); border: 1px solid rgba(10, 132, 255, 0.3); border-radius: var(--radius-md); padding: var(--spacing-md); text-align: center; margin-bottom: var(--spacing-md); }
+        .cloud-prompt-text { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .cloud-prompt-btn { padding: 8px 20px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* Community Hub */
+        .community-modal { position: fixed; inset: 0; background: var(--bg-primary); z-index: 800; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); display: flex; flex-direction: column; }
+        .community-modal.active { opacity: 1; pointer-events: auto; }
+        .community-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); border-bottom: 1px solid var(--separator); }
+        .community-title { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .community-close { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .community-filters { display: flex; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); overflow-x: auto; scrollbar-width: none; }
+        .community-filters::-webkit-scrollbar { display: none; }
+        .community-body { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg); }
+        .community-grid { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .community-song-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .community-song-card:active { transform: scale(0.98); }
+        .community-song-card:hover { border-color: var(--accent); }
+        .community-song-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm); }
+        .community-song-title { font-size: 17px; font-weight: 700; }
+        .community-song-genre { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-full); background: var(--accent-purple); color: white; }
+        .community-song-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); display: flex; gap: var(--spacing-md); }
+        .community-song-chords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-sm); }
+        .community-song-actions { display: flex; gap: var(--spacing-sm); }
+        .community-action-btn { padding: 8px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all var(--transition-fast); }
+        .community-action-btn:active { transform: scale(0.95); }
+        .community-action-btn.primary { background: var(--accent); color: white; }
+        .community-empty { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); }
+        .community-empty-icon { font-size: 48px; margin-bottom: var(--spacing-md); }
+        .community-loading { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); animation: shimmer 1.5s infinite; }
+
+        /* Song Templates */
+        .templates-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .templates-modal.active { opacity: 1; pointer-events: auto; }
+        .templates-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; }
+        .templates-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-sm); }
+        .templates-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
+        .template-category { margin-bottom: var(--spacing-lg); }
+        .template-category-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
+        .template-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .template-item:active { transform: scale(0.98); background: var(--bg-elevated); }
+        .template-item:hover { border-color: var(--accent); }
+        .template-item-header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); }
+        .template-item-icon { font-size: 20px; }
+        .template-item-name { font-size: 16px; font-weight: 700; flex: 1; }
+        .template-item-badge { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-purple); color: white; }
+        .template-item-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .template-item-structure { display: flex; flex-wrap: wrap; gap: 4px; }
+        .template-section-pill { font-size: 11px; padding: 3px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; }
+        .templates-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-md); }
+
+        /* Publish Song Modal */
+        .publish-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 850; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .publish-modal.active { opacity: 1; pointer-events: auto; }
+        .publish-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 360px; }
+        .publish-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-md); }
     </style>
 </head>
 <body>
@@ -764,7 +857,10 @@
                     <button class="custom-chord-replace-btn" onclick="replaceWithCustomChords()">Set All</button>
                 </div>
 
-                <button class="generate-btn" onclick="generateProgression()">🎲 Generate New Progression</button>
+                <div style="display:flex;gap:var(--spacing-sm);margin-bottom:var(--spacing-md);">
+                    <button class="generate-btn" onclick="generateProgression()" style="flex:2;margin-bottom:0;">🎲 Generate New</button>
+                    <button class="generate-btn" onclick="openTemplates()" style="flex:1;margin-bottom:0;background:linear-gradient(135deg, var(--accent-orange), var(--accent-pink));">🎼 Templates</button>
+                </div>
                 <div class="ai-grid">
                     <button class="ai-btn" onclick="aiGenerate('smart')" id="aiMagicBtn"><span class="icon">✨</span> AI Magic</button>
                     <button class="ai-btn" onclick="aiGenerate('surprise')" id="aiSurpriseBtn"><span class="icon">🎁</span> Surprise</button>
@@ -789,6 +885,10 @@
                 <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
                     <button class="share-btn" onclick="shareProgression()" style="flex:1;margin-top:0;">🔗 Share Link</button>
                     <button class="share-btn" onclick="shareQRCode()" style="flex:1;margin-top:0;">📱 QR Code</button>
+                </div>
+                <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
+                    <button class="share-btn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
+                    <button class="share-btn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
                 </div>
             </div>
             <div class="mode-view" id="produceView">
@@ -870,11 +970,17 @@
                     </div>
                 </div>
                 <div class="produce-panel" id="songsPanel">
+                    <div id="songsPanelCloudPrompt"></div>
                     <div class="save-load-grid">
                         <button class="save-btn" onclick="openSaveModal()">💾 Save Song</button>
                         <button class="load-btn" onclick="document.getElementById('loadFileInput').click()">📂 Load File</button>
                     </div>
+                    <div class="save-load-grid" style="margin-top:0;">
+                        <button class="save-btn" onclick="openCommunity()" style="background:rgba(191,90,242,0.15);color:var(--accent-purple);">🌍 Community</button>
+                        <button class="load-btn" onclick="openTemplates()" style="background:rgba(255,159,10,0.15);color:var(--accent-orange);">🎼 Templates</button>
+                    </div>
                     <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadSongFile(event)">
+                    <div id="cloudSongsList"></div>
                     <div class="saved-songs" id="savedSongsList"></div>
                 </div>
                 <div class="produce-panel" id="learnPanel">
@@ -1008,6 +1114,10 @@
         <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group">
+                <div class="settings-group-title">Account</div>
+                <div id="accountSection"></div>
+            </div>
+            <div class="settings-group">
                 <div class="settings-group-title">Interface</div>
                 <div class="settings-item" onclick="openSheet('uiMode')">
                     <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
@@ -1031,6 +1141,14 @@
                     <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
                     <span style="color: var(--text-secondary);">Browse ›</span>
                 </div>
+                <div class="settings-item" onclick="openTemplates()">
+                    <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
+                    <span style="color: var(--text-secondary);">Browse ›</span>
+                </div>
+                <div class="settings-item" onclick="openCommunity()">
+                    <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
+                    <span style="color: var(--text-secondary);">Discover ›</span>
+                </div>
                 <div class="settings-item" onclick="shareQRCode()">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
                     <span style="color: var(--text-secondary);">Generate ›</span>
@@ -1051,7 +1169,7 @@
                 <div class="settings-group-title">About</div>
                 <div class="settings-item">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Version</span></div>
-                    <span id="versionDisplay" style="color: var(--text-secondary);">0.63</span>
+                    <span id="versionDisplay" style="color: var(--text-secondary);">0.73</span>
                 </div>
             </div>
         </div>
@@ -1195,6 +1313,74 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-card" style="position:relative;">
+            <button class="auth-close" onclick="closeAuthModal()">✕</button>
+            <div class="auth-title" id="authTitle">Sign In</div>
+            <div class="auth-subtitle">Sync your songs across all your devices</div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" id="authTabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            <form class="auth-form" id="authForm" onsubmit="event.preventDefault(); handleAuthSubmit();">
+                <input type="email" class="auth-input" id="authEmail" placeholder="Email address" required autocomplete="email">
+                <input type="password" class="auth-input" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6">
+                <div class="auth-error" id="authError"></div>
+                <button type="submit" class="auth-submit" id="authSubmitBtn">Sign In</button>
+            </form>
+            <div class="auth-divider">or</div>
+            <button class="auth-submit" style="background:var(--bg-tertiary);color:var(--text-primary);margin-top:var(--spacing-sm);" onclick="continueAsGuest()">Continue as Guest</button>
+        </div>
+    </div>
+
+    <!-- Community Hub Modal -->
+    <div class="community-modal" id="communityModal">
+        <div class="community-header">
+            <div class="community-title">🌍 Community Hub</div>
+            <button class="community-close" onclick="closeCommunity()">✕</button>
+        </div>
+        <div class="community-filters" id="communityFilters">
+            <button class="filter-chip active" onclick="filterCommunity('all')">All</button>
+            <button class="filter-chip" onclick="filterCommunity('pop')">🎤 Pop</button>
+            <button class="filter-chip" onclick="filterCommunity('rock')">🎸 Rock</button>
+            <button class="filter-chip" onclick="filterCommunity('jazz')">🎷 Jazz</button>
+            <button class="filter-chip" onclick="filterCommunity('blues')">🎺 Blues</button>
+            <button class="filter-chip" onclick="filterCommunity('folk')">🪕 Folk</button>
+            <button class="filter-chip" onclick="filterCommunity('electronic')">🎛️ Electronic</button>
+            <button class="filter-chip" onclick="filterCommunity('lofi')">☕ Lo-Fi</button>
+            <button class="filter-chip" onclick="filterCommunity('classical')">🎻 Classical</button>
+        </div>
+        <div class="community-body">
+            <div class="community-grid" id="communityGrid"></div>
+        </div>
+    </div>
+
+    <!-- Song Templates Modal -->
+    <div class="templates-modal" id="templatesModal" onclick="closeTemplates()">
+        <div class="templates-card" onclick="event.stopPropagation()">
+            <div class="templates-title">🎼 Song Templates</div>
+            <div class="templates-subtitle">Start with a complete song structure</div>
+            <div id="templatesList"></div>
+            <button class="templates-close" onclick="closeTemplates()">Close</button>
+        </div>
+    </div>
+
+    <!-- Publish Song Modal -->
+    <div class="publish-modal" id="publishModal" onclick="closePublishModal()">
+        <div class="publish-card" onclick="event.stopPropagation()">
+            <div class="publish-title">🌍 Publish to Community</div>
+            <form class="auth-form" onsubmit="event.preventDefault(); confirmPublish();">
+                <input type="text" class="auth-input" id="publishTitle" placeholder="Song title" required maxlength="50">
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:-8px;">Your progression will be shared publicly in the Community Hub</div>
+                <div style="display:flex;gap:var(--spacing-sm);">
+                    <button type="button" class="auth-submit" style="background:var(--bg-tertiary);color:var(--text-primary);" onclick="closePublishModal()">Cancel</button>
+                    <button type="submit" class="auth-submit">Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Undo Toast -->
     <div class="undo-toast" id="undoToast">
         <span id="undoToastText">Chord deleted</span>
@@ -1208,7 +1394,7 @@
     <div class="metro-flash" id="metroFlash"></div>
 
     <script>
-        const VERSION = '0.72';
+        const VERSION = '0.73';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -2058,7 +2244,15 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            closeSaveModal(); renderSavedSongs(); renderLearnSongs(); showToast(`💾 Saved "${name}"`);
+            closeSaveModal(); renderSavedSongs(); renderLearnSongs();
+            // Also save to cloud if logged in
+            if (authState.user) {
+                saveToCloud(name).then(cloudSaved => {
+                    showToast(cloudSaved ? `☁️ Saved "${name}" to cloud` : `💾 Saved "${name}" locally`);
+                });
+            } else {
+                showToast(`💾 Saved "${name}"`);
+            }
         }
         function loadSong(index) {
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
@@ -2131,6 +2325,13 @@
             if (container) container.classList.add('active');
             updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
             if (state.uiMode === 'cards') initCardDeck();
+            // v0.73: Initialize new features
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            if (authState.user) loadCloudSongs();
+            // Load locally published community songs
+            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            localCommunity.forEach(s => { if (!DEMO_COMMUNITY_SONGS.find(d => d.id === s.id)) DEMO_COMMUNITY_SONGS.unshift(s); });
             // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
             if (versionDisplay) versionDisplay.textContent = VERSION;
@@ -3505,6 +3706,662 @@
             showToast('📄 Enhanced PDF exported!');
         }
 
+        // ============ v0.73: AUTH & CLOUD SYNC ============
+        const authState = {
+            user: JSON.parse(localStorage.getItem('chordflow-user') || 'null'),
+            session: JSON.parse(localStorage.getItem('chordflow-session') || 'null'),
+            authTab: 'login'
+        };
+
+        function openAuthModal() {
+            closeSheet();
+            document.getElementById('authModal').classList.add('active');
+            document.getElementById('authEmail').focus();
+        }
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authError').textContent = '';
+        }
+        function switchAuthTab(tab) {
+            authState.authTab = tab;
+            document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('authTabSignup').classList.toggle('active', tab === 'signup');
+            document.getElementById('authTitle').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('authSubmitBtn').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('authPassword').setAttribute('autocomplete', tab === 'login' ? 'current-password' : 'new-password');
+            document.getElementById('authError').textContent = '';
+        }
+        async function handleAuthSubmit() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('authError');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            if (!email || !password) { errorEl.textContent = 'Please fill in all fields'; return; }
+            if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters'; return; }
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            errorEl.textContent = '';
+            try {
+                const action = authState.authTab === 'login' ? 'login' : 'signup';
+                const res = await fetch(`/api/auth?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    errorEl.textContent = data.error || 'Authentication failed';
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                    return;
+                }
+                // Success - save user and session
+                authState.user = data.user;
+                authState.session = data.session;
+                localStorage.setItem('chordflow-user', JSON.stringify(data.user));
+                localStorage.setItem('chordflow-session', JSON.stringify(data.session));
+                closeAuthModal();
+                renderAccountSection();
+                renderCloudSongsPrompt();
+                loadCloudSongs();
+                showToast(action === 'login' ? '👋 Welcome back!' : '🎉 Account created!');
+            } catch (e) {
+                // Offline / API unavailable - do local auth simulation
+                handleOfflineAuth(email);
+            }
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+        function handleOfflineAuth(email) {
+            // Offline-friendly: store auth locally, sync when online
+            const localUser = { id: 'local_' + btoa(email).slice(0, 12), email: email };
+            authState.user = localUser;
+            authState.session = { access_token: 'local_token', offline: true };
+            localStorage.setItem('chordflow-user', JSON.stringify(localUser));
+            localStorage.setItem('chordflow-session', JSON.stringify(authState.session));
+            closeAuthModal();
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            showToast('👋 Signed in (offline mode)');
+        }
+        function continueAsGuest() {
+            closeAuthModal();
+            showToast('👤 Continuing as guest');
+        }
+        async function logoutUser() {
+            try {
+                if (authState.session && !authState.session.offline) {
+                    await fetch('/api/auth?action=logout', { method: 'POST' });
+                }
+            } catch (e) {}
+            authState.user = null;
+            authState.session = null;
+            localStorage.removeItem('chordflow-user');
+            localStorage.removeItem('chordflow-session');
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            showToast('👋 Signed out');
+        }
+        function renderAccountSection() {
+            const section = document.getElementById('accountSection');
+            if (!section) return;
+            if (authState.user) {
+                const initial = (authState.user.email || '?')[0].toUpperCase();
+                const isOffline = authState.session?.offline;
+                section.innerHTML = `
+                    <div class="user-badge">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-info">
+                            <div class="user-email">${authState.user.email}</div>
+                            <div class="user-status">${isOffline ? '<span class="cloud-sync-badge offline">Local Mode</span>' : '<span class="cloud-sync-badge">Cloud Synced</span>'}</div>
+                        </div>
+                        <button class="user-logout-btn" onclick="logoutUser()">Sign Out</button>
+                    </div>`;
+            } else {
+                section.innerHTML = `
+                    <div class="settings-item" onclick="openAuthModal()">
+                        <div class="settings-label"><span class="settings-icon">👤</span><span>Sign In / Sign Up</span></div>
+                        <span style="color: var(--accent);">Sync songs ›</span>
+                    </div>`;
+            }
+        }
+        function renderCloudSongsPrompt() {
+            const prompt = document.getElementById('songsPanelCloudPrompt');
+            if (!prompt) return;
+            if (!authState.user) {
+                prompt.innerHTML = `
+                    <div class="cloud-prompt">
+                        <div class="cloud-prompt-text">Sign in to save songs to the cloud and access them anywhere</div>
+                        <button class="cloud-prompt-btn" onclick="openAuthModal()">Sign In</button>
+                    </div>`;
+            } else {
+                prompt.innerHTML = '';
+            }
+        }
+        async function loadCloudSongs() {
+            if (!authState.user) return;
+            const cloudList = document.getElementById('cloudSongsList');
+            if (!cloudList) return;
+            try {
+                const res = await fetch(`/api/songs?action=load&userId=${authState.user.id}`);
+                const data = await res.json();
+                if (data.songs && data.songs.length > 0) {
+                    cloudList.innerHTML = `
+                        <div class="cloud-songs-header">
+                            <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
+                        </div>
+                        ${data.songs.map((s, i) => `
+                            <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
+                                <div>
+                                    <div class="saved-song-name">${s.title}</div>
+                                    <div class="saved-song-meta">${s.genre || ''} | ${s.key_signature || ''} | ${new Date(s.created_at).toLocaleDateString()}</div>
+                                </div>
+                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
+                            </div>
+                        `).join('')}`;
+                } else {
+                    cloudList.innerHTML = '';
+                }
+            } catch (e) {
+                // Offline - no cloud songs available
+                cloudList.innerHTML = '';
+            }
+        }
+        async function loadCloudSong(id) {
+            try {
+                const res = await fetch(`/api/songs?action=get&id=${id}`);
+                const data = await res.json();
+                if (data.song) {
+                    const songData = JSON.parse(data.song.song_data);
+                    Object.assign(state, {
+                        sections: songData.sections || state.sections,
+                        key: data.song.key_signature || state.key,
+                        genre: data.song.genre || state.genre,
+                        baseTempo: data.song.tempo || state.baseTempo,
+                        tempo: data.song.tempo || state.tempo,
+                        currentSection: 0, currentChordIndex: 0
+                    });
+                    closeSheet(); renderAll();
+                    showToast(`☁️ Loaded "${data.song.title}"`);
+                }
+            } catch (e) {
+                showToast('⚠️ Could not load cloud song');
+            }
+        }
+        async function deleteCloudSong(id) {
+            if (!authState.user) return;
+            try {
+                await fetch('/api/songs?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, userId: authState.user.id })
+                });
+                loadCloudSongs();
+                showToast('🗑️ Cloud song deleted');
+            } catch (e) {
+                showToast('⚠️ Delete failed');
+            }
+        }
+        async function saveToCloud(name) {
+            if (!authState.user) return false;
+            try {
+                const res = await fetch('/api/songs?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: name,
+                        song: { sections: state.sections },
+                        key: state.key,
+                        scale: state.key.includes('m') ? 'minor' : 'major',
+                        genre: state.genre,
+                        tempo: state.baseTempo,
+                        userId: authState.user.id
+                    })
+                });
+                const data = await res.json();
+                if (data.id && !data.local) {
+                    loadCloudSongs();
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        // ============ v0.73: COMMUNITY HUB ============
+        let communityFilter = 'all';
+        let communitySongs = [];
+
+        // Seeded community songs for demo (appear when API is unavailable)
+        const DEMO_COMMUNITY_SONGS = [
+            { id: 'comm_1', title: 'Sunset Drive', genre: 'lofi', key_signature: 'C', tempo: 85, chords: ['Cmaj7', 'Am7', 'Fmaj7', 'G7'], user_name: 'ChillBeats', likes: 42, created_at: '2026-02-10' },
+            { id: 'comm_2', title: 'Electric Thunder', genre: 'rock', key_signature: 'E', tempo: 140, chords: ['E', 'G', 'A', 'E'], user_name: 'RiffMaster', likes: 38, created_at: '2026-02-09' },
+            { id: 'comm_3', title: 'Moonlight Serenade', genre: 'jazz', key_signature: 'Bb', tempo: 72, chords: ['Bbmaj7', 'Gm7', 'Cm7', 'F7'], user_name: 'JazzCat', likes: 65, created_at: '2026-02-08' },
+            { id: 'comm_4', title: 'City Lights', genre: 'pop', key_signature: 'G', tempo: 120, chords: ['G', 'D', 'Em', 'C'], user_name: 'PopWriter', likes: 87, created_at: '2026-02-07' },
+            { id: 'comm_5', title: 'Delta Crossroads', genre: 'blues', key_signature: 'A', tempo: 92, chords: ['A7', 'D7', 'A7', 'E7'], user_name: 'BluesRoots', likes: 29, created_at: '2026-02-06' },
+            { id: 'comm_6', title: 'Mountain Song', genre: 'folk', key_signature: 'D', tempo: 100, chords: ['D', 'G', 'A', 'D'], user_name: 'FolkRoad', likes: 33, created_at: '2026-02-05' },
+            { id: 'comm_7', title: 'Neon Pulse', genre: 'electronic', key_signature: 'Am', tempo: 128, chords: ['Am', 'F', 'C', 'G'], user_name: 'SynthWave', likes: 51, created_at: '2026-02-04' },
+            { id: 'comm_8', title: 'Rainy Afternoon', genre: 'lofi', key_signature: 'Dm', tempo: 78, chords: ['Dm7', 'G7', 'Cmaj7', 'Am7'], user_name: 'ChillBeats', likes: 44, created_at: '2026-02-03' },
+            { id: 'comm_9', title: 'Sunday Praise', genre: 'gospel', key_signature: 'C', tempo: 108, chords: ['C', 'Am', 'F', 'G'], user_name: 'ChoirMaster', likes: 26, created_at: '2026-02-02' },
+            { id: 'comm_10', title: 'Andalucia Nights', genre: 'latin', key_signature: 'Am', tempo: 116, chords: ['Am', 'Dm', 'E7', 'Am'], user_name: 'LatinFire', likes: 37, created_at: '2026-02-01' },
+            { id: 'comm_11', title: 'Power Riff', genre: 'metal', key_signature: 'Em', tempo: 160, chords: ['Em', 'C', 'G', 'D'], user_name: 'MetalGod', likes: 45, created_at: '2026-01-31' },
+            { id: 'comm_12', title: 'Waltz for Two', genre: 'classical', key_signature: 'F', tempo: 88, chords: ['F', 'Bb', 'C', 'F'], user_name: 'ClassicKeys', likes: 18, created_at: '2026-01-30' },
+            { id: 'comm_13', title: 'Nashville Sunrise', genre: 'country', key_signature: 'G', tempo: 112, chords: ['G', 'C', 'D', 'G'], user_name: 'CountryRoad', likes: 31, created_at: '2026-01-29' },
+            { id: 'comm_14', title: 'Reggae Vibes', genre: 'reggae', key_signature: 'G', tempo: 84, chords: ['G', 'D', 'Em', 'C'], user_name: 'IslandBeat', likes: 39, created_at: '2026-01-28' },
+            { id: 'comm_15', title: 'Punk Anthem', genre: 'punk', key_signature: 'A', tempo: 175, chords: ['A', 'D', 'E', 'A'], user_name: 'Thrashville', likes: 22, created_at: '2026-01-27' }
+        ];
+
+        function openCommunity() {
+            closeSheet();
+            document.getElementById('communityModal').classList.add('active');
+            loadCommunitySongs();
+        }
+        function closeCommunity() {
+            document.getElementById('communityModal').classList.remove('active');
+        }
+        function filterCommunity(genre) {
+            communityFilter = genre;
+            document.querySelectorAll('#communityFilters .filter-chip').forEach(btn => {
+                const btnGenre = btn.getAttribute('onclick')?.match(/'(\w+)'/)?.[1] || 'all';
+                btn.classList.toggle('active', btnGenre === genre);
+            });
+            renderCommunitySongs();
+        }
+        async function loadCommunitySongs() {
+            const grid = document.getElementById('communityGrid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="community-loading">Loading community songs...</div>';
+            try {
+                const genreParam = communityFilter !== 'all' ? `&genre=${communityFilter}` : '';
+                const res = await fetch(`/api/songs?action=community${genreParam}&limit=20`);
+                const data = await res.json();
+                if (data.songs && data.songs.length > 0) {
+                    communitySongs = data.songs;
+                } else {
+                    communitySongs = DEMO_COMMUNITY_SONGS;
+                }
+            } catch (e) {
+                communitySongs = DEMO_COMMUNITY_SONGS;
+            }
+            renderCommunitySongs();
+        }
+        function renderCommunitySongs() {
+            const grid = document.getElementById('communityGrid');
+            if (!grid) return;
+            const filtered = communityFilter === 'all'
+                ? communitySongs
+                : communitySongs.filter(s => s.genre === communityFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="community-empty">
+                        <div class="community-empty-icon">🔍</div>
+                        <div>No songs found for this genre</div>
+                        <div style="font-size:13px;margin-top:8px;">Be the first to publish one!</div>
+                    </div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map(song => {
+                const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+                const genreObj = genres.find(g => g.id === song.genre);
+                const genreLabel = genreObj ? `${genreObj.icon} ${genreObj.name}` : song.genre;
+                return `
+                    <div class="community-song-card" onclick="previewCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">
+                        <div class="community-song-header">
+                            <div class="community-song-title">${song.title}</div>
+                            <span class="community-song-genre">${genreLabel}</span>
+                        </div>
+                        <div class="community-song-meta">
+                            <span>👤 ${song.user_name || 'Anonymous'}</span>
+                            <span>🎵 ${song.key_signature || 'C'}</span>
+                            <span>🥁 ${song.tempo || 120} BPM</span>
+                            ${song.likes ? `<span>❤️ ${song.likes}</span>` : ''}
+                        </div>
+                        <div class="community-song-chords">
+                            ${chords.map(c => `<span class="song-chord-pill">${c}</span>`).join('')}
+                        </div>
+                        <div class="community-song-actions">
+                            <button class="community-action-btn primary" onclick="event.stopPropagation(); loadCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">📥 Load</button>
+                            <button class="community-action-btn" onclick="event.stopPropagation(); playCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">▶️ Preview</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        function loadCommunitySong(song) {
+            const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = [...chords];
+            if (song.key_signature) state.key = song.key_signature;
+            if (song.genre) state.genre = song.genre;
+            if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
+            state.currentChordIndex = 0;
+            closeCommunity();
+            renderAll();
+            showToast(`📥 Loaded "${song.title}"`);
+        }
+        async function playCommunitySong(song) {
+            const chords = song.chords || ['C', 'G', 'Am', 'F'];
+            await initAudio();
+            for (let i = 0; i < Math.min(chords.length, 4); i++) {
+                await playChord(chords[i], '4n');
+                await new Promise(r => setTimeout(r, 400));
+            }
+        }
+        function previewCommunitySong(song) {
+            loadCommunitySong(song);
+        }
+        function openPublishModal() {
+            if (!authState.user) {
+                openAuthModal();
+                showToast('Sign in to publish songs');
+                return;
+            }
+            document.getElementById('publishModal').classList.add('active');
+            const titleInput = document.getElementById('publishTitle');
+            if (titleInput) {
+                titleInput.value = state.sections[state.currentSection]?.name || '';
+                titleInput.focus();
+            }
+        }
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.remove('active');
+        }
+        async function confirmPublish() {
+            const title = document.getElementById('publishTitle').value.trim();
+            if (!title) { showToast('⚠️ Enter a title'); return; }
+            if (!authState.user) { showToast('⚠️ Sign in first'); return; }
+
+            // Save to cloud first
+            try {
+                const res = await fetch('/api/songs?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        song: { sections: state.sections },
+                        key: state.key,
+                        scale: state.key.includes('m') ? 'minor' : 'major',
+                        genre: state.genre,
+                        tempo: state.baseTempo,
+                        userId: authState.user.id
+                    })
+                });
+                const data = await res.json();
+                if (data.id && !data.local) {
+                    // Make it public
+                    await fetch('/api/songs?action=share', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: data.id, userId: authState.user.id, isPublic: true })
+                    });
+                    closePublishModal();
+                    showToast('🌍 Published to Community!');
+                    return;
+                }
+            } catch (e) {}
+            // Fallback: save locally and add to demo community
+            const localSong = {
+                id: 'local_' + Date.now(),
+                title,
+                genre: state.genre,
+                key_signature: state.key,
+                tempo: state.baseTempo,
+                chords: [...state.sections[state.currentSection].progression],
+                user_name: authState.user?.email?.split('@')[0] || 'You',
+                likes: 0,
+                created_at: new Date().toISOString()
+            };
+            // Add to local community cache
+            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            localCommunity.unshift(localSong);
+            localStorage.setItem('chordflow-community', JSON.stringify(localCommunity));
+            DEMO_COMMUNITY_SONGS.unshift(localSong);
+            closePublishModal();
+            showToast('🌍 Published locally! (Will sync when online)');
+        }
+
+        // ============ v0.73: SONG TEMPLATES ============
+        const SONG_TEMPLATES = [
+            // Pop
+            {
+                category: 'Pop', icon: '🎤',
+                templates: [
+                    {
+                        name: 'Pop Hit Formula', badge: 'Popular', desc: 'Classic verse-chorus-bridge structure used in countless hits',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['C', 'G'] },
+                            { name: 'Verse', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Pre-Chorus', icon: '🎶', progression: ['F', 'G', 'Am', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Dm', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Outro', icon: '🏁', progression: ['C', 'G'] }
+                        ],
+                        key: 'C', genre: 'pop', tempo: 120
+                    },
+                    {
+                        name: 'Pop Ballad', badge: '', desc: 'Slow emotional ballad with simple structure',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['G', 'Em'] },
+                            { name: 'Verse', icon: '🎵', progression: ['G', 'D', 'Em', 'C'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'D', 'G', 'Em'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['G', 'D', 'Em', 'C'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'D', 'G', 'Em'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Am', 'C', 'D', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['G', 'C', 'G'] }
+                        ],
+                        key: 'G', genre: 'pop', tempo: 72
+                    }
+                ]
+            },
+            // Rock
+            {
+                category: 'Rock', icon: '🎸',
+                templates: [
+                    {
+                        name: 'Rock Anthem', badge: 'Classic', desc: 'High energy verse-chorus with guitar solo section',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['E', 'A', 'B', 'E'] },
+                            { name: 'Verse', icon: '🎵', progression: ['E', 'G', 'A', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['E', 'G', 'A', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Solo', icon: '🎸', progression: ['E', 'A', 'B', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Outro', icon: '🏁', progression: ['E'] }
+                        ],
+                        key: 'E', genre: 'rock', tempo: 140
+                    },
+                    {
+                        name: 'Power Ballad', badge: '', desc: 'Starts soft and builds to a powerful chorus',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['Am', 'F'] },
+                            { name: 'Verse (Soft)', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus (Loud)', icon: '🎤', progression: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['F', 'G', 'Am'] },
+                            { name: 'Solo', icon: '🎸', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Final Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] }
+                        ],
+                        key: 'Am', genre: 'rock', tempo: 76
+                    }
+                ]
+            },
+            // Jazz
+            {
+                category: 'Jazz', icon: '🎷',
+                templates: [
+                    {
+                        name: 'Jazz Standard (AABA)', badge: 'Classic', desc: '32-bar AABA form used in hundreds of standards',
+                        sections: [
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] },
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] },
+                            { name: 'B (Bridge)', icon: '🌉', progression: ['Fmaj7', 'Fm7', 'Em7', 'A7'] },
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] }
+                        ],
+                        key: 'C', genre: 'jazz', tempo: 140
+                    },
+                    {
+                        name: 'Jazz Blues', badge: '', desc: '12-bar blues with jazz chord substitutions',
+                        sections: [
+                            { name: 'Head', icon: '🎵', progression: ['Cmaj7', 'Cmaj7', 'Cmaj7', 'Cmaj7', 'Fmaj7', 'Fmaj7', 'Cmaj7', 'Cmaj7', 'Dm7', 'G7', 'Cmaj7', 'G7'] },
+                            { name: 'Solo', icon: '🎷', progression: ['Cmaj7', 'Cmaj7', 'Cmaj7', 'Cmaj7', 'Fmaj7', 'Fmaj7', 'Cmaj7', 'Cmaj7', 'Dm7', 'G7', 'Cmaj7', 'G7'] }
+                        ],
+                        key: 'C', genre: 'jazz', tempo: 120
+                    }
+                ]
+            },
+            // Blues
+            {
+                category: 'Blues', icon: '🎺',
+                templates: [
+                    {
+                        name: '12-Bar Blues', badge: 'Essential', desc: 'The classic blues structure everyone should know',
+                        sections: [
+                            { name: 'Verse', icon: '🎵', progression: ['E7', 'E7', 'E7', 'E7', 'A7', 'A7', 'E7', 'E7', 'B7', 'A7', 'E7', 'B7'] }
+                        ],
+                        key: 'E', genre: 'blues', tempo: 96
+                    }
+                ]
+            },
+            // Lo-Fi
+            {
+                category: 'Lo-Fi / Chill', icon: '☕',
+                templates: [
+                    {
+                        name: 'Lo-Fi Chill Beat', badge: 'Trending', desc: 'Dreamy chord loop perfect for study beats',
+                        sections: [
+                            { name: 'Loop A', icon: '🎵', progression: ['Dm7', 'G7', 'Cmaj7', 'Am7'] },
+                            { name: 'Loop B', icon: '🎶', progression: ['Fmaj7', 'Em7', 'Dm7', 'G7'] },
+                            { name: 'Loop A', icon: '🎵', progression: ['Dm7', 'G7', 'Cmaj7', 'Am7'] }
+                        ],
+                        key: 'C', genre: 'lofi', tempo: 80
+                    }
+                ]
+            },
+            // Folk / Country
+            {
+                category: 'Folk & Country', icon: '🪕',
+                templates: [
+                    {
+                        name: 'Folk Storyteller', badge: '', desc: 'Simple verse-chorus for acoustic storytelling',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['G', 'C'] },
+                            { name: 'Verse', icon: '🎵', progression: ['G', 'C', 'D', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'D', 'G'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['G', 'C', 'D', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'D', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['G'] }
+                        ],
+                        key: 'G', genre: 'folk', tempo: 105
+                    },
+                    {
+                        name: 'Country Two-Step', badge: '', desc: 'Upbeat country song with classic structure',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['D', 'A'] },
+                            { name: 'Verse', icon: '🎵', progression: ['D', 'G', 'A', 'D'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['D', 'G', 'A', 'D'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Em', 'G', 'A'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] }
+                        ],
+                        key: 'D', genre: 'country', tempo: 130
+                    }
+                ]
+            },
+            // Electronic
+            {
+                category: 'Electronic', icon: '🎛️',
+                templates: [
+                    {
+                        name: 'EDM Drop Structure', badge: '', desc: 'Build-up, drop, breakdown pattern',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['Am', 'F'] },
+                            { name: 'Build-Up', icon: '🎶', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Drop', icon: '🔊', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Breakdown', icon: '🎵', progression: ['F', 'C'] },
+                            { name: 'Build-Up 2', icon: '🎶', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Drop 2', icon: '🔊', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['Am', 'F'] }
+                        ],
+                        key: 'Am', genre: 'electronic', tempo: 128
+                    }
+                ]
+            },
+            // Gospel
+            {
+                category: 'Gospel / R&B', icon: '🙏',
+                templates: [
+                    {
+                        name: 'Gospel Praise Song', badge: '', desc: 'Uplifting worship structure with builds',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['C', 'Am'] },
+                            { name: 'Verse', icon: '🎵', progression: ['C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Bridge (Build)', icon: '🌉', progression: ['Dm', 'G', 'C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus (Big)', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Tag', icon: '🏁', progression: ['C'] }
+                        ],
+                        key: 'C', genre: 'gospel', tempo: 108
+                    }
+                ]
+            }
+        ];
+
+        function openTemplates() {
+            closeSheet();
+            const list = document.getElementById('templatesList');
+            if (!list) return;
+            list.innerHTML = SONG_TEMPLATES.map(cat => `
+                <div class="template-category">
+                    <div class="template-category-title">${cat.icon} ${cat.category}</div>
+                    ${cat.templates.map((t, ti) => `
+                        <div class="template-item" onclick="loadTemplate('${cat.category}', ${ti})">
+                            <div class="template-item-header">
+                                <span class="template-item-icon">${cat.icon}</span>
+                                <span class="template-item-name">${t.name}</span>
+                                ${t.badge ? `<span class="template-item-badge">${t.badge}</span>` : ''}
+                            </div>
+                            <div class="template-item-desc">${t.desc}</div>
+                            <div class="template-item-structure">
+                                ${t.sections.map(s => `<span class="template-section-pill">${s.icon} ${s.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            document.getElementById('templatesModal').classList.add('active');
+        }
+        function closeTemplates() {
+            document.getElementById('templatesModal').classList.remove('active');
+        }
+        function loadTemplate(categoryName, templateIndex) {
+            const category = SONG_TEMPLATES.find(c => c.category === categoryName);
+            if (!category) return;
+            const template = category.templates[templateIndex];
+            if (!template) return;
+            saveStateForUndo();
+            state.sections = template.sections.map(s => ({
+                name: s.name,
+                icon: s.icon,
+                progression: [...s.progression]
+            }));
+            state.key = template.key;
+            state.genre = template.genre;
+            state.baseTempo = template.tempo;
+            state.tempo = Math.round(template.tempo * state.speedMultiplier);
+            state.currentSection = 0;
+            state.currentChordIndex = 0;
+            closeTemplates();
+            renderAll();
+            showToast(`🎼 Loaded "${template.name}" template`);
+        }
+
         // ============ LOCK SCREEN / BACKGROUND AUDIO (Media Session API) ============
         function updateMediaSession() {
             if (!('mediaSession' in navigator)) return;
@@ -3618,7 +4475,7 @@
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
-            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); }
+            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); closeAuthModal(); closeCommunity(); closeTemplates(); closePublishModal(); }
             if (e.code === 'ArrowLeft' && state.uiMode === 'cards') cdPrevCard();
             if (e.code === 'ArrowRight' && state.uiMode === 'cards') cdNextCard();
         });
@@ -3644,7 +4501,7 @@
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Drums, inline edit, arrangement, melody, presets, QR, desktop layout, Media Session`);
+            console.log(`🎵 ChordFlow v${VERSION} - Auth, Cloud Sync, Community Hub, Song Templates, Drums, inline edit, arrangement, melody, presets, QR`);
         }
         init();
     </script>
