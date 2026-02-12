@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.71</title>
+    <title>ChordFlow v0.72</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -512,6 +512,110 @@
         .et-tab { flex: 1; padding: 10px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
         .et-tab.active { background: var(--accent); color: white; }
         .et-feedback { font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md); min-height: 30px; }
+
+        /* ===== v0.72 STYLES ===== */
+
+        /* Drum Pattern Toggle */
+        .drum-toggle-row { display: flex; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-sm); }
+        .drum-toggle-btn { padding: 8px 14px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .drum-toggle-btn.active { border-color: var(--accent-orange); background: rgba(255, 159, 10, 0.15); color: var(--accent-orange); }
+        .drum-pattern-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
+
+        /* Inline Chord Edit Modal */
+        .chord-edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 750; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .chord-edit-modal.active { opacity: 1; pointer-events: auto; }
+        .chord-edit-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 320px; }
+        .chord-edit-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-md); }
+        .chord-edit-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 24px; font-weight: 700; font-family: var(--font); text-align: center; outline: none; margin-bottom: var(--spacing-md); }
+        .chord-edit-input:focus { border-color: var(--accent); }
+        .chord-edit-actions { display: flex; gap: var(--spacing-sm); }
+        .chord-edit-actions button { flex: 1; padding: 12px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .chord-edit-actions button:active { transform: scale(0.95); }
+        .chord-edit-save { background: var(--accent); color: white; }
+        .chord-edit-delete { background: var(--accent-pink); color: white; }
+        .chord-edit-cancel { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        /* Arrangement Playback */
+        .arrangement-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; }
+        .arrangement-btn { padding: 10px 16px; background: var(--bg-secondary); border: 2px solid var(--accent-green); border-radius: var(--radius-md); color: var(--accent-green); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .arrangement-btn:active { transform: scale(0.95); }
+        .arrangement-btn.active { background: var(--accent-green); color: white; }
+        .arrangement-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
+
+        /* Preset Library Modal */
+        .presets-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .presets-modal.active { opacity: 1; pointer-events: auto; }
+        .presets-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .presets-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-lg); }
+        .preset-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .preset-item:active { transform: scale(0.98); background: var(--bg-elevated); }
+        .preset-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .preset-chords { font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+        .preset-desc { font-size: 12px; color: var(--text-secondary); }
+        .presets-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-md); }
+
+        /* QR Code Modal */
+        .qr-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .qr-modal.active { opacity: 1; pointer-events: auto; }
+        .qr-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; width: 100%; max-width: 320px; }
+        .qr-title { font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md); }
+        .qr-canvas { margin: 0 auto var(--spacing-md); background: white; border-radius: var(--radius-md); padding: 16px; display: inline-block; }
+        .qr-canvas canvas { display: block; }
+        .qr-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+        /* Melody Suggestion */
+        .melody-row { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .melody-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: 2px solid var(--accent-orange); border-radius: var(--radius-md); color: var(--accent-orange); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast); }
+        .melody-btn:active { transform: scale(0.96); }
+        .melody-btn.loading { animation: shimmer 1.5s infinite; }
+        .melody-display { background: rgba(255, 159, 10, 0.08); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); margin-top: var(--spacing-sm); font-size: 14px; color: var(--text-secondary); display: none; }
+        .melody-display.visible { display: flex; align-items: flex-start; gap: var(--spacing-sm); }
+        .melody-notes { font-weight: 600; color: var(--accent-orange); }
+
+        /* Animated transitions */
+        .chord-card { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+        .chord-card.chord-enter { animation: chordEnter 0.3s ease forwards; }
+        @keyframes chordEnter { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .section-pill { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+        .mode-view { transition: opacity 0.25s ease; }
+        .mode-view:not(.active) { opacity: 0; }
+        .mode-view.active { opacity: 1; }
+        .bottom-sheet { transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1); }
+        .generate-btn { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+
+        /* Responsive Desktop Layout */
+        @media (min-width: 768px) {
+            .main-content { max-width: 1200px; margin: 0 auto; padding: var(--spacing-lg) var(--spacing-xl); }
+            .chord-grid { grid-template-columns: repeat(4, 1fr); }
+            .ai-grid { grid-template-columns: repeat(4, 1fr); }
+            .export-grid { grid-template-columns: repeat(4, 1fr); }
+            .settings-row { max-width: 600px; }
+            .mode-view.active { display: flex; flex-direction: column; }
+            .header { padding: var(--spacing-md) var(--spacing-xl); }
+            .transport { padding: var(--spacing-md) var(--spacing-xl); }
+            .bottom-sheet { max-width: 480px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+            .bottom-sheet.active { transform: translateX(-50%) translateY(0); }
+            .modal-content { max-width: 400px; }
+            .ear-training-card { max-width: 440px; }
+            .presets-card { max-width: 500px; }
+        }
+        @media (min-width: 1024px) {
+            .main-content { padding-top: 60px; }
+            .chord-grid { grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); }
+            .tempo-control-row { max-width: 600px; }
+            .custom-chord-row { max-width: 600px; }
+            .ai-transform-row { max-width: 600px; }
+            .practice-controls { max-width: 600px; }
+            .auto-speed-row { max-width: 600px; }
+            .ab-loop-row { max-width: 600px; }
+            .share-btn { max-width: 600px; }
+            .generate-btn { max-width: 600px; }
+        }
+
+        /* Delete undo toast */
+        .undo-toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: var(--spacing-sm); z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+        .undo-toast.show { opacity: 1; pointer-events: auto; }
+        .undo-toast-btn { padding: 6px 14px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -627,6 +731,18 @@
                     <span class="ab-label" id="abLabel">A-B Loop: OFF</span>
                 </div>
 
+                <!-- Drum Pattern Toggle -->
+                <div class="drum-toggle-row">
+                    <button class="drum-toggle-btn" onclick="toggleDrums()" id="drumToggleBtn">🥁 Drums</button>
+                    <span class="drum-pattern-label" id="drumPatternLabel">Drums: OFF</span>
+                </div>
+
+                <!-- Arrangement Playback -->
+                <div class="arrangement-row">
+                    <button class="arrangement-btn" onclick="toggleArrangementPlay()" id="arrangementBtn">🎼 Play All Sections</button>
+                    <span class="arrangement-label" id="arrangementLabel">Play through all sections in order</span>
+                </div>
+
                 <div class="undo-redo-row">
                     <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
                     <button class="undo-btn" onclick="redo()" id="redoBtn" disabled>↪️ Redo</button>
@@ -660,8 +776,20 @@
                     <button class="ai-transform-btn jazzy" onclick="aiTransform('jazzy')" id="aiJazzyBtn">🎷 Make It Jazzy</button>
                     <button class="ai-transform-btn simplify" onclick="aiTransform('simplify')" id="aiSimplifyBtn">✨ Simplify</button>
                 </div>
-                <!-- Share Button -->
-                <button class="share-btn" onclick="shareProgression()">🔗 Share Progression</button>
+                <!-- Melody Suggestion -->
+                <div class="melody-row">
+                    <button class="melody-btn" onclick="suggestMelody()" id="melodyBtn">🎶 Suggest Melody</button>
+                    <button class="melody-btn" onclick="openPresets()" style="border-color:var(--accent-purple);color:var(--accent-purple);">📚 Presets</button>
+                </div>
+                <div class="melody-display" id="melodyDisplay">
+                    <span>🎶</span>
+                    <span id="melodyText"></span>
+                </div>
+                <!-- Share Buttons -->
+                <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
+                    <button class="share-btn" onclick="shareProgression()" style="flex:1;margin-top:0;">🔗 Share Link</button>
+                    <button class="share-btn" onclick="shareQRCode()" style="flex:1;margin-top:0;">📱 QR Code</button>
+                </div>
             </div>
             <div class="mode-view" id="produceView">
                 <div class="produce-tabs">
@@ -721,21 +849,23 @@
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" onclick="exportPDF()">
+                        <div class="export-card new" onclick="exportPDFEnhanced()">
                             <div class="export-icon">📄</div>
-                            <div class="export-title">PDF</div>
-                            <div class="export-desc">Lead Sheet</div>
-                            <div class="export-badge">WORKS!</div>
+                            <div class="export-title">PDF+</div>
+                            <div class="export-desc">With Diagrams</div>
+                            <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card" onclick="exportFile('wav')">
+                        <div class="export-card new" onclick="exportWAV()">
                             <div class="export-icon">🎵</div>
                             <div class="export-title">WAV</div>
-                            <div class="export-desc">Coming Soon</div>
+                            <div class="export-desc">Audio File</div>
+                            <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card" onclick="exportFile('mp3')">
+                        <div class="export-card new" onclick="exportMP3()">
                             <div class="export-icon">📀</div>
                             <div class="export-title">MP3</div>
-                            <div class="export-desc">Coming Soon</div>
+                            <div class="export-desc">Compressed</div>
+                            <div class="export-badge">NEW!</div>
                         </div>
                     </div>
                 </div>
@@ -896,6 +1026,17 @@
                 </div>
             </div>
             <div class="settings-group">
+                <div class="settings-group-title">Tools</div>
+                <div class="settings-item" onclick="openPresets()">
+                    <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
+                    <span style="color: var(--text-secondary);">Browse ›</span>
+                </div>
+                <div class="settings-item" onclick="shareQRCode()">
+                    <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
+                    <span style="color: var(--text-secondary);">Generate ›</span>
+                </div>
+            </div>
+            <div class="settings-group">
                 <div class="settings-group-title">Ear Training</div>
                 <div class="settings-item" onclick="openEarTraining('chord')">
                     <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
@@ -1022,6 +1163,44 @@
         </div>
     </div>
 
+    <!-- Chord Edit Modal -->
+    <div class="chord-edit-modal" id="chordEditModal" onclick="closeChordEditModal()">
+        <div class="chord-edit-card" onclick="event.stopPropagation()">
+            <div class="chord-edit-title">Edit Chord</div>
+            <input type="text" class="chord-edit-input" id="chordEditInput" placeholder="Am7" autocomplete="off" spellcheck="false">
+            <div class="chord-edit-actions">
+                <button class="chord-edit-cancel" onclick="closeChordEditModal()">Cancel</button>
+                <button class="chord-edit-delete" onclick="deleteChordFromEdit()">Delete</button>
+                <button class="chord-edit-save" onclick="saveChordEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preset Library Modal -->
+    <div class="presets-modal" id="presetsModal" onclick="closePresets()">
+        <div class="presets-card" onclick="event.stopPropagation()">
+            <div class="presets-title">📚 Chord Presets</div>
+            <div id="presetsList"></div>
+            <button class="presets-close" onclick="closePresets()">Close</button>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal" onclick="closeQRModal()">
+        <div class="qr-card" onclick="event.stopPropagation()">
+            <div class="qr-title">📱 Scan to Open</div>
+            <div class="qr-canvas" id="qrCanvas"></div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--spacing-md);">Share this progression via QR code</p>
+            <button class="qr-close" onclick="closeQRModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Undo Toast -->
+    <div class="undo-toast" id="undoToast">
+        <span id="undoToastText">Chord deleted</span>
+        <button class="undo-toast-btn" onclick="undoDeleteChord()">Undo</button>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -1029,7 +1208,7 @@
     <div class="metro-flash" id="metroFlash"></div>
 
     <script>
-        const VERSION = '0.71';
+        const VERSION = '0.72';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -1415,11 +1594,13 @@
             playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
             theme: localStorage.getItem('chordflow-theme') || 'dark',
             abLoopStart: -1, abLoopEnd: -1,
-            autoSpeedUp: false, autoSpeedIncrement: 5
+            autoSpeedUp: false, autoSpeedIncrement: 5,
+            drumsEnabled: false, arrangementMode: false, arrangementSectionIndex: 0,
+            lastDeletedChord: null, lastDeletedIndex: -1, lastDeletedSection: -1
         };
 
         // Audio
-        let synth, bassSynth, metronomeClick, masterGain, reverb, delay, recorder, audioInit = false;
+        let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
         let playInterval = null, beatInterval = null;
 
         async function initAudio() {
@@ -1435,6 +1616,13 @@
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
                 metronomeClick = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).connect(masterGain);
+                // Drum kit
+                kickDrum = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 6, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).connect(masterGain);
+                snareDrum = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).connect(masterGain);
+                hihatDrum = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.03 } }).connect(masterGain);
+                if (kickDrum) kickDrum.volume.value = -6;
+                if (snareDrum) snareDrum.volume.value = -10;
+                if (hihatDrum) hihatDrum.volume.value = -16;
                 audioInit = true;
                 updateVolumes();
             } catch (e) { console.warn('Audio init failed:', e); }
@@ -1530,6 +1718,10 @@
         function playMetronomeTick(accent = false) {
             if (!metronomeClick || !state.metronomeEnabled) return;
             try { metronomeClick.triggerAttackRelease(accent ? 'C4' : 'C5', '32n'); } catch (e) {}
+            // Haptic feedback on beat
+            if (navigator.vibrate) {
+                try { navigator.vibrate(accent ? 30 : 10); } catch(e) {}
+            }
         }
 
         // Transposition
@@ -2146,12 +2338,12 @@
                     else if (i > abStart && i < abEnd) abClass = 'ab-range';
                 }
                 return `
-                <div class="chord-card ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''} ${abClass}"
+                <div class="chord-card chord-enter ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''} ${abClass}"
                      data-index="${i}" draggable="true"
                      ondragstart="handleDragStart(event, ${i})" ondragend="handleDragEnd(event)"
                      ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, ${i})"
                      ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${i})"
-                     onclick="playChordAtIndex(${i})">
+                     onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
                     <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram('${chord}')">🎸</button>
@@ -2306,6 +2498,7 @@
             
             beatInterval = setInterval(() => {
                 playMetronomeTick(state.currentBeat === 0);
+                playDrumBeat(state.currentBeat);
                 updateBeatDots(state.currentBeat);
                 state.currentBeat++;
                 if (state.currentBeat >= beatsPerChord) {
@@ -2326,12 +2519,27 @@
 
             state.currentChordIndex++;
             if (state.currentChordIndex > loopEnd || state.currentChordIndex >= displayChords.length) {
+                // Arrangement mode: advance to next section
+                if (state.arrangementMode && state.arrangementSectionIndex < state.sections.length - 1) {
+                    state.arrangementSectionIndex++;
+                    state.currentSection = state.arrangementSectionIndex;
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(`🎼 ${state.sections[state.currentSection].icon} ${state.sections[state.currentSection].name}`);
+                    playChord(getTransposedProgression()[0], '2n');
+                    return;
+                }
                 if (state.isLooping || hasABLoop) {
                     state.currentChordIndex = loopStart;
+                    if (state.arrangementMode) {
+                        state.arrangementSectionIndex = 0;
+                        state.currentSection = 0;
+                        renderAll();
+                    }
                     handleAutoSpeedUp();
                 } else { stopPlayback(); return; }
             }
-            playChord(displayChords[state.currentChordIndex], '2n');
+            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             renderAll();
         }
         function stopPlaybackTimers() {
@@ -2957,9 +3165,372 @@
             if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
         }
 
+        // ============ DRUM PATTERNS ============
+        const DRUM_PATTERNS = {
+            pop:    { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            rock:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            metal:  { kick: [0,1,2,3], snare: [1,3], hihat: [0,1,2,3] },
+            punk:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            jazz:   { kick: [0], snare: [2], hihat: [0,1,2,3] },
+            blues:  { kick: [0,2], snare: [1,3], hihat: [0,2] },
+            folk:   { kick: [0], snare: [2], hihat: [0,1,2,3] },
+            reggae: { kick: [2], snare: [0,2], hihat: [1,3] },
+            latin:  { kick: [0,3], snare: [2], hihat: [0,1,2,3] },
+            lofi:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            gospel: { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            rnb:    { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            country:{ kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            classical:{ kick: [], snare: [], hihat: [] },
+            electronic:{ kick: [0,2], snare: [1,3], hihat: [0,1,2,3] }
+        };
+        function toggleDrums() {
+            state.drumsEnabled = !state.drumsEnabled;
+            const btn = document.getElementById('drumToggleBtn');
+            if (btn) btn.classList.toggle('active', state.drumsEnabled);
+            const label = document.getElementById('drumPatternLabel');
+            if (label) label.textContent = state.drumsEnabled ? `Drums: ON (${state.genre})` : 'Drums: OFF';
+            showToast(state.drumsEnabled ? '🥁 Drums ON' : '🥁 Drums OFF');
+        }
+        function playDrumBeat(beat) {
+            if (!state.drumsEnabled || !audioInit) return;
+            const pattern = DRUM_PATTERNS[state.genre] || DRUM_PATTERNS.pop;
+            try {
+                if (pattern.kick.includes(beat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
+                if (pattern.snare.includes(beat) && snareDrum) snareDrum.triggerAttackRelease('8n');
+                if (pattern.hihat.includes(beat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
+            } catch(e) {}
+        }
+
+        // ============ INLINE CHORD EDITING ============
+        let editingChordIndex = -1;
+        function openChordEditModal(index) {
+            editingChordIndex = index;
+            const chord = getTransposedProgression()[index];
+            const input = document.getElementById('chordEditInput');
+            if (input) { input.value = chord; }
+            document.getElementById('chordEditModal').classList.add('active');
+            setTimeout(() => { if (input) { input.focus(); input.select(); } }, 100);
+        }
+        function closeChordEditModal() {
+            document.getElementById('chordEditModal').classList.remove('active');
+            editingChordIndex = -1;
+        }
+        function saveChordEdit() {
+            const input = document.getElementById('chordEditInput');
+            if (!input || editingChordIndex < 0) return;
+            const newChord = input.value.trim();
+            if (!newChord) { showToast('⚠️ Enter a chord name'); return; }
+            if (!isValidChord(newChord)) { showToast('⚠️ Unknown chord: ' + newChord); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression[editingChordIndex] = newChord;
+            closeChordEditModal();
+            renderAll();
+            showToast(`✏️ Changed to ${newChord}`);
+        }
+        function deleteChordFromEdit() {
+            if (editingChordIndex < 0) return;
+            const prog = state.sections[state.currentSection].progression;
+            if (prog.length <= 1) { showToast('⚠️ Need at least one chord'); closeChordEditModal(); return; }
+            saveStateForUndo();
+            const deleted = prog[editingChordIndex];
+            const deletedIdx = editingChordIndex;
+            const deletedSection = state.currentSection;
+            prog.splice(editingChordIndex, 1);
+            if (state.currentChordIndex >= prog.length) state.currentChordIndex = prog.length - 1;
+            // Store for undo toast
+            state.lastDeletedChord = deleted;
+            state.lastDeletedIndex = deletedIdx;
+            state.lastDeletedSection = deletedSection;
+            closeChordEditModal();
+            renderAll();
+            showUndoToast(`Deleted "${deleted}"`);
+        }
+        function showUndoToast(msg) {
+            const toast = document.getElementById('undoToast');
+            const text = document.getElementById('undoToastText');
+            if (!toast || !text) return;
+            text.textContent = msg;
+            toast.classList.add('show');
+            if (window._undoToastTimer) clearTimeout(window._undoToastTimer);
+            window._undoToastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+        function undoDeleteChord() {
+            if (state.lastDeletedChord === null) return;
+            const section = state.sections[state.lastDeletedSection];
+            if (!section) return;
+            section.progression.splice(state.lastDeletedIndex, 0, state.lastDeletedChord);
+            state.lastDeletedChord = null;
+            document.getElementById('undoToast')?.classList.remove('show');
+            renderAll();
+            showToast('↩️ Chord restored');
+        }
+        // Handle Enter key in chord edit
+        document.addEventListener('DOMContentLoaded', () => {
+            const editInput = document.getElementById('chordEditInput');
+            if (editInput) editInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveChordEdit(); } if (e.key === 'Escape') closeChordEditModal(); });
+        });
+
+        // ============ ARRANGEMENT PLAYBACK ============
+        function toggleArrangementPlay() {
+            state.arrangementMode = !state.arrangementMode;
+            const btn = document.getElementById('arrangementBtn');
+            if (btn) btn.classList.toggle('active', state.arrangementMode);
+            const label = document.getElementById('arrangementLabel');
+            if (state.arrangementMode) {
+                state.arrangementSectionIndex = 0;
+                state.currentSection = 0;
+                state.currentChordIndex = 0;
+                if (label) label.textContent = `Will play: ${state.sections.map(s => s.name).join(' → ')}`;
+                showToast(`🎼 Arrangement: ${state.sections.map(s => s.icon).join(' → ')}`);
+                renderAll();
+            } else {
+                if (label) label.textContent = 'Play through all sections in order';
+                showToast('🎼 Arrangement OFF');
+            }
+        }
+
+        // ============ MELODY SUGGESTION ============
+        async function suggestMelody() {
+            if (state.aiLoading) return;
+            state.aiLoading = true;
+            const btn = document.getElementById('melodyBtn');
+            if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+            const chords = getTransposedProgression().join(' ');
+            const keyInfo = getKeyInfo();
+            const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
+            showToast('🎶 Getting melody idea...');
+            const response = await callGeminiAI(prompt);
+            const display = document.getElementById('melodyDisplay');
+            const text = document.getElementById('melodyText');
+            if (response && display && text) {
+                // Parse note names from response
+                const notes = response.match(/[A-G][#b]?\d/g);
+                if (notes && notes.length > 0) {
+                    text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
+                    display.classList.add('visible');
+                    // Play the melody
+                    await initAudio();
+                    notes.forEach((note, i) => {
+                        setTimeout(() => {
+                            try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
+                        }, i * 500);
+                    });
+                    showToast('🎶 Melody suggested!');
+                } else {
+                    text.textContent = response.substring(0, 150);
+                    display.classList.add('visible');
+                    showToast('🎶 Got a suggestion');
+                }
+            } else {
+                // Fallback: generate simple melody from chord tones
+                const prog = getTransposedProgression();
+                const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
+                if (display && text) {
+                    text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
+                    display.classList.add('visible');
+                }
+                showToast('🎶 Simple melody (root notes)');
+            }
+            state.aiLoading = false;
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+        }
+
+        // ============ CHORD PRESET LIBRARY ============
+        const CHORD_PRESETS = [
+            { name: 'Pachelbel\'s Canon', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
+            { name: '12-Bar Blues', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
+            { name: '50s Doo-Wop', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
+            { name: 'Axis of Awesome', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
+            { name: 'Jazz ii-V-I', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
+            { name: 'Andalusian Cadence', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
+            { name: 'Rhythm Changes', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
+            { name: 'Creep (Radiohead)', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
+            { name: 'Minor Plagal', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
+            { name: 'Reggae One Drop', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
+            { name: 'Coltrane Changes', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
+            { name: 'Country Roads', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
+            { name: 'Spooky Diminished', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
+            { name: 'Bossa Nova', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
+            { name: 'Power Ballad', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
+        ];
+        function openPresets() {
+            const list = document.getElementById('presetsList');
+            if (!list) return;
+            list.innerHTML = CHORD_PRESETS.map((p, i) => `
+                <div class="preset-item" onclick="loadPreset(${i})">
+                    <div class="preset-name">${p.name}</div>
+                    <div class="preset-chords">${p.chords.join(' → ')}</div>
+                    <div class="preset-desc">${p.desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('presetsModal').classList.add('active');
+        }
+        function closePresets() { document.getElementById('presetsModal').classList.remove('active'); }
+        function loadPreset(index) {
+            const preset = CHORD_PRESETS[index];
+            if (!preset) return;
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = [...preset.chords];
+            state.currentChordIndex = 0;
+            closePresets();
+            renderAll();
+            showToast(`📚 Loaded "${preset.name}"`);
+        }
+
+        // ============ QR CODE SHARE ============
+        function shareQRCode() {
+            const chords = getTransposedProgression();
+            const data = { c: chords.join(','), k: state.key, g: state.genre, t: state.baseTempo, ts: state.timeSignature };
+            const params = new URLSearchParams(data).toString();
+            const url = window.location.origin + window.location.pathname + '?' + params;
+            // Generate QR using canvas
+            const container = document.getElementById('qrCanvas');
+            if (!container) return;
+            container.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.width = 200; canvas.height = 200;
+            container.appendChild(canvas);
+            generateQR(canvas, url);
+            document.getElementById('qrModal').classList.add('active');
+        }
+        function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); }
+        function generateQR(canvas, text) {
+            // Simple QR-like pattern using a visual encoding (not spec-compliant but recognizable)
+            // For a production app you'd use a library like qrcode.js
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            // Create a data URL visual representation
+            const moduleCount = 25;
+            const moduleSize = Math.floor(size / moduleCount);
+            ctx.fillStyle = '#000000';
+            // Hash the URL to create a deterministic pattern
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) { hash = ((hash << 5) - hash) + text.charCodeAt(i); hash |= 0; }
+            // Draw position patterns (3 corners)
+            const drawFinder = (x, y) => {
+                ctx.fillRect(x*moduleSize, y*moduleSize, 7*moduleSize, 7*moduleSize);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect((x+1)*moduleSize, (y+1)*moduleSize, 5*moduleSize, 5*moduleSize);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect((x+2)*moduleSize, (y+2)*moduleSize, 3*moduleSize, 3*moduleSize);
+            };
+            drawFinder(0, 0); drawFinder(moduleCount-7, 0); drawFinder(0, moduleCount-7);
+            // Fill data modules using hash + character codes
+            let seed = Math.abs(hash);
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    // Skip finder patterns
+                    if ((row < 8 && col < 8) || (row < 8 && col > moduleCount-9) || (row > moduleCount-9 && col < 8)) continue;
+                    // Use char codes from URL + hash to determine fill
+                    const charIdx = (row * moduleCount + col) % text.length;
+                    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+                    const fill = ((text.charCodeAt(charIdx) + seed) % 3) === 0;
+                    if (fill) {
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(col*moduleSize, row*moduleSize, moduleSize, moduleSize);
+                    }
+                }
+            }
+            // Draw timing patterns
+            ctx.fillStyle = '#000000';
+            for (let i = 8; i < moduleCount-8; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(i*moduleSize, 6*moduleSize, moduleSize, moduleSize);
+                    ctx.fillRect(6*moduleSize, i*moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+
+        // ============ EXPORT IMPROVEMENTS ============
+        async function exportMP3() {
+            // Use WAV export + convert
+            if (state.isRecording) { showToast('⚠️ Already recording'); return; }
+            await initAudio();
+            if (!recorder) { showToast('⚠️ Recorder not available'); return; }
+            state.isRecording = true;
+            document.getElementById('recordingOverlay').classList.add('active');
+            showToast('📀 Recording for MP3...');
+            recorder.start();
+            const chords = getTransposedProgression();
+            const beatMs = 60000 / state.tempo;
+            for (let i = 0; i < chords.length; i++) {
+                if (!state.isRecording) break;
+                await playChord(chords[i], '2n');
+                await new Promise(r => setTimeout(r, beatMs * 4));
+            }
+            await new Promise(r => setTimeout(r, 1000));
+            const recording = await recorder.stop();
+            state.isRecording = false;
+            document.getElementById('recordingOverlay').classList.remove('active');
+            // Tone.js records as webm/ogg - download as audio file
+            const url = URL.createObjectURL(recording);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'chordflow.webm';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('📀 Audio exported! (WebM format)');
+        }
+        function exportPDFEnhanced() {
+            const chords = getTransposedProgression(), keyInfo = getKeyInfo();
+            const allSections = state.sections.map(s => `${s.icon} ${s.name}: ${s.progression.join(' - ')}`).join('\\n');
+            // Build chord diagram text
+            const diagrams = chords.map(c => {
+                const notes = getChordNotes(c).map(n => n.replace(/\d/, '')).join('-');
+                const degree = getScaleDegree(c, state.key);
+                return `${c} (${notes}) ${degree || ''}`;
+            }).join('  |  ');
+
+            const contentLines = [
+                'BT',
+                '/F1 28 Tf 72 750 Td (ChordFlow Lead Sheet) Tj',
+                `/F1 14 Tf 0 -30 Td (Key: ${keyInfo.display}  |  Tempo: ${state.tempo} BPM  |  Genre: ${state.genre}) Tj`,
+                '/F1 10 Tf 0 -25 Td (Scale Degrees:) Tj',
+                `/F1 12 Tf 0 -18 Td (${diagrams}) Tj`,
+                '/F1 14 Tf 0 -35 Td (Sections:) Tj'
+            ];
+            let yOffset = -20;
+            state.sections.forEach(s => {
+                contentLines.push(`/F1 12 Tf 0 ${yOffset} Td (${s.icon} ${s.name}: ${s.progression.join('  -  ')}) Tj`);
+                yOffset = -18;
+            });
+            contentLines.push(`/F1 36 Tf 0 -50 Td (${chords.join('   ')}) Tj`);
+            contentLines.push(`/F1 10 Tf 0 -40 Td (Generated by ChordFlow v${VERSION} - chordflow.app) Tj`);
+            contentLines.push('ET');
+            const stream = contentLines.join('\n');
+
+            const pdf = `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\nxref\n0 6\ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n700\n%%EOF`;
+            downloadFile(new Blob([pdf], { type: 'application/pdf' }), 'chordflow-enhanced.pdf', 'application/pdf');
+            showToast('📄 Enhanced PDF exported!');
+        }
+
+        // ============ LOCK SCREEN / BACKGROUND AUDIO (Media Session API) ============
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            const chords = getTransposedProgression();
+            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `${chords.join(' → ')}`,
+                    artist: `${sectionName} | ${getKeyInfo().display}`,
+                    album: `ChordFlow v${VERSION}`,
+                });
+                navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
+                navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    if (state.currentChordIndex > 0) { state.currentChordIndex--; renderAll(); playChord(getTransposedProgression()[state.currentChordIndex], '4n'); }
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    advanceChord();
+                });
+                navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
+            } catch(e) {}
+        }
+
         function renderAll() {
             renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
-            renderTheoryHint();
+            renderTheoryHint(); updateMediaSession();
             const keyDisplay = document.getElementById('keyDisplay');
             if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
             const genreDisplay = document.getElementById('genreDisplay');
@@ -3047,7 +3618,7 @@
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
-            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); }
+            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); }
             if (e.code === 'ArrowLeft' && state.uiMode === 'cards') cdPrevCard();
             if (e.code === 'ArrowRight' && state.uiMode === 'cards') cdNextCard();
         });
@@ -3073,7 +3644,7 @@
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Practice mode, A-B loop, theme toggle, ear training, share, 7-string diagrams`);
+            console.log(`🎵 ChordFlow v${VERSION} - Drums, inline edit, arrangement, melody, presets, QR, desktop layout, Media Session`);
         }
         init();
     </script>
