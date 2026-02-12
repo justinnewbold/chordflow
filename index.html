@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.69</title>
+    <title>ChordFlow v0.73</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -419,6 +419,296 @@
         .song-filters { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-sm); }
         .filter-chip { padding: 8px 16px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
         .filter-chip.active { background: var(--accent); color: white; }
+
+        /* Visual Metronome */
+        .visual-metronome { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); height: 40px; }
+        .metro-pendulum { width: 4px; height: 32px; background: var(--accent); border-radius: 2px; transform-origin: bottom center; transition: transform 0.1s ease; opacity: 0.3; }
+        .metro-pendulum.tick { opacity: 1; animation: metroPop 0.3s ease; }
+        .metro-pendulum.accent { background: var(--accent-orange); }
+        @keyframes metroPop { 0% { transform: scaleY(0.5); } 50% { transform: scaleY(1.3); } 100% { transform: scaleY(1); } }
+        .metro-beat-num { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; transition: all 0.1s ease; }
+        .metro-beat-num.active { background: var(--accent); color: white; transform: scale(1.2); }
+        .metro-beat-num.accent { background: var(--accent-orange); }
+        .metro-flash { position: fixed; inset: 0; background: rgba(10, 132, 255, 0.08); pointer-events: none; opacity: 0; z-index: 50; transition: opacity 0.05s ease; }
+        .metro-flash.flash { opacity: 1; }
+
+        /* Scale Degree Labels */
+        .chord-degree { font-size: 11px; color: var(--accent-purple); font-weight: 700; margin-top: 4px; letter-spacing: 0.5px; }
+
+        /* Custom Chord Input */
+        .custom-chord-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+        .custom-chord-input { flex: 1; padding: 12px 16px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); font-weight: 600; outline: none; transition: border-color var(--transition-fast); }
+        .custom-chord-input:focus { border-color: var(--accent); }
+        .custom-chord-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+        .custom-chord-add-btn { padding: 12px 20px; background: var(--accent-green); border: none; border-radius: var(--radius-md); color: white; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
+        .custom-chord-add-btn:active { transform: scale(0.95); }
+        .custom-chord-replace-btn { padding: 12px 16px; background: var(--accent-purple); border: none; border-radius: var(--radius-md); color: white; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
+        .custom-chord-replace-btn:active { transform: scale(0.95); }
+
+        /* AI Transform Buttons */
+        .ai-transform-row { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .ai-transform-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast); }
+        .ai-transform-btn:active { transform: scale(0.96); }
+        .ai-transform-btn.loading { animation: shimmer 1.5s infinite; }
+        .ai-transform-btn.jazzy { border-color: var(--accent-purple); }
+        .ai-transform-btn.jazzy:hover { background: rgba(191, 90, 242, 0.1); }
+        .ai-transform-btn.simplify { border-color: var(--accent-green); }
+        .ai-transform-btn.simplify:hover { background: rgba(48, 209, 88, 0.1); }
+
+        /* Theory Hint */
+        .theory-hint { background: rgba(191, 90, 242, 0.08); border: 1px solid rgba(191, 90, 242, 0.3); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); margin-bottom: var(--spacing-md); font-size: 13px; color: var(--text-secondary); line-height: 1.4; display: flex; align-items: flex-start; gap: var(--spacing-sm); }
+        .theory-hint .hint-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+        /* ===== LIGHT THEME ===== */
+        [data-theme="light"] {
+            --bg-primary: #f2f2f7; --bg-secondary: #ffffff; --bg-tertiary: #e5e5ea; --bg-elevated: #d1d1d6;
+            --text-primary: #000000; --text-secondary: #636366; --text-tertiary: #8e8e93;
+            --accent: #007aff; --accent-green: #28a745; --accent-orange: #ff9500; --accent-pink: #ff2d55; --accent-purple: #af52de;
+            --separator: rgba(60, 60, 67, 0.29);
+        }
+        [data-theme="light"] .header { background: rgba(242,242,247,0.9); }
+        [data-theme="light"] .metro-flash { background: rgba(0, 122, 255, 0.06); }
+
+        /* A-B Loop indicators */
+        .ab-loop-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; }
+        .ab-btn { padding: 8px 14px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .ab-btn.active { border-color: var(--accent-pink); background: rgba(255, 55, 95, 0.15); color: var(--accent-pink); }
+        .ab-btn:active { transform: scale(0.95); }
+        .ab-label { font-size: 12px; color: var(--text-secondary); }
+        .chord-card.ab-start { box-shadow: inset 0 -3px 0 var(--accent-pink); }
+        .chord-card.ab-end { box-shadow: inset 0 -3px 0 var(--accent-orange); }
+        .chord-card.ab-range { box-shadow: inset 0 -3px 0 var(--accent-purple); }
+
+        /* Auto Speed-Up */
+        .auto-speed-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); }
+        .auto-speed-btn { padding: 8px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .auto-speed-btn.active { background: var(--accent-orange); color: white; }
+        .auto-speed-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
+
+        /* Share Button */
+        .share-btn { padding: 12px; background: var(--bg-secondary); border: 2px solid var(--accent); border-radius: var(--radius-md); color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: var(--spacing-sm); transition: all var(--transition-fast); }
+        .share-btn:active { transform: scale(0.97); background: rgba(10, 132, 255, 0.1); }
+
+        /* Ear Training Modal */
+        .ear-training-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .ear-training-modal.active { opacity: 1; pointer-events: auto; }
+        .ear-training-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 360px; text-align: center; }
+        .et-title { font-size: 24px; font-weight: 800; margin-bottom: var(--spacing-sm); }
+        .et-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .et-score { font-size: 16px; font-weight: 700; margin-bottom: var(--spacing-lg); display: flex; justify-content: center; gap: var(--spacing-lg); }
+        .et-score-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .et-score-num { font-size: 28px; font-weight: 800; }
+        .et-score-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+        .et-play-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); border: none; font-size: 32px; color: white; cursor: pointer; margin: 0 auto var(--spacing-lg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); transition: all var(--transition-fast); }
+        .et-play-btn:active { transform: scale(0.9); }
+        .et-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
+        .et-option { padding: 16px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); font-size: 18px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); }
+        .et-option:active { transform: scale(0.95); }
+        .et-option.correct { border-color: var(--accent-green); background: rgba(48, 209, 88, 0.2); }
+        .et-option.wrong { border-color: var(--accent-pink); background: rgba(255, 55, 95, 0.2); }
+        .et-option.disabled { pointer-events: none; opacity: 0.5; }
+        .et-close { padding: 12px 32px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-full); color: var(--text-primary); font-size: 15px; font-weight: 600; cursor: pointer; }
+        .et-tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 4px; }
+        .et-tab { flex: 1; padding: 10px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .et-tab.active { background: var(--accent); color: white; }
+        .et-feedback { font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md); min-height: 30px; }
+
+        /* ===== v0.72 STYLES ===== */
+
+        /* Drum Pattern Toggle */
+        .drum-toggle-row { display: flex; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-sm); }
+        .drum-toggle-btn { padding: 8px 14px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .drum-toggle-btn.active { border-color: var(--accent-orange); background: rgba(255, 159, 10, 0.15); color: var(--accent-orange); }
+        .drum-pattern-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
+
+        /* Inline Chord Edit Modal */
+        .chord-edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 750; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .chord-edit-modal.active { opacity: 1; pointer-events: auto; }
+        .chord-edit-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 320px; }
+        .chord-edit-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-md); }
+        .chord-edit-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 24px; font-weight: 700; font-family: var(--font); text-align: center; outline: none; margin-bottom: var(--spacing-md); }
+        .chord-edit-input:focus { border-color: var(--accent); }
+        .chord-edit-actions { display: flex; gap: var(--spacing-sm); }
+        .chord-edit-actions button { flex: 1; padding: 12px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .chord-edit-actions button:active { transform: scale(0.95); }
+        .chord-edit-save { background: var(--accent); color: white; }
+        .chord-edit-delete { background: var(--accent-pink); color: white; }
+        .chord-edit-cancel { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        /* Arrangement Playback */
+        .arrangement-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; }
+        .arrangement-btn { padding: 10px 16px; background: var(--bg-secondary); border: 2px solid var(--accent-green); border-radius: var(--radius-md); color: var(--accent-green); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .arrangement-btn:active { transform: scale(0.95); }
+        .arrangement-btn.active { background: var(--accent-green); color: white; }
+        .arrangement-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
+
+        /* Preset Library Modal */
+        .presets-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .presets-modal.active { opacity: 1; pointer-events: auto; }
+        .presets-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .presets-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-lg); }
+        .preset-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
+        .preset-item:active { transform: scale(0.98); background: var(--bg-elevated); }
+        .preset-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .preset-chords { font-size: 14px; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+        .preset-desc { font-size: 12px; color: var(--text-secondary); }
+        .presets-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-md); }
+
+        /* QR Code Modal */
+        .qr-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .qr-modal.active { opacity: 1; pointer-events: auto; }
+        .qr-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; width: 100%; max-width: 320px; }
+        .qr-title { font-size: 20px; font-weight: 700; margin-bottom: var(--spacing-md); }
+        .qr-canvas { margin: 0 auto var(--spacing-md); background: white; border-radius: var(--radius-md); padding: 16px; display: inline-block; }
+        .qr-canvas canvas { display: block; }
+        .qr-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+        /* Melody Suggestion */
+        .melody-row { display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+        .melody-btn { flex: 1; padding: 12px; background: var(--bg-secondary); border: 2px solid var(--accent-orange); border-radius: var(--radius-md); color: var(--accent-orange); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all var(--transition-fast); }
+        .melody-btn:active { transform: scale(0.96); }
+        .melody-btn.loading { animation: shimmer 1.5s infinite; }
+        .melody-display { background: rgba(255, 159, 10, 0.08); border: 1px solid rgba(255, 159, 10, 0.3); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); margin-top: var(--spacing-sm); font-size: 14px; color: var(--text-secondary); display: none; }
+        .melody-display.visible { display: flex; align-items: flex-start; gap: var(--spacing-sm); }
+        .melody-notes { font-weight: 600; color: var(--accent-orange); }
+
+        /* Animated transitions */
+        .chord-card { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+        .chord-card.chord-enter { animation: chordEnter 0.3s ease forwards; }
+        @keyframes chordEnter { from { opacity: 0; transform: scale(0.8) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .section-pill { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+        .mode-view { transition: opacity 0.25s ease; }
+        .mode-view:not(.active) { opacity: 0; }
+        .mode-view.active { opacity: 1; }
+        .bottom-sheet { transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1); }
+        .generate-btn { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+
+        /* Responsive Desktop Layout */
+        @media (min-width: 768px) {
+            .main-content { max-width: 1200px; margin: 0 auto; padding: var(--spacing-lg) var(--spacing-xl); }
+            .chord-grid { grid-template-columns: repeat(4, 1fr); }
+            .ai-grid { grid-template-columns: repeat(4, 1fr); }
+            .export-grid { grid-template-columns: repeat(4, 1fr); }
+            .settings-row { max-width: 600px; }
+            .mode-view.active { display: flex; flex-direction: column; }
+            .header { padding: var(--spacing-md) var(--spacing-xl); }
+            .transport { padding: var(--spacing-md) var(--spacing-xl); }
+            .bottom-sheet { max-width: 480px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
+            .bottom-sheet.active { transform: translateX(-50%) translateY(0); }
+            .modal-content { max-width: 400px; }
+            .ear-training-card { max-width: 440px; }
+            .presets-card { max-width: 500px; }
+        }
+        @media (min-width: 1024px) {
+            .main-content { padding-top: 60px; }
+            .chord-grid { grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); }
+            .tempo-control-row { max-width: 600px; }
+            .custom-chord-row { max-width: 600px; }
+            .ai-transform-row { max-width: 600px; }
+            .practice-controls { max-width: 600px; }
+            .auto-speed-row { max-width: 600px; }
+            .ab-loop-row { max-width: 600px; }
+            .share-btn { max-width: 600px; }
+            .generate-btn { max-width: 600px; }
+        }
+
+        /* Delete undo toast */
+        .undo-toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: var(--spacing-sm); z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+        .undo-toast.show { opacity: 1; pointer-events: auto; }
+        .undo-toast-btn { padding: 6px 14px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* ===== v0.73 STYLES ===== */
+
+        /* Auth Modal */
+        .auth-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .auth-modal.active { opacity: 1; pointer-events: auto; }
+        .auth-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 360px; }
+        .auth-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-xs); }
+        .auth-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
+        .auth-tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 4px; }
+        .auth-tab { flex: 1; padding: 10px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .auth-tab.active { background: var(--accent); color: white; }
+        .auth-form { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .auth-input { width: 100%; padding: 14px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 16px; font-family: var(--font); outline: none; transition: border-color var(--transition-fast); }
+        .auth-input:focus { border-color: var(--accent); }
+        .auth-input::placeholder { color: var(--text-tertiary); }
+        .auth-submit { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .auth-submit:active { transform: scale(0.97); }
+        .auth-submit:disabled { opacity: 0.5; }
+        .auth-submit.loading { animation: shimmer 1.5s infinite; }
+        .auth-error { color: var(--accent-pink); font-size: 13px; text-align: center; min-height: 20px; }
+        .auth-close { position: absolute; top: var(--spacing-md); right: var(--spacing-md); width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .auth-divider { display: flex; align-items: center; gap: var(--spacing-md); color: var(--text-tertiary); font-size: 12px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--separator); }
+
+        /* User Profile Badge */
+        .user-badge { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: white; flex-shrink: 0; }
+        .user-info { flex: 1; min-width: 0; }
+        .user-email { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-status { font-size: 11px; color: var(--accent-green); }
+        .user-logout-btn { padding: 6px 12px; background: var(--bg-elevated); border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+
+        /* Cloud Sync Indicator */
+        .cloud-sync-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 4px 8px; border-radius: var(--radius-full); background: rgba(48, 209, 88, 0.15); color: var(--accent-green); font-weight: 600; }
+        .cloud-sync-badge.offline { background: rgba(142, 142, 147, 0.15); color: var(--text-secondary); }
+        .cloud-songs-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-md); }
+        .cloud-songs-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .cloud-prompt { background: rgba(10, 132, 255, 0.08); border: 1px solid rgba(10, 132, 255, 0.3); border-radius: var(--radius-md); padding: var(--spacing-md); text-align: center; margin-bottom: var(--spacing-md); }
+        .cloud-prompt-text { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .cloud-prompt-btn { padding: 8px 20px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* Community Hub */
+        .community-modal { position: fixed; inset: 0; background: var(--bg-primary); z-index: 800; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); display: flex; flex-direction: column; }
+        .community-modal.active { opacity: 1; pointer-events: auto; }
+        .community-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); border-bottom: 1px solid var(--separator); }
+        .community-title { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: var(--spacing-sm); }
+        .community-close { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .community-filters { display: flex; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); overflow-x: auto; scrollbar-width: none; }
+        .community-filters::-webkit-scrollbar { display: none; }
+        .community-body { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg); }
+        .community-grid { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        .community-song-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .community-song-card:active { transform: scale(0.98); }
+        .community-song-card:hover { border-color: var(--accent); }
+        .community-song-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm); }
+        .community-song-title { font-size: 17px; font-weight: 700; }
+        .community-song-genre { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-full); background: var(--accent-purple); color: white; }
+        .community-song-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); display: flex; gap: var(--spacing-md); }
+        .community-song-chords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-sm); }
+        .community-song-actions { display: flex; gap: var(--spacing-sm); }
+        .community-action-btn { padding: 8px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all var(--transition-fast); }
+        .community-action-btn:active { transform: scale(0.95); }
+        .community-action-btn.primary { background: var(--accent); color: white; }
+        .community-empty { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); }
+        .community-empty-icon { font-size: 48px; margin-bottom: var(--spacing-md); }
+        .community-loading { text-align: center; padding: var(--spacing-xl); color: var(--text-secondary); animation: shimmer 1.5s infinite; }
+
+        /* Song Templates */
+        .templates-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .templates-modal.active { opacity: 1; pointer-events: auto; }
+        .templates-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; }
+        .templates-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-sm); }
+        .templates-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
+        .template-category { margin-bottom: var(--spacing-lg); }
+        .template-category-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
+        .template-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
+        .template-item:active { transform: scale(0.98); background: var(--bg-elevated); }
+        .template-item:hover { border-color: var(--accent); }
+        .template-item-header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); }
+        .template-item-icon { font-size: 20px; }
+        .template-item-name { font-size: 16px; font-weight: 700; flex: 1; }
+        .template-item-badge { font-size: 11px; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-purple); color: white; }
+        .template-item-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .template-item-structure { display: flex; flex-wrap: wrap; gap: 4px; }
+        .template-section-pill { font-size: 11px; padding: 3px 8px; border-radius: var(--radius-full); background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; }
+        .templates-close { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius-md); color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-md); }
+
+        /* Publish Song Modal */
+        .publish-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 850; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .publish-modal.active { opacity: 1; pointer-events: auto; }
+        .publish-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); width: 100%; max-width: 360px; }
+        .publish-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-md); }
     </style>
 </head>
 <body>
@@ -495,6 +785,14 @@
                     <div class="tempo-value" id="tempoValueDisplay" onclick="handleTempoTap()">120</div>
                 </div>
 
+                <!-- Visual Metronome -->
+                <div class="visual-metronome" id="visualMetronome">
+                    <div class="metro-beat-num" data-beat="0">1</div>
+                    <div class="metro-beat-num" data-beat="1">2</div>
+                    <div class="metro-beat-num" data-beat="2">3</div>
+                    <div class="metro-beat-num" data-beat="3">4</div>
+                </div>
+
                 <div class="progress-container">
                     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                     <div class="beat-dots" id="beatDots">
@@ -509,18 +807,88 @@
                     <button class="count-in-btn" onclick="toggleCountIn()" id="countInBtn">📢 Count</button>
                 </div>
 
+                <!-- Auto Speed-Up Practice -->
+                <div class="auto-speed-row">
+                    <span class="auto-speed-label" id="autoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
+                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp()" id="autoSpeedBtn">OFF</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3)" id="aspd3">+3</button>
+                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5)" id="aspd5">+5</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10)" id="aspd10">+10</button>
+                </div>
+
+                <!-- A-B Loop -->
+                <div class="ab-loop-row">
+                    <button class="ab-btn" onclick="setABPoint('A')" id="abStartBtn">🅰️ Start</button>
+                    <button class="ab-btn" onclick="setABPoint('B')" id="abEndBtn">🅱️ End</button>
+                    <button class="ab-btn" onclick="clearABLoop()" id="abClearBtn">✕ Clear</button>
+                    <span class="ab-label" id="abLabel">A-B Loop: OFF</span>
+                </div>
+
+                <!-- Drum Pattern Toggle -->
+                <div class="drum-toggle-row">
+                    <button class="drum-toggle-btn" onclick="toggleDrums()" id="drumToggleBtn">🥁 Drums</button>
+                    <span class="drum-pattern-label" id="drumPatternLabel">Drums: OFF</span>
+                </div>
+
+                <!-- Arrangement Playback -->
+                <div class="arrangement-row">
+                    <button class="arrangement-btn" onclick="toggleArrangementPlay()" id="arrangementBtn">🎼 Play All Sections</button>
+                    <span class="arrangement-label" id="arrangementLabel">Play through all sections in order</span>
+                </div>
+
                 <div class="undo-redo-row">
                     <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
                     <button class="undo-btn" onclick="redo()" id="redoBtn" disabled>↪️ Redo</button>
                 </div>
                 <div class="sections-strip" id="sectionsStrip"></div>
+
+                <!-- Theory Hint -->
+                <div class="theory-hint" id="theoryHint" style="display:none;">
+                    <span class="hint-icon">🎓</span>
+                    <span id="theoryHintText"></span>
+                </div>
+
                 <div class="chord-grid" id="chordGrid"></div>
-                <button class="generate-btn" onclick="generateProgression()">🎲 Generate New Progression</button>
+
+                <!-- Custom Chord Input -->
+                <div class="custom-chord-row">
+                    <input type="text" class="custom-chord-input" id="customChordInput" placeholder="Type chord (e.g. Am7, Fmaj7, Bdim)" autocomplete="off" spellcheck="false">
+                    <button class="custom-chord-add-btn" onclick="addCustomChord()">+ Add</button>
+                    <button class="custom-chord-replace-btn" onclick="replaceWithCustomChords()">Set All</button>
+                </div>
+
+                <div style="display:flex;gap:var(--spacing-sm);margin-bottom:var(--spacing-md);">
+                    <button class="generate-btn" onclick="generateProgression()" style="flex:2;margin-bottom:0;">🎲 Generate New</button>
+                    <button class="generate-btn" onclick="openTemplates()" style="flex:1;margin-bottom:0;background:linear-gradient(135deg, var(--accent-orange), var(--accent-pink));">🎼 Templates</button>
+                </div>
                 <div class="ai-grid">
                     <button class="ai-btn" onclick="aiGenerate('smart')" id="aiMagicBtn"><span class="icon">✨</span> AI Magic</button>
                     <button class="ai-btn" onclick="aiGenerate('surprise')" id="aiSurpriseBtn"><span class="icon">🎁</span> Surprise</button>
                     <button class="ai-btn" onclick="aiGenerate('enhance')" id="aiEnhanceBtn"><span class="icon">💎</span> Enhance</button>
                     <button class="ai-btn" onclick="aiGenerate('genre')" id="aiGenreBtn"><span class="icon">🎷</span> Jazzify</button>
+                </div>
+                <!-- AI Transform Buttons -->
+                <div class="ai-transform-row">
+                    <button class="ai-transform-btn jazzy" onclick="aiTransform('jazzy')" id="aiJazzyBtn">🎷 Make It Jazzy</button>
+                    <button class="ai-transform-btn simplify" onclick="aiTransform('simplify')" id="aiSimplifyBtn">✨ Simplify</button>
+                </div>
+                <!-- Melody Suggestion -->
+                <div class="melody-row">
+                    <button class="melody-btn" onclick="suggestMelody()" id="melodyBtn">🎶 Suggest Melody</button>
+                    <button class="melody-btn" onclick="openPresets()" style="border-color:var(--accent-purple);color:var(--accent-purple);">📚 Presets</button>
+                </div>
+                <div class="melody-display" id="melodyDisplay">
+                    <span>🎶</span>
+                    <span id="melodyText"></span>
+                </div>
+                <!-- Share Buttons -->
+                <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
+                    <button class="share-btn" onclick="shareProgression()" style="flex:1;margin-top:0;">🔗 Share Link</button>
+                    <button class="share-btn" onclick="shareQRCode()" style="flex:1;margin-top:0;">📱 QR Code</button>
+                </div>
+                <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
+                    <button class="share-btn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
+                    <button class="share-btn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
                 </div>
             </div>
             <div class="mode-view" id="produceView">
@@ -581,30 +949,38 @@
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" onclick="exportPDF()">
+                        <div class="export-card new" onclick="exportPDFEnhanced()">
                             <div class="export-icon">📄</div>
-                            <div class="export-title">PDF</div>
-                            <div class="export-desc">Lead Sheet</div>
-                            <div class="export-badge">WORKS!</div>
+                            <div class="export-title">PDF+</div>
+                            <div class="export-desc">With Diagrams</div>
+                            <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card" onclick="exportFile('wav')">
+                        <div class="export-card new" onclick="exportWAV()">
                             <div class="export-icon">🎵</div>
                             <div class="export-title">WAV</div>
-                            <div class="export-desc">Coming Soon</div>
+                            <div class="export-desc">Audio File</div>
+                            <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card" onclick="exportFile('mp3')">
+                        <div class="export-card new" onclick="exportMP3()">
                             <div class="export-icon">📀</div>
                             <div class="export-title">MP3</div>
-                            <div class="export-desc">Coming Soon</div>
+                            <div class="export-desc">Compressed</div>
+                            <div class="export-badge">NEW!</div>
                         </div>
                     </div>
                 </div>
                 <div class="produce-panel" id="songsPanel">
+                    <div id="songsPanelCloudPrompt"></div>
                     <div class="save-load-grid">
                         <button class="save-btn" onclick="openSaveModal()">💾 Save Song</button>
                         <button class="load-btn" onclick="document.getElementById('loadFileInput').click()">📂 Load File</button>
                     </div>
+                    <div class="save-load-grid" style="margin-top:0;">
+                        <button class="save-btn" onclick="openCommunity()" style="background:rgba(191,90,242,0.15);color:var(--accent-purple);">🌍 Community</button>
+                        <button class="load-btn" onclick="openTemplates()" style="background:rgba(255,159,10,0.15);color:var(--accent-orange);">🎼 Templates</button>
+                    </div>
                     <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadSongFile(event)">
+                    <div id="cloudSongsList"></div>
                     <div class="saved-songs" id="savedSongsList"></div>
                 </div>
                 <div class="produce-panel" id="learnPanel">
@@ -738,10 +1114,18 @@
         <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group">
+                <div class="settings-group-title">Account</div>
+                <div id="accountSection"></div>
+            </div>
+            <div class="settings-group">
                 <div class="settings-group-title">Interface</div>
                 <div class="settings-item" onclick="openSheet('uiMode')">
                     <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
                     <span id="currentUILabel" style="color: var(--text-secondary);">Dual Mode ›</span>
+                </div>
+                <div class="settings-item" onclick="toggleTheme()">
+                    <div class="settings-label"><span class="settings-icon">🌓</span><span>Theme</span></div>
+                    <span id="themeLabel" style="color: var(--text-secondary);">Dark ›</span>
                 </div>
                 <div class="settings-item" onclick="showShortcuts()">
                     <div class="settings-label"><span class="settings-icon">⌨️</span><span>Keyboard Shortcuts</span></div>
@@ -752,10 +1136,40 @@
                 </div>
             </div>
             <div class="settings-group">
+                <div class="settings-group-title">Tools</div>
+                <div class="settings-item" onclick="openPresets()">
+                    <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
+                    <span style="color: var(--text-secondary);">Browse ›</span>
+                </div>
+                <div class="settings-item" onclick="openTemplates()">
+                    <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
+                    <span style="color: var(--text-secondary);">Browse ›</span>
+                </div>
+                <div class="settings-item" onclick="openCommunity()">
+                    <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
+                    <span style="color: var(--text-secondary);">Discover ›</span>
+                </div>
+                <div class="settings-item" onclick="shareQRCode()">
+                    <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
+                    <span style="color: var(--text-secondary);">Generate ›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Ear Training</div>
+                <div class="settings-item" onclick="openEarTraining('chord')">
+                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
+                    <span style="color: var(--text-secondary);">Play ›</span>
+                </div>
+                <div class="settings-item" onclick="openEarTraining('interval')">
+                    <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
+                    <span style="color: var(--text-secondary);">Play ›</span>
+                </div>
+            </div>
+            <div class="settings-group">
                 <div class="settings-group-title">About</div>
                 <div class="settings-item">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Version</span></div>
-                    <span id="versionDisplay" style="color: var(--text-secondary);">0.63</span>
+                    <span id="versionDisplay" style="color: var(--text-secondary);">0.73</span>
                 </div>
             </div>
         </div>
@@ -796,7 +1210,16 @@
         <div class="diagram-card" onclick="event.stopPropagation()">
             <div class="diagram-chord-name" id="diagramChordName">C</div>
             <div class="diagram-notes" id="diagramNotes">C - E - G</div>
-            <svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg>
+            <div style="display:flex;gap:4px;justify-content:center;margin-bottom:12px;">
+                <button class="dgm-tab active" onclick="switchDgm('guitar',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Guitar</button>
+                <button class="dgm-tab" onclick="switchDgm('guitar7',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 7-String</button>
+                <button class="dgm-tab" onclick="switchDgm('piano',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎹 Piano</button>
+                <button class="dgm-tab" onclick="switchDgm('bass',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Bass</button>
+            </div>
+            <div id="guitarDgm"><svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg></div>
+            <div id="guitar7Dgm" style="display:none;"></div>
+            <div id="pianoDgm" style="display:none;"></div>
+            <div id="bassDgm" style="display:none;"></div>
             <button class="diagram-close" onclick="closeChordDiagram()">Close</button>
         </div>
     </div>
@@ -837,11 +1260,141 @@
         <div class="count-in-number" id="countInNumber">4</div>
     </div>
 
+    <!-- Ear Training Modal -->
+    <div class="ear-training-modal" id="earTrainingModal">
+        <div class="ear-training-card">
+            <div class="et-tabs">
+                <button class="et-tab active" onclick="switchEarTrainingTab('chord')" id="etTabChord">🎵 Chords</button>
+                <button class="et-tab" onclick="switchEarTrainingTab('interval')" id="etTabInterval">🎶 Intervals</button>
+            </div>
+            <div class="et-title" id="etTitle">Guess the Chord</div>
+            <div class="et-subtitle" id="etSubtitle">Listen to the chord and pick the correct answer</div>
+            <div class="et-score">
+                <div class="et-score-item"><div class="et-score-num" id="etCorrect">0</div><div class="et-score-label">Correct</div></div>
+                <div class="et-score-item"><div class="et-score-num" id="etStreak">0</div><div class="et-score-label">Streak</div></div>
+                <div class="et-score-item"><div class="et-score-num" id="etTotal">0</div><div class="et-score-label">Total</div></div>
+            </div>
+            <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
+            <div class="et-feedback" id="etFeedback"></div>
+            <div class="et-options" id="etOptions"></div>
+            <button class="et-close" onclick="closeEarTraining()">Close</button>
+        </div>
+    </div>
+
+    <!-- Chord Edit Modal -->
+    <div class="chord-edit-modal" id="chordEditModal" onclick="closeChordEditModal()">
+        <div class="chord-edit-card" onclick="event.stopPropagation()">
+            <div class="chord-edit-title">Edit Chord</div>
+            <input type="text" class="chord-edit-input" id="chordEditInput" placeholder="Am7" autocomplete="off" spellcheck="false">
+            <div class="chord-edit-actions">
+                <button class="chord-edit-cancel" onclick="closeChordEditModal()">Cancel</button>
+                <button class="chord-edit-delete" onclick="deleteChordFromEdit()">Delete</button>
+                <button class="chord-edit-save" onclick="saveChordEdit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preset Library Modal -->
+    <div class="presets-modal" id="presetsModal" onclick="closePresets()">
+        <div class="presets-card" onclick="event.stopPropagation()">
+            <div class="presets-title">📚 Chord Presets</div>
+            <div id="presetsList"></div>
+            <button class="presets-close" onclick="closePresets()">Close</button>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal" onclick="closeQRModal()">
+        <div class="qr-card" onclick="event.stopPropagation()">
+            <div class="qr-title">📱 Scan to Open</div>
+            <div class="qr-canvas" id="qrCanvas"></div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--spacing-md);">Share this progression via QR code</p>
+            <button class="qr-close" onclick="closeQRModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-card" style="position:relative;">
+            <button class="auth-close" onclick="closeAuthModal()">✕</button>
+            <div class="auth-title" id="authTitle">Sign In</div>
+            <div class="auth-subtitle">Sync your songs across all your devices</div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Sign In</button>
+                <button class="auth-tab" id="authTabSignup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            <form class="auth-form" id="authForm" onsubmit="event.preventDefault(); handleAuthSubmit();">
+                <input type="email" class="auth-input" id="authEmail" placeholder="Email address" required autocomplete="email">
+                <input type="password" class="auth-input" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6">
+                <div class="auth-error" id="authError"></div>
+                <button type="submit" class="auth-submit" id="authSubmitBtn">Sign In</button>
+            </form>
+            <div class="auth-divider">or</div>
+            <button class="auth-submit" style="background:var(--bg-tertiary);color:var(--text-primary);margin-top:var(--spacing-sm);" onclick="continueAsGuest()">Continue as Guest</button>
+        </div>
+    </div>
+
+    <!-- Community Hub Modal -->
+    <div class="community-modal" id="communityModal">
+        <div class="community-header">
+            <div class="community-title">🌍 Community Hub</div>
+            <button class="community-close" onclick="closeCommunity()">✕</button>
+        </div>
+        <div class="community-filters" id="communityFilters">
+            <button class="filter-chip active" onclick="filterCommunity('all')">All</button>
+            <button class="filter-chip" onclick="filterCommunity('pop')">🎤 Pop</button>
+            <button class="filter-chip" onclick="filterCommunity('rock')">🎸 Rock</button>
+            <button class="filter-chip" onclick="filterCommunity('jazz')">🎷 Jazz</button>
+            <button class="filter-chip" onclick="filterCommunity('blues')">🎺 Blues</button>
+            <button class="filter-chip" onclick="filterCommunity('folk')">🪕 Folk</button>
+            <button class="filter-chip" onclick="filterCommunity('electronic')">🎛️ Electronic</button>
+            <button class="filter-chip" onclick="filterCommunity('lofi')">☕ Lo-Fi</button>
+            <button class="filter-chip" onclick="filterCommunity('classical')">🎻 Classical</button>
+        </div>
+        <div class="community-body">
+            <div class="community-grid" id="communityGrid"></div>
+        </div>
+    </div>
+
+    <!-- Song Templates Modal -->
+    <div class="templates-modal" id="templatesModal" onclick="closeTemplates()">
+        <div class="templates-card" onclick="event.stopPropagation()">
+            <div class="templates-title">🎼 Song Templates</div>
+            <div class="templates-subtitle">Start with a complete song structure</div>
+            <div id="templatesList"></div>
+            <button class="templates-close" onclick="closeTemplates()">Close</button>
+        </div>
+    </div>
+
+    <!-- Publish Song Modal -->
+    <div class="publish-modal" id="publishModal" onclick="closePublishModal()">
+        <div class="publish-card" onclick="event.stopPropagation()">
+            <div class="publish-title">🌍 Publish to Community</div>
+            <form class="auth-form" onsubmit="event.preventDefault(); confirmPublish();">
+                <input type="text" class="auth-input" id="publishTitle" placeholder="Song title" required maxlength="50">
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:-8px;">Your progression will be shared publicly in the Community Hub</div>
+                <div style="display:flex;gap:var(--spacing-sm);">
+                    <button type="button" class="auth-submit" style="background:var(--bg-tertiary);color:var(--text-primary);" onclick="closePublishModal()">Cancel</button>
+                    <button type="submit" class="auth-submit">Publish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Undo Toast -->
+    <div class="undo-toast" id="undoToast">
+        <span id="undoToastText">Chord deleted</span>
+        <button class="undo-toast-btn" onclick="undoDeleteChord()">Undo</button>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- Visual Metronome Flash Overlay -->
+    <div class="metro-flash" id="metroFlash"></div>
+
     <script>
-        const VERSION = '0.68';
+        const VERSION = '0.73';
         const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
 
         // Data
@@ -1224,11 +1777,16 @@
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
             undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
-            playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0
+            playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
+            theme: localStorage.getItem('chordflow-theme') || 'dark',
+            abLoopStart: -1, abLoopEnd: -1,
+            autoSpeedUp: false, autoSpeedIncrement: 5,
+            drumsEnabled: false, arrangementMode: false, arrangementSectionIndex: 0,
+            lastDeletedChord: null, lastDeletedIndex: -1, lastDeletedSection: -1
         };
 
         // Audio
-        let synth, bassSynth, metronomeClick, masterGain, reverb, delay, recorder, audioInit = false;
+        let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
         let playInterval = null, beatInterval = null;
 
         async function initAudio() {
@@ -1244,6 +1802,13 @@
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
                 metronomeClick = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).connect(masterGain);
+                // Drum kit
+                kickDrum = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 6, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).connect(masterGain);
+                snareDrum = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).connect(masterGain);
+                hihatDrum = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.03 } }).connect(masterGain);
+                if (kickDrum) kickDrum.volume.value = -6;
+                if (snareDrum) snareDrum.volume.value = -10;
+                if (hihatDrum) hihatDrum.volume.value = -16;
                 audioInit = true;
                 updateVolumes();
             } catch (e) { console.warn('Audio init failed:', e); }
@@ -1339,6 +1904,10 @@
         function playMetronomeTick(accent = false) {
             if (!metronomeClick || !state.metronomeEnabled) return;
             try { metronomeClick.triggerAttackRelease(accent ? 'C4' : 'C5', '32n'); } catch (e) {}
+            // Haptic feedback on beat
+            if (navigator.vibrate) {
+                try { navigator.vibrate(accent ? 30 : 10); } catch(e) {}
+            }
         }
 
         // Transposition
@@ -1443,10 +2012,13 @@
             document.getElementById('chordDiagramModal').classList.add('active');
             document.getElementById('pianoDgm').innerHTML = mkPiano(chord);
             document.getElementById('bassDgm').innerHTML = mkBass(chord);
+            const g7El = document.getElementById('guitar7Dgm');
+            if (g7El) g7El.innerHTML = mk7String(chord);
             document.querySelectorAll('.dgm-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
             document.getElementById('guitarDgm').style.display='block';
             document.getElementById('pianoDgm').style.display='none';
             document.getElementById('bassDgm').style.display='none';
+            if (g7El) g7El.style.display='none';
         }
         function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); }
         function switchDgm(view, btn) {
@@ -1455,6 +2027,8 @@
             document.getElementById('guitarDgm').style.display = view === 'guitar' ? 'block' : 'none';
             document.getElementById('pianoDgm').style.display = view === 'piano' ? 'block' : 'none';
             document.getElementById('bassDgm').style.display = view === 'bass' ? 'block' : 'none';
+            const g7El = document.getElementById('guitar7Dgm');
+            if (g7El) g7El.style.display = view === 'guitar7' ? 'block' : 'none';
         }
         function mkPiano(chord) {
             const notes = getChordNotes(chord).map(n => n.replace(/\d/, ''));
@@ -1670,7 +2244,15 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            closeSaveModal(); renderSavedSongs(); renderLearnSongs(); showToast(`💾 Saved "${name}"`);
+            closeSaveModal(); renderSavedSongs(); renderLearnSongs();
+            // Also save to cloud if logged in
+            if (authState.user) {
+                saveToCloud(name).then(cloudSaved => {
+                    showToast(cloudSaved ? `☁️ Saved "${name}" to cloud` : `💾 Saved "${name}" locally`);
+                });
+            } else {
+                showToast(`💾 Saved "${name}"`);
+            }
         }
         function loadSong(index) {
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
@@ -1743,6 +2325,13 @@
             if (container) container.classList.add('active');
             updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
             if (state.uiMode === 'cards') initCardDeck();
+            // v0.73: Initialize new features
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            if (authState.user) loadCloudSongs();
+            // Load locally published community songs
+            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            localCommunity.forEach(s => { if (!DEMO_COMMUNITY_SONGS.find(d => d.id === s.id)) DEMO_COMMUNITY_SONGS.unshift(s); });
             // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
             if (versionDisplay) versionDisplay.textContent = VERSION;
@@ -1929,6 +2518,8 @@
                     if (i === beat) { dot.classList.add('active'); if (beat === 0) dot.classList.add('accent'); }
                 });
             }
+            // Visual metronome
+            updateVisualMetronome(beat);
         }
 
         // Chord Grid
@@ -1936,20 +2527,32 @@
             const grid = document.getElementById('chordGrid');
             if (!grid) return;
             const displayChords = getTransposedProgression();
-            grid.innerHTML = displayChords.map((chord, i) => `
-                <div class="chord-card ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''}" 
+            const abStart = Math.min(state.abLoopStart, state.abLoopEnd);
+            const abEnd = Math.max(state.abLoopStart, state.abLoopEnd);
+            const hasAB = state.abLoopStart >= 0 && state.abLoopEnd >= 0;
+            grid.innerHTML = displayChords.map((chord, i) => {
+                const degree = getScaleDegree(chord, state.key);
+                let abClass = '';
+                if (hasAB) {
+                    if (i === abStart) abClass = 'ab-start';
+                    else if (i === abEnd) abClass = 'ab-end';
+                    else if (i > abStart && i < abEnd) abClass = 'ab-range';
+                }
+                return `
+                <div class="chord-card chord-enter ${getChordColorClass(chord)} ${state.currentChordIndex === i && state.isPlaying ? 'playing' : ''} ${abClass}"
                      data-index="${i}" draggable="true"
                      ondragstart="handleDragStart(event, ${i})" ondragend="handleDragEnd(event)"
                      ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event, ${i})"
                      ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${i})"
-                     onclick="playChordAtIndex(${i})">
+                     onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
                     <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram('${chord}')">🎸</button>
                     <div class="chord-name">${chord}</div>
                     <div class="chord-type">${getChordTypeLabel(chord)}</div>
-                </div>
-            `).join('');
+                    ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
+                </div>`;
+            }).join('');
         }
         
         // Drag and Drop handlers
@@ -2096,6 +2699,7 @@
             
             beatInterval = setInterval(() => {
                 playMetronomeTick(state.currentBeat === 0);
+                playDrumBeat(state.currentBeat);
                 updateBeatDots(state.currentBeat);
                 state.currentBeat++;
                 if (state.currentBeat >= beatsPerChord) {
@@ -2110,12 +2714,33 @@
         }
         function advanceChord() {
             const displayChords = getTransposedProgression();
+            const hasABLoop = state.abLoopStart >= 0 && state.abLoopEnd >= 0 && state.abLoopStart !== state.abLoopEnd;
+            const loopStart = hasABLoop ? Math.min(state.abLoopStart, state.abLoopEnd) : 0;
+            const loopEnd = hasABLoop ? Math.max(state.abLoopStart, state.abLoopEnd) : displayChords.length - 1;
+
             state.currentChordIndex++;
-            if (state.currentChordIndex >= displayChords.length) {
-                if (state.isLooping) { state.currentChordIndex = 0; }
-                else { stopPlayback(); return; }
+            if (state.currentChordIndex > loopEnd || state.currentChordIndex >= displayChords.length) {
+                // Arrangement mode: advance to next section
+                if (state.arrangementMode && state.arrangementSectionIndex < state.sections.length - 1) {
+                    state.arrangementSectionIndex++;
+                    state.currentSection = state.arrangementSectionIndex;
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(`🎼 ${state.sections[state.currentSection].icon} ${state.sections[state.currentSection].name}`);
+                    playChord(getTransposedProgression()[0], '2n');
+                    return;
+                }
+                if (state.isLooping || hasABLoop) {
+                    state.currentChordIndex = loopStart;
+                    if (state.arrangementMode) {
+                        state.arrangementSectionIndex = 0;
+                        state.currentSection = 0;
+                        renderAll();
+                    }
+                    handleAutoSpeedUp();
+                } else { stopPlayback(); return; }
             }
-            playChord(displayChords[state.currentChordIndex], '2n');
+            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             renderAll();
         }
         function stopPlaybackTimers() {
@@ -2136,13 +2761,1652 @@
             if (state.isPlaying) startPlayback();
         }
 
+        // ============ LEARN SONGS ============
+        let learnSongsFilter = 'all';
+
+        function renderLearnSongs() {
+            const list = document.getElementById('learnSongsList');
+            if (!list) return;
+            const filtered = learnSongsFilter === 'all'
+                ? publicDomainSongs
+                : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSongsFilter);
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                return;
+            }
+            list.innerHTML = filtered.map(song => {
+                const uniqueChords = [...new Set(song.chords)];
+                return `<div class="song-card" onclick="openSongPlayer('${song.id}')">
+                    <div class="song-header">
+                        <div class="song-title">${song.title}</div>
+                        <span class="song-difficulty ${song.difficulty.toLowerCase()}">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta">Key of ${song.key} | ${song.timeSignature} | ${song.tempo} BPM | ${song.year}</div>
+                    <div class="song-chords">${uniqueChords.map(c => `<span class="song-chord-pill">${c}</span>`).join('')}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function filterSongs(filter) {
+            learnSongsFilter = filter;
+            document.querySelectorAll('#songFilters .filter-chip').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter === 'all' ? 'all' : filter));
+            });
+            renderLearnSongs();
+        }
+
+        // ============ SONG PLAYER VIEW ============
+        let currentLearnSong = null;
+        let learnSongPlaying = false;
+        let learnSongInterval = null;
+        let learnSongChordIndex = 0;
+
+        function openSongPlayer(songId) {
+            const song = publicDomainSongs.find(s => s.id === songId);
+            if (!song) return;
+            currentLearnSong = song;
+            learnSongChordIndex = 0;
+            learnSongPlaying = false;
+
+            const view = document.getElementById('songPlayerView');
+            const list = document.getElementById('learnSongsList');
+            if (!view || !list) return;
+
+            list.style.display = 'none';
+            view.style.display = 'block';
+
+            const uniqueChords = [...new Set(song.chords)];
+            view.innerHTML = `
+                <div class="song-player">
+                    <div class="song-player-header">
+                        <div class="song-player-title">${song.title}</div>
+                        <button class="song-player-close" onclick="closeSongPlayer()">✕</button>
+                    </div>
+                    <div class="song-info-row">
+                        <span class="song-info-chip">🎵 ${song.key}</span>
+                        <span class="song-info-chip">🎼 ${song.timeSignature}</span>
+                        <span class="song-info-chip">🥁 ${song.tempo} BPM</span>
+                        <span class="song-info-chip ${song.difficulty.toLowerCase()}" style="color:white;">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta" style="margin-bottom:var(--spacing-md);">${song.origin} (${song.year})</div>
+                    <div class="song-lyrics-container" id="songLyrics">
+                        ${song.lyrics.map((l, i) => `
+                            <div class="lyric-line" id="lyricLine${i}">
+                                <span class="lyric-chord">[${l.chord}]</span>
+                                <span class="lyric-text">${l.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="song-tips">
+                        <div class="song-tips-title">💡 Tips</div>
+                        <div class="song-tips-text">${song.tips}</div>
+                    </div>
+                    <div class="song-controls">
+                        <button class="song-control-btn primary" id="learnPlayBtn" onclick="toggleLearnSongPlay()">▶️ Play Along</button>
+                        <button class="song-control-btn" onclick="loadLearnSongToEditor()">📝 Load to Editor</button>
+                    </div>
+                </div>`;
+        }
+
+        function closeSongPlayer() {
+            stopLearnSongPlay();
+            const view = document.getElementById('songPlayerView');
+            const list = document.getElementById('learnSongsList');
+            if (view) view.style.display = 'none';
+            if (list) list.style.display = 'flex';
+            currentLearnSong = null;
+        }
+
+        async function toggleLearnSongPlay() {
+            if (!currentLearnSong) return;
+            await initAudio();
+            if (learnSongPlaying) {
+                stopLearnSongPlay();
+                return;
+            }
+            learnSongPlaying = true;
+            learnSongChordIndex = 0;
+            const btn = document.getElementById('learnPlayBtn');
+            if (btn) { btn.textContent = '⏸️ Pause'; btn.classList.add('playing'); }
+
+            const beatMs = 60000 / currentLearnSong.tempo;
+            const beatsPerChord = currentLearnSong.timeSignature === '3/4' ? 3 : 4;
+
+            // Play first chord
+            highlightLyricLine(0);
+            playChord(currentLearnSong.lyrics[0].chord, '2n');
+
+            learnSongInterval = setInterval(() => {
+                learnSongChordIndex++;
+                if (learnSongChordIndex >= currentLearnSong.lyrics.length) {
+                    stopLearnSongPlay();
+                    return;
+                }
+                highlightLyricLine(learnSongChordIndex);
+                playChord(currentLearnSong.lyrics[learnSongChordIndex].chord, '2n');
+            }, beatMs * beatsPerChord);
+        }
+
+        function stopLearnSongPlay() {
+            learnSongPlaying = false;
+            if (learnSongInterval) { clearInterval(learnSongInterval); learnSongInterval = null; }
+            const btn = document.getElementById('learnPlayBtn');
+            if (btn) { btn.textContent = '▶️ Play Along'; btn.classList.remove('playing'); }
+            document.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active'));
+        }
+
+        function highlightLyricLine(index) {
+            document.querySelectorAll('.lyric-line').forEach(l => l.classList.remove('active'));
+            const line = document.getElementById(`lyricLine${index}`);
+            if (line) {
+                line.classList.add('active');
+                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function loadLearnSongToEditor() {
+            if (!currentLearnSong) return;
+            saveStateForUndo();
+            state.sections = [{
+                name: currentLearnSong.title.substring(0, 20),
+                icon: '📚',
+                progression: [...new Set(currentLearnSong.chords)]
+            }];
+            state.key = currentLearnSong.key.includes('m') ? currentLearnSong.key : currentLearnSong.key;
+            state.baseTempo = currentLearnSong.tempo;
+            state.tempo = currentLearnSong.tempo;
+            state.timeSignature = currentLearnSong.timeSignature;
+            state.currentSection = 0;
+            state.currentChordIndex = 0;
+            closeSongPlayer();
+            setMode('create');
+            setProduceTab('mixer');
+            renderAll();
+            showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
+        }
+
+        // ============ CUSTOM CHORD INPUT ============
+        function addCustomChord() {
+            const input = document.getElementById('customChordInput');
+            if (!input) return;
+            const chord = input.value.trim();
+            if (!chord) { showToast('⚠️ Enter a chord name'); return; }
+            if (!isValidChord(chord)) { showToast('⚠️ Unknown chord: ' + chord); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression.push(chord);
+            input.value = '';
+            renderAll();
+            showToast(`➕ Added ${chord}`);
+        }
+
+        function replaceWithCustomChords() {
+            const input = document.getElementById('customChordInput');
+            if (!input) return;
+            const raw = input.value.trim();
+            if (!raw) { showToast('⚠️ Enter chords separated by spaces or commas'); return; }
+            const chords = raw.split(/[\s,|→-]+/).filter(c => c.length > 0);
+            const valid = chords.filter(c => isValidChord(c));
+            if (valid.length === 0) { showToast('⚠️ No valid chords found'); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = valid;
+            state.currentChordIndex = 0;
+            input.value = '';
+            renderAll();
+            showToast(`🎵 Set ${valid.length} chords: ${valid.join(' ')}`);
+        }
+
+        function isValidChord(chord) {
+            // Check if we have notes for it or a stripped version
+            if (CHORD_NOTES[chord]) return true;
+            const stripped = chord.replace(/7|maj7|m7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+            if (CHORD_NOTES[stripped] || CHORD_NOTES[stripped + 'm'] || ALL_NOTES.includes(normalizeNote(stripped))) return true;
+            return false;
+        }
+
+        // Handle Enter key for custom chord input
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('customChordInput');
+            if (input) {
+                input.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (input.value.includes(' ') || input.value.includes(',')) replaceWithCustomChords();
+                        else addCustomChord();
+                    }
+                });
+            }
+        });
+
+        // ============ SCALE DEGREES & MUSIC THEORY ============
+        const SCALE_DEGREES_MAJOR = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+        const SCALE_DEGREES_MINOR = ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII'];
+
+        function getScaleDegree(chord, key) {
+            const isMinorKey = key.includes('m');
+            const keyRoot = normalizeNote(key.replace('m', ''));
+            const chordRoot = chord.match(/^([A-G][#b]?)/)?.[1];
+            if (!chordRoot) return '';
+            const normChordRoot = normalizeNote(chordRoot);
+            const keyIdx = ALL_NOTES.indexOf(keyRoot);
+            const chordIdx = ALL_NOTES.indexOf(normChordRoot);
+            if (keyIdx === -1 || chordIdx === -1) return '';
+
+            const interval = (chordIdx - keyIdx + 12) % 12;
+            const degreeMap = { 0: 0, 2: 1, 4: 2, 5: 3, 7: 4, 9: 5, 11: 6 };
+            // Also map common chromatic notes
+            const chromMap = { 1: '♭II', 3: '♭III', 6: '♭V', 8: '♭VI', 10: '♭VII' };
+
+            const degreeIdx = degreeMap[interval];
+            if (degreeIdx !== undefined) {
+                const degrees = isMinorKey ? SCALE_DEGREES_MINOR : SCALE_DEGREES_MAJOR;
+                let degree = degrees[degreeIdx];
+                // Adjust for chord quality
+                const isMinorChord = chord.includes('m') && !chord.includes('maj');
+                const is7th = chord.includes('7');
+                const isDim = chord.includes('dim');
+                if (isMinorChord && !isMinorKey && degreeIdx !== 1 && degreeIdx !== 2 && degreeIdx !== 5) {
+                    degree = degree.toLowerCase();
+                }
+                if (is7th) degree += '7';
+                if (isDim) degree = degree.toLowerCase() + '°';
+                return degree;
+            }
+            return chromMap[interval] || '';
+        }
+
+        function getTheoryHint(chords, key) {
+            const isMinor = key.includes('m');
+            const degrees = chords.map(c => getScaleDegree(c, key)).filter(Boolean);
+            if (degrees.length < 2) return '';
+
+            // Detect common patterns
+            const degreeStr = degrees.join('-');
+            if (degreeStr.includes('I-V-vi-IV') || degreeStr.includes('I-V-VI-IV')) return 'The "Axis of Awesome" progression - used in hundreds of pop hits!';
+            if (degreeStr.includes('I-IV-V')) return 'Classic I-IV-V: The foundation of rock, blues, and country music.';
+            if (degreeStr.includes('vi-IV-I-V') || degreeStr.includes('VI-IV-I-V')) return 'The "sensitive" progression - common in emotional pop ballads.';
+            if (degreeStr.includes('I-vi-IV-V')) return 'The "50s progression" - think doo-wop and early rock & roll.';
+            if (degreeStr.includes('ii-V-I') || degreeStr.includes('II-V-I')) return 'The ii-V-I: The most important progression in jazz!';
+            if (degreeStr.includes('i-VI-III-VII')) return 'Andalusian cadence - common in flamenco and minor key rock.';
+            if (degreeStr.includes('I-IV-vi-V')) return 'A bright, optimistic progression popular in modern pop.';
+            if (chords.every(c => !c.includes('m') || c.includes('maj'))) return 'All major chords create a bright, uplifting feel.';
+            if (chords.every(c => c.includes('m') && !c.includes('maj'))) return 'All minor chords create a dark, introspective mood.';
+            if (chords.some(c => c.includes('7'))) return 'The 7th chords add color and tension - common in jazz and blues.';
+            return `Key of ${isMinor ? key.replace('m','') + ' minor' : key + ' major'}: ${degrees.join(' → ')}`;
+        }
+
+        // ============ VISUAL METRONOME ============
+        function updateVisualMetronome(beat) {
+            const metro = document.getElementById('visualMetronome');
+            if (!metro) return;
+
+            const beatNums = metro.querySelectorAll('.metro-beat-num');
+            beatNums.forEach((el, i) => {
+                el.classList.remove('active', 'accent');
+                if (i === beat) {
+                    el.classList.add('active');
+                    if (beat === 0) el.classList.add('accent');
+                }
+            });
+
+            // Flash screen on downbeat
+            if (beat === 0) {
+                const flash = document.getElementById('metroFlash');
+                if (flash) {
+                    flash.classList.add('flash');
+                    setTimeout(() => flash.classList.remove('flash'), 100);
+                }
+            }
+        }
+
+        // ============ DARK/LIGHT THEME ============
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', state.theme);
+            localStorage.setItem('chordflow-theme', state.theme);
+            const label = document.getElementById('themeLabel');
+            if (label) label.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
+            showToast(state.theme === 'dark' ? '🌙 Dark mode' : '☀️ Light mode');
+        }
+        // Apply saved theme on load
+        if (state.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+
+        // ============ A-B LOOP ============
+        function setABPoint(point) {
+            if (point === 'A') {
+                state.abLoopStart = state.currentChordIndex;
+                const btn = document.getElementById('abStartBtn');
+                if (btn) btn.classList.add('active');
+                showToast(`🅰️ Loop start: chord ${state.abLoopStart + 1}`);
+            } else {
+                state.abLoopEnd = state.currentChordIndex;
+                const btn = document.getElementById('abEndBtn');
+                if (btn) btn.classList.add('active');
+                showToast(`🅱️ Loop end: chord ${state.abLoopEnd + 1}`);
+            }
+            updateABLabel();
+            renderChords();
+        }
+        function clearABLoop() {
+            state.abLoopStart = -1;
+            state.abLoopEnd = -1;
+            document.getElementById('abStartBtn')?.classList.remove('active');
+            document.getElementById('abEndBtn')?.classList.remove('active');
+            updateABLabel();
+            renderChords();
+            showToast('✕ A-B loop cleared');
+        }
+        function updateABLabel() {
+            const label = document.getElementById('abLabel');
+            if (!label) return;
+            if (state.abLoopStart >= 0 && state.abLoopEnd >= 0) {
+                label.textContent = `A-B Loop: ${state.abLoopStart + 1} → ${state.abLoopEnd + 1}`;
+            } else if (state.abLoopStart >= 0) {
+                label.textContent = `A-B Loop: A=${state.abLoopStart + 1}, set B...`;
+            } else {
+                label.textContent = 'A-B Loop: OFF';
+            }
+        }
+
+        // ============ AUTO SPEED-UP PRACTICE ============
+        let autoSpeedLoopCount = 0;
+        function toggleAutoSpeedUp() {
+            state.autoSpeedUp = !state.autoSpeedUp;
+            autoSpeedLoopCount = 0;
+            const btn = document.getElementById('autoSpeedBtn');
+            if (btn) { btn.textContent = state.autoSpeedUp ? 'ON' : 'OFF'; btn.classList.toggle('active', state.autoSpeedUp); }
+            const label = document.getElementById('autoSpeedLabel');
+            if (label) label.textContent = state.autoSpeedUp ? `🏃 Auto Speed-Up: +${state.autoSpeedIncrement} BPM/loop` : '🏃 Auto Speed-Up: OFF';
+            showToast(state.autoSpeedUp ? `🏃 Auto speed-up ON (+${state.autoSpeedIncrement} BPM per loop)` : '🏃 Auto speed-up OFF');
+        }
+        function setAutoSpeedIncrement(val) {
+            state.autoSpeedIncrement = val;
+            document.querySelectorAll('.auto-speed-btn').forEach(b => { if (b.id !== 'autoSpeedBtn') b.classList.remove('active'); });
+            const btn = document.getElementById('aspd' + val);
+            if (btn) btn.classList.add('active');
+            const label = document.getElementById('autoSpeedLabel');
+            if (state.autoSpeedUp && label) label.textContent = `🏃 Auto Speed-Up: +${val} BPM/loop`;
+        }
+        function handleAutoSpeedUp() {
+            if (!state.autoSpeedUp) return;
+            autoSpeedLoopCount++;
+            const newTempo = state.baseTempo + (state.autoSpeedIncrement * autoSpeedLoopCount);
+            if (newTempo <= 200) {
+                state.tempo = Math.round(newTempo * state.speedMultiplier);
+                updateTempoDisplay();
+                restartPlayback();
+                showToast(`🏃 Tempo → ${state.tempo} BPM`);
+            } else {
+                showToast('🏁 Max tempo reached!');
+                state.autoSpeedUp = false;
+                const btn = document.getElementById('autoSpeedBtn');
+                if (btn) { btn.textContent = 'OFF'; btn.classList.remove('active'); }
+            }
+        }
+
+        // ============ SHARE PROGRESSION VIA LINK ============
+        function shareProgression() {
+            const chords = getTransposedProgression();
+            const data = {
+                c: chords.join(','),
+                k: state.key,
+                g: state.genre,
+                t: state.baseTempo,
+                ts: state.timeSignature
+            };
+            const params = new URLSearchParams(data).toString();
+            const url = window.location.origin + window.location.pathname + '?' + params;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    showToast('🔗 Link copied to clipboard!');
+                }).catch(() => {
+                    prompt('Copy this link:', url);
+                });
+            } else {
+                prompt('Copy this link:', url);
+            }
+        }
+        function loadSharedProgression() {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('c')) return false;
+            const chords = params.get('c').split(',').filter(c => c.length > 0);
+            if (chords.length === 0) return false;
+            state.sections[0].progression = chords;
+            if (params.has('k')) state.key = params.get('k');
+            if (params.has('g')) state.genre = params.get('g');
+            if (params.has('t')) { state.baseTempo = parseInt(params.get('t')); state.tempo = Math.round(state.baseTempo * state.speedMultiplier); }
+            if (params.has('ts')) state.timeSignature = params.get('ts');
+            state.currentSection = 0;
+            state.currentChordIndex = 0;
+            // Clean URL without reloading
+            window.history.replaceState({}, '', window.location.pathname);
+            return true;
+        }
+
+        // ============ 7-STRING GUITAR DIAGRAMS ============
+        const GUITAR7_DIAGRAMS = {
+            'C': [[1,0,0],[2,1,0],[3,2,3],[4,3,0],[5,2,1]], 'Am': [[1,0,0],[2,1,0],[3,2,2],[4,2,3]], 'G': [[0,3,0],[1,2,0],[5,3,0],[6,2,0]],
+            'D': [[1,2,0],[2,3,0],[3,2,0]], 'Dm': [[1,1,0],[2,3,0],[3,2,0]], 'E': [[1,2,2],[2,2,3],[3,1,1]], 'Em': [[1,2,2],[2,2,3]],
+            'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0]], 'Fm': [[0,1,1],[1,1,2],[2,1,3],[3,3,0]], 'B': [[1,4,0],[2,4,0],[3,4,0],[4,2,0]],
+            'Bm': [[1,3,0],[2,4,0],[3,4,0],[4,2,0]], 'A': [[1,2,0],[2,2,0],[3,2,0]], 'Bb': [[0,1,0],[1,3,0],[2,3,0],[3,3,0]]
+        };
+        function mk7String(chord) {
+            const strings = 7, frets = 5;
+            const sw = 14, fh = 22, padL = 15, padT = 15;
+            const w = padL + strings * sw + 10, h = padT + frets * fh + 10;
+            let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;margin:0 auto;">`;
+            // Nut
+            svg += `<rect x="${padL}" y="${padT}" width="${(strings-1)*sw}" height="3" fill="var(--text-primary)"/>`;
+            // Frets
+            for (let f = 0; f <= frets; f++) svg += `<line x1="${padL}" y1="${padT+f*fh}" x2="${padL+(strings-1)*sw}" y2="${padT+f*fh}" stroke="var(--text-tertiary)" stroke-width="1"/>`;
+            // Strings
+            for (let s = 0; s < strings; s++) svg += `<line x1="${padL+s*sw}" y1="${padT}" x2="${padL+s*sw}" y2="${padT+frets*fh}" stroke="var(--text-secondary)" stroke-width="1"/>`;
+            // String labels
+            const labels = ['B', 'E', 'A', 'D', 'G', 'B', 'e'];
+            for (let s = 0; s < strings; s++) svg += `<text x="${padL+s*sw}" y="${padT-5}" text-anchor="middle" fill="var(--text-tertiary)" font-size="9">${labels[s]}</text>`;
+            // Dots
+            const key = chord.replace(/7|maj7|m7|dim|aug|sus[24]/g, '');
+            const dots = GUITAR7_DIAGRAMS[key] || GUITAR7_DIAGRAMS['C'];
+            dots.forEach(([str, fret]) => {
+                if (fret === 0) {
+                    svg += `<circle cx="${padL+str*sw}" cy="${padT-1}" r="3" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>`;
+                } else {
+                    svg += `<circle cx="${padL+str*sw}" cy="${padT+(fret-0.5)*fh}" r="5" fill="var(--accent)"/>`;
+                }
+            });
+            svg += '</svg>';
+            return svg;
+        }
+
+        // ============ EAR TRAINING ============
+        let earTrainingMode = 'chord';
+        let earTrainingAnswer = null;
+        let earTrainingScore = { correct: 0, streak: 0, total: 0 };
+        const INTERVAL_NAMES = ['Unison', 'Minor 2nd', 'Major 2nd', 'Minor 3rd', 'Major 3rd', 'Perfect 4th', 'Tritone', 'Perfect 5th', 'Minor 6th', 'Major 6th', 'Minor 7th', 'Major 7th', 'Octave'];
+
+        function openEarTraining(mode) {
+            earTrainingMode = mode || 'chord';
+            earTrainingScore = { correct: 0, streak: 0, total: 0 };
+            earTrainingAnswer = null;
+            closeSheet();
+            document.getElementById('earTrainingModal').classList.add('active');
+            switchEarTrainingTab(earTrainingMode);
+            generateEarTrainingRound();
+        }
+        function closeEarTraining() {
+            document.getElementById('earTrainingModal').classList.remove('active');
+        }
+        function switchEarTrainingTab(mode) {
+            earTrainingMode = mode;
+            earTrainingScore = { correct: 0, streak: 0, total: 0 };
+            document.getElementById('etTabChord').classList.toggle('active', mode === 'chord');
+            document.getElementById('etTabInterval').classList.toggle('active', mode === 'interval');
+            document.getElementById('etTitle').textContent = mode === 'chord' ? 'Guess the Chord' : 'Name the Interval';
+            document.getElementById('etSubtitle').textContent = mode === 'chord' ? 'Listen and pick the correct chord' : 'Listen and name the interval between the two notes';
+            updateEarTrainingScore();
+            generateEarTrainingRound();
+        }
+        function generateEarTrainingRound() {
+            document.getElementById('etFeedback').textContent = '';
+            if (earTrainingMode === 'chord') {
+                const chordPool = ['C', 'D', 'E', 'F', 'G', 'A', 'Cm', 'Dm', 'Em', 'Fm', 'Gm', 'Am'];
+                earTrainingAnswer = chordPool[Math.floor(Math.random() * chordPool.length)];
+                // Generate 3 wrong answers
+                const wrong = chordPool.filter(c => c !== earTrainingAnswer).sort(() => Math.random() - 0.5).slice(0, 3);
+                const options = [earTrainingAnswer, ...wrong].sort(() => Math.random() - 0.5);
+                renderEarTrainingOptions(options);
+            } else {
+                const interval = Math.floor(Math.random() * 12) + 1; // 1-12 semitones
+                const baseNote = ALL_NOTES[Math.floor(Math.random() * 12)];
+                const baseIdx = ALL_NOTES.indexOf(baseNote);
+                const topNote = ALL_NOTES[(baseIdx + interval) % 12];
+                earTrainingAnswer = { interval, baseNote: baseNote + '4', topNote: topNote + (baseIdx + interval >= 12 ? '5' : '4'), name: INTERVAL_NAMES[interval] };
+                // Generate 3 wrong intervals
+                const wrongIntervals = [];
+                while (wrongIntervals.length < 3) {
+                    const w = Math.floor(Math.random() * 12) + 1;
+                    if (w !== interval && !wrongIntervals.includes(w)) wrongIntervals.push(w);
+                }
+                const options = [INTERVAL_NAMES[interval], ...wrongIntervals.map(w => INTERVAL_NAMES[w])].sort(() => Math.random() - 0.5);
+                renderEarTrainingOptions(options);
+            }
+        }
+        function renderEarTrainingOptions(options) {
+            const container = document.getElementById('etOptions');
+            container.innerHTML = options.map(opt => `<button class="et-option" onclick="checkEarTrainingAnswer(this, '${opt.replace(/'/g, "\\'")}')">${opt}</button>`).join('');
+        }
+        async function playEarTrainingChord() {
+            await initAudio();
+            if (earTrainingMode === 'chord') {
+                playChord(earTrainingAnswer, '2n');
+            } else {
+                // Play two notes sequentially
+                const baseNote = earTrainingAnswer.baseNote;
+                const topNote = earTrainingAnswer.topNote;
+                synth.triggerAttackRelease(baseNote, '4n');
+                setTimeout(() => synth.triggerAttackRelease(topNote, '4n'), 600);
+            }
+        }
+        function checkEarTrainingAnswer(btn, answer) {
+            earTrainingScore.total++;
+            const correct = earTrainingMode === 'chord' ? answer === earTrainingAnswer : answer === earTrainingAnswer.name;
+            // Disable all buttons
+            document.querySelectorAll('.et-option').forEach(b => {
+                b.classList.add('disabled');
+                const isCorrectBtn = earTrainingMode === 'chord' ? b.textContent === earTrainingAnswer : b.textContent === earTrainingAnswer.name;
+                if (isCorrectBtn) b.classList.add('correct');
+            });
+            if (correct) {
+                earTrainingScore.correct++;
+                earTrainingScore.streak++;
+                btn.classList.add('correct');
+                document.getElementById('etFeedback').textContent = '✅ Correct!';
+            } else {
+                earTrainingScore.streak = 0;
+                btn.classList.add('wrong');
+                const rightAnswer = earTrainingMode === 'chord' ? earTrainingAnswer : earTrainingAnswer.name;
+                document.getElementById('etFeedback').textContent = `❌ It was ${rightAnswer}`;
+            }
+            updateEarTrainingScore();
+            // Auto-advance after 1.5s
+            setTimeout(() => generateEarTrainingRound(), 1500);
+        }
+        function updateEarTrainingScore() {
+            document.getElementById('etCorrect').textContent = earTrainingScore.correct;
+            document.getElementById('etStreak').textContent = earTrainingScore.streak;
+            document.getElementById('etTotal').textContent = earTrainingScore.total;
+        }
+
+        // ============ AI TRANSFORM (Jazzy / Simplify) ============
+        async function aiTransform(type) {
+            if (state.aiLoading) return;
+            state.aiLoading = true;
+            const btn = document.getElementById(type === 'jazzy' ? 'aiJazzyBtn' : 'aiSimplifyBtn');
+            if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+            saveStateForUndo();
+
+            const currentChords = getTransposedProgression().join(' ');
+            const keyInfo = getKeyInfo();
+            let prompt = '';
+            if (type === 'jazzy') {
+                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
+            } else {
+                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
+            }
+
+            showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
+            const response = await callGeminiAI(prompt);
+            const chords = response ? parseChordResponse(response) : null;
+
+            if (chords && chords.length >= 3) {
+                state.sections[state.currentSection].progression = chords;
+                state.currentChordIndex = 0;
+                renderAll();
+                showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
+            } else {
+                // Fallback: do it locally
+                if (type === 'jazzy') {
+                    const jazzified = getTransposedProgression().map(c => {
+                        if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
+                        if (c.includes('m') && !c.includes('maj')) return c + '7';
+                        return c + 'maj7';
+                    });
+                    state.sections[state.currentSection].progression = jazzified;
+                } else {
+                    const simplified = getTransposedProgression().map(c => {
+                        return c.replace(/maj7|m7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+                    });
+                    state.sections[state.currentSection].progression = simplified;
+                }
+                state.currentChordIndex = 0;
+                renderAll();
+                showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
+            }
+
+            state.aiLoading = false;
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+        }
+
+        // ============ DRUM PATTERNS ============
+        const DRUM_PATTERNS = {
+            pop:    { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            rock:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            metal:  { kick: [0,1,2,3], snare: [1,3], hihat: [0,1,2,3] },
+            punk:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            jazz:   { kick: [0], snare: [2], hihat: [0,1,2,3] },
+            blues:  { kick: [0,2], snare: [1,3], hihat: [0,2] },
+            folk:   { kick: [0], snare: [2], hihat: [0,1,2,3] },
+            reggae: { kick: [2], snare: [0,2], hihat: [1,3] },
+            latin:  { kick: [0,3], snare: [2], hihat: [0,1,2,3] },
+            lofi:   { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            gospel: { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            rnb:    { kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            country:{ kick: [0,2], snare: [1,3], hihat: [0,1,2,3] },
+            classical:{ kick: [], snare: [], hihat: [] },
+            electronic:{ kick: [0,2], snare: [1,3], hihat: [0,1,2,3] }
+        };
+        function toggleDrums() {
+            state.drumsEnabled = !state.drumsEnabled;
+            const btn = document.getElementById('drumToggleBtn');
+            if (btn) btn.classList.toggle('active', state.drumsEnabled);
+            const label = document.getElementById('drumPatternLabel');
+            if (label) label.textContent = state.drumsEnabled ? `Drums: ON (${state.genre})` : 'Drums: OFF';
+            showToast(state.drumsEnabled ? '🥁 Drums ON' : '🥁 Drums OFF');
+        }
+        function playDrumBeat(beat) {
+            if (!state.drumsEnabled || !audioInit) return;
+            const pattern = DRUM_PATTERNS[state.genre] || DRUM_PATTERNS.pop;
+            try {
+                if (pattern.kick.includes(beat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
+                if (pattern.snare.includes(beat) && snareDrum) snareDrum.triggerAttackRelease('8n');
+                if (pattern.hihat.includes(beat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
+            } catch(e) {}
+        }
+
+        // ============ INLINE CHORD EDITING ============
+        let editingChordIndex = -1;
+        function openChordEditModal(index) {
+            editingChordIndex = index;
+            const chord = getTransposedProgression()[index];
+            const input = document.getElementById('chordEditInput');
+            if (input) { input.value = chord; }
+            document.getElementById('chordEditModal').classList.add('active');
+            setTimeout(() => { if (input) { input.focus(); input.select(); } }, 100);
+        }
+        function closeChordEditModal() {
+            document.getElementById('chordEditModal').classList.remove('active');
+            editingChordIndex = -1;
+        }
+        function saveChordEdit() {
+            const input = document.getElementById('chordEditInput');
+            if (!input || editingChordIndex < 0) return;
+            const newChord = input.value.trim();
+            if (!newChord) { showToast('⚠️ Enter a chord name'); return; }
+            if (!isValidChord(newChord)) { showToast('⚠️ Unknown chord: ' + newChord); return; }
+            saveStateForUndo();
+            state.sections[state.currentSection].progression[editingChordIndex] = newChord;
+            closeChordEditModal();
+            renderAll();
+            showToast(`✏️ Changed to ${newChord}`);
+        }
+        function deleteChordFromEdit() {
+            if (editingChordIndex < 0) return;
+            const prog = state.sections[state.currentSection].progression;
+            if (prog.length <= 1) { showToast('⚠️ Need at least one chord'); closeChordEditModal(); return; }
+            saveStateForUndo();
+            const deleted = prog[editingChordIndex];
+            const deletedIdx = editingChordIndex;
+            const deletedSection = state.currentSection;
+            prog.splice(editingChordIndex, 1);
+            if (state.currentChordIndex >= prog.length) state.currentChordIndex = prog.length - 1;
+            // Store for undo toast
+            state.lastDeletedChord = deleted;
+            state.lastDeletedIndex = deletedIdx;
+            state.lastDeletedSection = deletedSection;
+            closeChordEditModal();
+            renderAll();
+            showUndoToast(`Deleted "${deleted}"`);
+        }
+        function showUndoToast(msg) {
+            const toast = document.getElementById('undoToast');
+            const text = document.getElementById('undoToastText');
+            if (!toast || !text) return;
+            text.textContent = msg;
+            toast.classList.add('show');
+            if (window._undoToastTimer) clearTimeout(window._undoToastTimer);
+            window._undoToastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+        function undoDeleteChord() {
+            if (state.lastDeletedChord === null) return;
+            const section = state.sections[state.lastDeletedSection];
+            if (!section) return;
+            section.progression.splice(state.lastDeletedIndex, 0, state.lastDeletedChord);
+            state.lastDeletedChord = null;
+            document.getElementById('undoToast')?.classList.remove('show');
+            renderAll();
+            showToast('↩️ Chord restored');
+        }
+        // Handle Enter key in chord edit
+        document.addEventListener('DOMContentLoaded', () => {
+            const editInput = document.getElementById('chordEditInput');
+            if (editInput) editInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); saveChordEdit(); } if (e.key === 'Escape') closeChordEditModal(); });
+        });
+
+        // ============ ARRANGEMENT PLAYBACK ============
+        function toggleArrangementPlay() {
+            state.arrangementMode = !state.arrangementMode;
+            const btn = document.getElementById('arrangementBtn');
+            if (btn) btn.classList.toggle('active', state.arrangementMode);
+            const label = document.getElementById('arrangementLabel');
+            if (state.arrangementMode) {
+                state.arrangementSectionIndex = 0;
+                state.currentSection = 0;
+                state.currentChordIndex = 0;
+                if (label) label.textContent = `Will play: ${state.sections.map(s => s.name).join(' → ')}`;
+                showToast(`🎼 Arrangement: ${state.sections.map(s => s.icon).join(' → ')}`);
+                renderAll();
+            } else {
+                if (label) label.textContent = 'Play through all sections in order';
+                showToast('🎼 Arrangement OFF');
+            }
+        }
+
+        // ============ MELODY SUGGESTION ============
+        async function suggestMelody() {
+            if (state.aiLoading) return;
+            state.aiLoading = true;
+            const btn = document.getElementById('melodyBtn');
+            if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+            const chords = getTransposedProgression().join(' ');
+            const keyInfo = getKeyInfo();
+            const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
+            showToast('🎶 Getting melody idea...');
+            const response = await callGeminiAI(prompt);
+            const display = document.getElementById('melodyDisplay');
+            const text = document.getElementById('melodyText');
+            if (response && display && text) {
+                // Parse note names from response
+                const notes = response.match(/[A-G][#b]?\d/g);
+                if (notes && notes.length > 0) {
+                    text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
+                    display.classList.add('visible');
+                    // Play the melody
+                    await initAudio();
+                    notes.forEach((note, i) => {
+                        setTimeout(() => {
+                            try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
+                        }, i * 500);
+                    });
+                    showToast('🎶 Melody suggested!');
+                } else {
+                    text.textContent = response.substring(0, 150);
+                    display.classList.add('visible');
+                    showToast('🎶 Got a suggestion');
+                }
+            } else {
+                // Fallback: generate simple melody from chord tones
+                const prog = getTransposedProgression();
+                const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
+                if (display && text) {
+                    text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
+                    display.classList.add('visible');
+                }
+                showToast('🎶 Simple melody (root notes)');
+            }
+            state.aiLoading = false;
+            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+        }
+
+        // ============ CHORD PRESET LIBRARY ============
+        const CHORD_PRESETS = [
+            { name: 'Pachelbel\'s Canon', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
+            { name: '12-Bar Blues', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
+            { name: '50s Doo-Wop', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
+            { name: 'Axis of Awesome', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
+            { name: 'Jazz ii-V-I', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
+            { name: 'Andalusian Cadence', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
+            { name: 'Rhythm Changes', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
+            { name: 'Creep (Radiohead)', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
+            { name: 'Minor Plagal', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
+            { name: 'Reggae One Drop', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
+            { name: 'Coltrane Changes', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
+            { name: 'Country Roads', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
+            { name: 'Spooky Diminished', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
+            { name: 'Bossa Nova', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
+            { name: 'Power Ballad', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
+        ];
+        function openPresets() {
+            const list = document.getElementById('presetsList');
+            if (!list) return;
+            list.innerHTML = CHORD_PRESETS.map((p, i) => `
+                <div class="preset-item" onclick="loadPreset(${i})">
+                    <div class="preset-name">${p.name}</div>
+                    <div class="preset-chords">${p.chords.join(' → ')}</div>
+                    <div class="preset-desc">${p.desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('presetsModal').classList.add('active');
+        }
+        function closePresets() { document.getElementById('presetsModal').classList.remove('active'); }
+        function loadPreset(index) {
+            const preset = CHORD_PRESETS[index];
+            if (!preset) return;
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = [...preset.chords];
+            state.currentChordIndex = 0;
+            closePresets();
+            renderAll();
+            showToast(`📚 Loaded "${preset.name}"`);
+        }
+
+        // ============ QR CODE SHARE ============
+        function shareQRCode() {
+            const chords = getTransposedProgression();
+            const data = { c: chords.join(','), k: state.key, g: state.genre, t: state.baseTempo, ts: state.timeSignature };
+            const params = new URLSearchParams(data).toString();
+            const url = window.location.origin + window.location.pathname + '?' + params;
+            // Generate QR using canvas
+            const container = document.getElementById('qrCanvas');
+            if (!container) return;
+            container.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.width = 200; canvas.height = 200;
+            container.appendChild(canvas);
+            generateQR(canvas, url);
+            document.getElementById('qrModal').classList.add('active');
+        }
+        function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); }
+        function generateQR(canvas, text) {
+            // Simple QR-like pattern using a visual encoding (not spec-compliant but recognizable)
+            // For a production app you'd use a library like qrcode.js
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            // Create a data URL visual representation
+            const moduleCount = 25;
+            const moduleSize = Math.floor(size / moduleCount);
+            ctx.fillStyle = '#000000';
+            // Hash the URL to create a deterministic pattern
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) { hash = ((hash << 5) - hash) + text.charCodeAt(i); hash |= 0; }
+            // Draw position patterns (3 corners)
+            const drawFinder = (x, y) => {
+                ctx.fillRect(x*moduleSize, y*moduleSize, 7*moduleSize, 7*moduleSize);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect((x+1)*moduleSize, (y+1)*moduleSize, 5*moduleSize, 5*moduleSize);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect((x+2)*moduleSize, (y+2)*moduleSize, 3*moduleSize, 3*moduleSize);
+            };
+            drawFinder(0, 0); drawFinder(moduleCount-7, 0); drawFinder(0, moduleCount-7);
+            // Fill data modules using hash + character codes
+            let seed = Math.abs(hash);
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    // Skip finder patterns
+                    if ((row < 8 && col < 8) || (row < 8 && col > moduleCount-9) || (row > moduleCount-9 && col < 8)) continue;
+                    // Use char codes from URL + hash to determine fill
+                    const charIdx = (row * moduleCount + col) % text.length;
+                    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+                    const fill = ((text.charCodeAt(charIdx) + seed) % 3) === 0;
+                    if (fill) {
+                        ctx.fillStyle = '#000000';
+                        ctx.fillRect(col*moduleSize, row*moduleSize, moduleSize, moduleSize);
+                    }
+                }
+            }
+            // Draw timing patterns
+            ctx.fillStyle = '#000000';
+            for (let i = 8; i < moduleCount-8; i++) {
+                if (i % 2 === 0) {
+                    ctx.fillRect(i*moduleSize, 6*moduleSize, moduleSize, moduleSize);
+                    ctx.fillRect(6*moduleSize, i*moduleSize, moduleSize, moduleSize);
+                }
+            }
+        }
+
+        // ============ EXPORT IMPROVEMENTS ============
+        async function exportMP3() {
+            // Use WAV export + convert
+            if (state.isRecording) { showToast('⚠️ Already recording'); return; }
+            await initAudio();
+            if (!recorder) { showToast('⚠️ Recorder not available'); return; }
+            state.isRecording = true;
+            document.getElementById('recordingOverlay').classList.add('active');
+            showToast('📀 Recording for MP3...');
+            recorder.start();
+            const chords = getTransposedProgression();
+            const beatMs = 60000 / state.tempo;
+            for (let i = 0; i < chords.length; i++) {
+                if (!state.isRecording) break;
+                await playChord(chords[i], '2n');
+                await new Promise(r => setTimeout(r, beatMs * 4));
+            }
+            await new Promise(r => setTimeout(r, 1000));
+            const recording = await recorder.stop();
+            state.isRecording = false;
+            document.getElementById('recordingOverlay').classList.remove('active');
+            // Tone.js records as webm/ogg - download as audio file
+            const url = URL.createObjectURL(recording);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'chordflow.webm';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('📀 Audio exported! (WebM format)');
+        }
+        function exportPDFEnhanced() {
+            const chords = getTransposedProgression(), keyInfo = getKeyInfo();
+            const allSections = state.sections.map(s => `${s.icon} ${s.name}: ${s.progression.join(' - ')}`).join('\\n');
+            // Build chord diagram text
+            const diagrams = chords.map(c => {
+                const notes = getChordNotes(c).map(n => n.replace(/\d/, '')).join('-');
+                const degree = getScaleDegree(c, state.key);
+                return `${c} (${notes}) ${degree || ''}`;
+            }).join('  |  ');
+
+            const contentLines = [
+                'BT',
+                '/F1 28 Tf 72 750 Td (ChordFlow Lead Sheet) Tj',
+                `/F1 14 Tf 0 -30 Td (Key: ${keyInfo.display}  |  Tempo: ${state.tempo} BPM  |  Genre: ${state.genre}) Tj`,
+                '/F1 10 Tf 0 -25 Td (Scale Degrees:) Tj',
+                `/F1 12 Tf 0 -18 Td (${diagrams}) Tj`,
+                '/F1 14 Tf 0 -35 Td (Sections:) Tj'
+            ];
+            let yOffset = -20;
+            state.sections.forEach(s => {
+                contentLines.push(`/F1 12 Tf 0 ${yOffset} Td (${s.icon} ${s.name}: ${s.progression.join('  -  ')}) Tj`);
+                yOffset = -18;
+            });
+            contentLines.push(`/F1 36 Tf 0 -50 Td (${chords.join('   ')}) Tj`);
+            contentLines.push(`/F1 10 Tf 0 -40 Td (Generated by ChordFlow v${VERSION} - chordflow.app) Tj`);
+            contentLines.push('ET');
+            const stream = contentLines.join('\n');
+
+            const pdf = `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\nxref\n0 6\ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n700\n%%EOF`;
+            downloadFile(new Blob([pdf], { type: 'application/pdf' }), 'chordflow-enhanced.pdf', 'application/pdf');
+            showToast('📄 Enhanced PDF exported!');
+        }
+
+        // ============ v0.73: AUTH & CLOUD SYNC ============
+        const authState = {
+            user: JSON.parse(localStorage.getItem('chordflow-user') || 'null'),
+            session: JSON.parse(localStorage.getItem('chordflow-session') || 'null'),
+            authTab: 'login'
+        };
+
+        function openAuthModal() {
+            closeSheet();
+            document.getElementById('authModal').classList.add('active');
+            document.getElementById('authEmail').focus();
+        }
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authError').textContent = '';
+        }
+        function switchAuthTab(tab) {
+            authState.authTab = tab;
+            document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('authTabSignup').classList.toggle('active', tab === 'signup');
+            document.getElementById('authTitle').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('authSubmitBtn').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('authPassword').setAttribute('autocomplete', tab === 'login' ? 'current-password' : 'new-password');
+            document.getElementById('authError').textContent = '';
+        }
+        async function handleAuthSubmit() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('authError');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            if (!email || !password) { errorEl.textContent = 'Please fill in all fields'; return; }
+            if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters'; return; }
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            errorEl.textContent = '';
+            try {
+                const action = authState.authTab === 'login' ? 'login' : 'signup';
+                const res = await fetch(`/api/auth?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok || data.error) {
+                    errorEl.textContent = data.error || 'Authentication failed';
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                    return;
+                }
+                // Success - save user and session
+                authState.user = data.user;
+                authState.session = data.session;
+                localStorage.setItem('chordflow-user', JSON.stringify(data.user));
+                localStorage.setItem('chordflow-session', JSON.stringify(data.session));
+                closeAuthModal();
+                renderAccountSection();
+                renderCloudSongsPrompt();
+                loadCloudSongs();
+                showToast(action === 'login' ? '👋 Welcome back!' : '🎉 Account created!');
+            } catch (e) {
+                // Offline / API unavailable - do local auth simulation
+                handleOfflineAuth(email);
+            }
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+        function handleOfflineAuth(email) {
+            // Offline-friendly: store auth locally, sync when online
+            const localUser = { id: 'local_' + btoa(email).slice(0, 12), email: email };
+            authState.user = localUser;
+            authState.session = { access_token: 'local_token', offline: true };
+            localStorage.setItem('chordflow-user', JSON.stringify(localUser));
+            localStorage.setItem('chordflow-session', JSON.stringify(authState.session));
+            closeAuthModal();
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            showToast('👋 Signed in (offline mode)');
+        }
+        function continueAsGuest() {
+            closeAuthModal();
+            showToast('👤 Continuing as guest');
+        }
+        async function logoutUser() {
+            try {
+                if (authState.session && !authState.session.offline) {
+                    await fetch('/api/auth?action=logout', { method: 'POST' });
+                }
+            } catch (e) {}
+            authState.user = null;
+            authState.session = null;
+            localStorage.removeItem('chordflow-user');
+            localStorage.removeItem('chordflow-session');
+            renderAccountSection();
+            renderCloudSongsPrompt();
+            showToast('👋 Signed out');
+        }
+        function renderAccountSection() {
+            const section = document.getElementById('accountSection');
+            if (!section) return;
+            if (authState.user) {
+                const initial = (authState.user.email || '?')[0].toUpperCase();
+                const isOffline = authState.session?.offline;
+                section.innerHTML = `
+                    <div class="user-badge">
+                        <div class="user-avatar">${initial}</div>
+                        <div class="user-info">
+                            <div class="user-email">${authState.user.email}</div>
+                            <div class="user-status">${isOffline ? '<span class="cloud-sync-badge offline">Local Mode</span>' : '<span class="cloud-sync-badge">Cloud Synced</span>'}</div>
+                        </div>
+                        <button class="user-logout-btn" onclick="logoutUser()">Sign Out</button>
+                    </div>`;
+            } else {
+                section.innerHTML = `
+                    <div class="settings-item" onclick="openAuthModal()">
+                        <div class="settings-label"><span class="settings-icon">👤</span><span>Sign In / Sign Up</span></div>
+                        <span style="color: var(--accent);">Sync songs ›</span>
+                    </div>`;
+            }
+        }
+        function renderCloudSongsPrompt() {
+            const prompt = document.getElementById('songsPanelCloudPrompt');
+            if (!prompt) return;
+            if (!authState.user) {
+                prompt.innerHTML = `
+                    <div class="cloud-prompt">
+                        <div class="cloud-prompt-text">Sign in to save songs to the cloud and access them anywhere</div>
+                        <button class="cloud-prompt-btn" onclick="openAuthModal()">Sign In</button>
+                    </div>`;
+            } else {
+                prompt.innerHTML = '';
+            }
+        }
+        async function loadCloudSongs() {
+            if (!authState.user) return;
+            const cloudList = document.getElementById('cloudSongsList');
+            if (!cloudList) return;
+            try {
+                const res = await fetch(`/api/songs?action=load&userId=${authState.user.id}`);
+                const data = await res.json();
+                if (data.songs && data.songs.length > 0) {
+                    cloudList.innerHTML = `
+                        <div class="cloud-songs-header">
+                            <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
+                        </div>
+                        ${data.songs.map((s, i) => `
+                            <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
+                                <div>
+                                    <div class="saved-song-name">${s.title}</div>
+                                    <div class="saved-song-meta">${s.genre || ''} | ${s.key_signature || ''} | ${new Date(s.created_at).toLocaleDateString()}</div>
+                                </div>
+                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
+                            </div>
+                        `).join('')}`;
+                } else {
+                    cloudList.innerHTML = '';
+                }
+            } catch (e) {
+                // Offline - no cloud songs available
+                cloudList.innerHTML = '';
+            }
+        }
+        async function loadCloudSong(id) {
+            try {
+                const res = await fetch(`/api/songs?action=get&id=${id}`);
+                const data = await res.json();
+                if (data.song) {
+                    const songData = JSON.parse(data.song.song_data);
+                    Object.assign(state, {
+                        sections: songData.sections || state.sections,
+                        key: data.song.key_signature || state.key,
+                        genre: data.song.genre || state.genre,
+                        baseTempo: data.song.tempo || state.baseTempo,
+                        tempo: data.song.tempo || state.tempo,
+                        currentSection: 0, currentChordIndex: 0
+                    });
+                    closeSheet(); renderAll();
+                    showToast(`☁️ Loaded "${data.song.title}"`);
+                }
+            } catch (e) {
+                showToast('⚠️ Could not load cloud song');
+            }
+        }
+        async function deleteCloudSong(id) {
+            if (!authState.user) return;
+            try {
+                await fetch('/api/songs?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, userId: authState.user.id })
+                });
+                loadCloudSongs();
+                showToast('🗑️ Cloud song deleted');
+            } catch (e) {
+                showToast('⚠️ Delete failed');
+            }
+        }
+        async function saveToCloud(name) {
+            if (!authState.user) return false;
+            try {
+                const res = await fetch('/api/songs?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: name,
+                        song: { sections: state.sections },
+                        key: state.key,
+                        scale: state.key.includes('m') ? 'minor' : 'major',
+                        genre: state.genre,
+                        tempo: state.baseTempo,
+                        userId: authState.user.id
+                    })
+                });
+                const data = await res.json();
+                if (data.id && !data.local) {
+                    loadCloudSongs();
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        // ============ v0.73: COMMUNITY HUB ============
+        let communityFilter = 'all';
+        let communitySongs = [];
+
+        // Seeded community songs for demo (appear when API is unavailable)
+        const DEMO_COMMUNITY_SONGS = [
+            { id: 'comm_1', title: 'Sunset Drive', genre: 'lofi', key_signature: 'C', tempo: 85, chords: ['Cmaj7', 'Am7', 'Fmaj7', 'G7'], user_name: 'ChillBeats', likes: 42, created_at: '2026-02-10' },
+            { id: 'comm_2', title: 'Electric Thunder', genre: 'rock', key_signature: 'E', tempo: 140, chords: ['E', 'G', 'A', 'E'], user_name: 'RiffMaster', likes: 38, created_at: '2026-02-09' },
+            { id: 'comm_3', title: 'Moonlight Serenade', genre: 'jazz', key_signature: 'Bb', tempo: 72, chords: ['Bbmaj7', 'Gm7', 'Cm7', 'F7'], user_name: 'JazzCat', likes: 65, created_at: '2026-02-08' },
+            { id: 'comm_4', title: 'City Lights', genre: 'pop', key_signature: 'G', tempo: 120, chords: ['G', 'D', 'Em', 'C'], user_name: 'PopWriter', likes: 87, created_at: '2026-02-07' },
+            { id: 'comm_5', title: 'Delta Crossroads', genre: 'blues', key_signature: 'A', tempo: 92, chords: ['A7', 'D7', 'A7', 'E7'], user_name: 'BluesRoots', likes: 29, created_at: '2026-02-06' },
+            { id: 'comm_6', title: 'Mountain Song', genre: 'folk', key_signature: 'D', tempo: 100, chords: ['D', 'G', 'A', 'D'], user_name: 'FolkRoad', likes: 33, created_at: '2026-02-05' },
+            { id: 'comm_7', title: 'Neon Pulse', genre: 'electronic', key_signature: 'Am', tempo: 128, chords: ['Am', 'F', 'C', 'G'], user_name: 'SynthWave', likes: 51, created_at: '2026-02-04' },
+            { id: 'comm_8', title: 'Rainy Afternoon', genre: 'lofi', key_signature: 'Dm', tempo: 78, chords: ['Dm7', 'G7', 'Cmaj7', 'Am7'], user_name: 'ChillBeats', likes: 44, created_at: '2026-02-03' },
+            { id: 'comm_9', title: 'Sunday Praise', genre: 'gospel', key_signature: 'C', tempo: 108, chords: ['C', 'Am', 'F', 'G'], user_name: 'ChoirMaster', likes: 26, created_at: '2026-02-02' },
+            { id: 'comm_10', title: 'Andalucia Nights', genre: 'latin', key_signature: 'Am', tempo: 116, chords: ['Am', 'Dm', 'E7', 'Am'], user_name: 'LatinFire', likes: 37, created_at: '2026-02-01' },
+            { id: 'comm_11', title: 'Power Riff', genre: 'metal', key_signature: 'Em', tempo: 160, chords: ['Em', 'C', 'G', 'D'], user_name: 'MetalGod', likes: 45, created_at: '2026-01-31' },
+            { id: 'comm_12', title: 'Waltz for Two', genre: 'classical', key_signature: 'F', tempo: 88, chords: ['F', 'Bb', 'C', 'F'], user_name: 'ClassicKeys', likes: 18, created_at: '2026-01-30' },
+            { id: 'comm_13', title: 'Nashville Sunrise', genre: 'country', key_signature: 'G', tempo: 112, chords: ['G', 'C', 'D', 'G'], user_name: 'CountryRoad', likes: 31, created_at: '2026-01-29' },
+            { id: 'comm_14', title: 'Reggae Vibes', genre: 'reggae', key_signature: 'G', tempo: 84, chords: ['G', 'D', 'Em', 'C'], user_name: 'IslandBeat', likes: 39, created_at: '2026-01-28' },
+            { id: 'comm_15', title: 'Punk Anthem', genre: 'punk', key_signature: 'A', tempo: 175, chords: ['A', 'D', 'E', 'A'], user_name: 'Thrashville', likes: 22, created_at: '2026-01-27' }
+        ];
+
+        function openCommunity() {
+            closeSheet();
+            document.getElementById('communityModal').classList.add('active');
+            loadCommunitySongs();
+        }
+        function closeCommunity() {
+            document.getElementById('communityModal').classList.remove('active');
+        }
+        function filterCommunity(genre) {
+            communityFilter = genre;
+            document.querySelectorAll('#communityFilters .filter-chip').forEach(btn => {
+                const btnGenre = btn.getAttribute('onclick')?.match(/'(\w+)'/)?.[1] || 'all';
+                btn.classList.toggle('active', btnGenre === genre);
+            });
+            renderCommunitySongs();
+        }
+        async function loadCommunitySongs() {
+            const grid = document.getElementById('communityGrid');
+            if (!grid) return;
+            grid.innerHTML = '<div class="community-loading">Loading community songs...</div>';
+            try {
+                const genreParam = communityFilter !== 'all' ? `&genre=${communityFilter}` : '';
+                const res = await fetch(`/api/songs?action=community${genreParam}&limit=20`);
+                const data = await res.json();
+                if (data.songs && data.songs.length > 0) {
+                    communitySongs = data.songs;
+                } else {
+                    communitySongs = DEMO_COMMUNITY_SONGS;
+                }
+            } catch (e) {
+                communitySongs = DEMO_COMMUNITY_SONGS;
+            }
+            renderCommunitySongs();
+        }
+        function renderCommunitySongs() {
+            const grid = document.getElementById('communityGrid');
+            if (!grid) return;
+            const filtered = communityFilter === 'all'
+                ? communitySongs
+                : communitySongs.filter(s => s.genre === communityFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="community-empty">
+                        <div class="community-empty-icon">🔍</div>
+                        <div>No songs found for this genre</div>
+                        <div style="font-size:13px;margin-top:8px;">Be the first to publish one!</div>
+                    </div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map(song => {
+                const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+                const genreObj = genres.find(g => g.id === song.genre);
+                const genreLabel = genreObj ? `${genreObj.icon} ${genreObj.name}` : song.genre;
+                return `
+                    <div class="community-song-card" onclick="previewCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">
+                        <div class="community-song-header">
+                            <div class="community-song-title">${song.title}</div>
+                            <span class="community-song-genre">${genreLabel}</span>
+                        </div>
+                        <div class="community-song-meta">
+                            <span>👤 ${song.user_name || 'Anonymous'}</span>
+                            <span>🎵 ${song.key_signature || 'C'}</span>
+                            <span>🥁 ${song.tempo || 120} BPM</span>
+                            ${song.likes ? `<span>❤️ ${song.likes}</span>` : ''}
+                        </div>
+                        <div class="community-song-chords">
+                            ${chords.map(c => `<span class="song-chord-pill">${c}</span>`).join('')}
+                        </div>
+                        <div class="community-song-actions">
+                            <button class="community-action-btn primary" onclick="event.stopPropagation(); loadCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">📥 Load</button>
+                            <button class="community-action-btn" onclick="event.stopPropagation(); playCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">▶️ Preview</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        function loadCommunitySong(song) {
+            const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+            saveStateForUndo();
+            state.sections[state.currentSection].progression = [...chords];
+            if (song.key_signature) state.key = song.key_signature;
+            if (song.genre) state.genre = song.genre;
+            if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
+            state.currentChordIndex = 0;
+            closeCommunity();
+            renderAll();
+            showToast(`📥 Loaded "${song.title}"`);
+        }
+        async function playCommunitySong(song) {
+            const chords = song.chords || ['C', 'G', 'Am', 'F'];
+            await initAudio();
+            for (let i = 0; i < Math.min(chords.length, 4); i++) {
+                await playChord(chords[i], '4n');
+                await new Promise(r => setTimeout(r, 400));
+            }
+        }
+        function previewCommunitySong(song) {
+            loadCommunitySong(song);
+        }
+        function openPublishModal() {
+            if (!authState.user) {
+                openAuthModal();
+                showToast('Sign in to publish songs');
+                return;
+            }
+            document.getElementById('publishModal').classList.add('active');
+            const titleInput = document.getElementById('publishTitle');
+            if (titleInput) {
+                titleInput.value = state.sections[state.currentSection]?.name || '';
+                titleInput.focus();
+            }
+        }
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.remove('active');
+        }
+        async function confirmPublish() {
+            const title = document.getElementById('publishTitle').value.trim();
+            if (!title) { showToast('⚠️ Enter a title'); return; }
+            if (!authState.user) { showToast('⚠️ Sign in first'); return; }
+
+            // Save to cloud first
+            try {
+                const res = await fetch('/api/songs?action=save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        song: { sections: state.sections },
+                        key: state.key,
+                        scale: state.key.includes('m') ? 'minor' : 'major',
+                        genre: state.genre,
+                        tempo: state.baseTempo,
+                        userId: authState.user.id
+                    })
+                });
+                const data = await res.json();
+                if (data.id && !data.local) {
+                    // Make it public
+                    await fetch('/api/songs?action=share', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: data.id, userId: authState.user.id, isPublic: true })
+                    });
+                    closePublishModal();
+                    showToast('🌍 Published to Community!');
+                    return;
+                }
+            } catch (e) {}
+            // Fallback: save locally and add to demo community
+            const localSong = {
+                id: 'local_' + Date.now(),
+                title,
+                genre: state.genre,
+                key_signature: state.key,
+                tempo: state.baseTempo,
+                chords: [...state.sections[state.currentSection].progression],
+                user_name: authState.user?.email?.split('@')[0] || 'You',
+                likes: 0,
+                created_at: new Date().toISOString()
+            };
+            // Add to local community cache
+            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            localCommunity.unshift(localSong);
+            localStorage.setItem('chordflow-community', JSON.stringify(localCommunity));
+            DEMO_COMMUNITY_SONGS.unshift(localSong);
+            closePublishModal();
+            showToast('🌍 Published locally! (Will sync when online)');
+        }
+
+        // ============ v0.73: SONG TEMPLATES ============
+        const SONG_TEMPLATES = [
+            // Pop
+            {
+                category: 'Pop', icon: '🎤',
+                templates: [
+                    {
+                        name: 'Pop Hit Formula', badge: 'Popular', desc: 'Classic verse-chorus-bridge structure used in countless hits',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['C', 'G'] },
+                            { name: 'Verse', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Pre-Chorus', icon: '🎶', progression: ['F', 'G', 'Am', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Dm', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] },
+                            { name: 'Outro', icon: '🏁', progression: ['C', 'G'] }
+                        ],
+                        key: 'C', genre: 'pop', tempo: 120
+                    },
+                    {
+                        name: 'Pop Ballad', badge: '', desc: 'Slow emotional ballad with simple structure',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['G', 'Em'] },
+                            { name: 'Verse', icon: '🎵', progression: ['G', 'D', 'Em', 'C'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'D', 'G', 'Em'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['G', 'D', 'Em', 'C'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'D', 'G', 'Em'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Am', 'C', 'D', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['G', 'C', 'G'] }
+                        ],
+                        key: 'G', genre: 'pop', tempo: 72
+                    }
+                ]
+            },
+            // Rock
+            {
+                category: 'Rock', icon: '🎸',
+                templates: [
+                    {
+                        name: 'Rock Anthem', badge: 'Classic', desc: 'High energy verse-chorus with guitar solo section',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['E', 'A', 'B', 'E'] },
+                            { name: 'Verse', icon: '🎵', progression: ['E', 'G', 'A', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['E', 'G', 'A', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Solo', icon: '🎸', progression: ['E', 'A', 'B', 'E'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['A', 'B', 'E', 'A'] },
+                            { name: 'Outro', icon: '🏁', progression: ['E'] }
+                        ],
+                        key: 'E', genre: 'rock', tempo: 140
+                    },
+                    {
+                        name: 'Power Ballad', badge: '', desc: 'Starts soft and builds to a powerful chorus',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['Am', 'F'] },
+                            { name: 'Verse (Soft)', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus (Loud)', icon: '🎤', progression: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['F', 'G', 'Am'] },
+                            { name: 'Solo', icon: '🎸', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Final Chorus', icon: '🎤', progression: ['C', 'G', 'Am', 'F'] }
+                        ],
+                        key: 'Am', genre: 'rock', tempo: 76
+                    }
+                ]
+            },
+            // Jazz
+            {
+                category: 'Jazz', icon: '🎷',
+                templates: [
+                    {
+                        name: 'Jazz Standard (AABA)', badge: 'Classic', desc: '32-bar AABA form used in hundreds of standards',
+                        sections: [
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] },
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] },
+                            { name: 'B (Bridge)', icon: '🌉', progression: ['Fmaj7', 'Fm7', 'Em7', 'A7'] },
+                            { name: 'A Section', icon: '🎵', progression: ['Cmaj7', 'Am7', 'Dm7', 'G7'] }
+                        ],
+                        key: 'C', genre: 'jazz', tempo: 140
+                    },
+                    {
+                        name: 'Jazz Blues', badge: '', desc: '12-bar blues with jazz chord substitutions',
+                        sections: [
+                            { name: 'Head', icon: '🎵', progression: ['Cmaj7', 'Cmaj7', 'Cmaj7', 'Cmaj7', 'Fmaj7', 'Fmaj7', 'Cmaj7', 'Cmaj7', 'Dm7', 'G7', 'Cmaj7', 'G7'] },
+                            { name: 'Solo', icon: '🎷', progression: ['Cmaj7', 'Cmaj7', 'Cmaj7', 'Cmaj7', 'Fmaj7', 'Fmaj7', 'Cmaj7', 'Cmaj7', 'Dm7', 'G7', 'Cmaj7', 'G7'] }
+                        ],
+                        key: 'C', genre: 'jazz', tempo: 120
+                    }
+                ]
+            },
+            // Blues
+            {
+                category: 'Blues', icon: '🎺',
+                templates: [
+                    {
+                        name: '12-Bar Blues', badge: 'Essential', desc: 'The classic blues structure everyone should know',
+                        sections: [
+                            { name: 'Verse', icon: '🎵', progression: ['E7', 'E7', 'E7', 'E7', 'A7', 'A7', 'E7', 'E7', 'B7', 'A7', 'E7', 'B7'] }
+                        ],
+                        key: 'E', genre: 'blues', tempo: 96
+                    }
+                ]
+            },
+            // Lo-Fi
+            {
+                category: 'Lo-Fi / Chill', icon: '☕',
+                templates: [
+                    {
+                        name: 'Lo-Fi Chill Beat', badge: 'Trending', desc: 'Dreamy chord loop perfect for study beats',
+                        sections: [
+                            { name: 'Loop A', icon: '🎵', progression: ['Dm7', 'G7', 'Cmaj7', 'Am7'] },
+                            { name: 'Loop B', icon: '🎶', progression: ['Fmaj7', 'Em7', 'Dm7', 'G7'] },
+                            { name: 'Loop A', icon: '🎵', progression: ['Dm7', 'G7', 'Cmaj7', 'Am7'] }
+                        ],
+                        key: 'C', genre: 'lofi', tempo: 80
+                    }
+                ]
+            },
+            // Folk / Country
+            {
+                category: 'Folk & Country', icon: '🪕',
+                templates: [
+                    {
+                        name: 'Folk Storyteller', badge: '', desc: 'Simple verse-chorus for acoustic storytelling',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['G', 'C'] },
+                            { name: 'Verse', icon: '🎵', progression: ['G', 'C', 'D', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'D', 'G'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['G', 'C', 'D', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['C', 'G', 'D', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['G'] }
+                        ],
+                        key: 'G', genre: 'folk', tempo: 105
+                    },
+                    {
+                        name: 'Country Two-Step', badge: '', desc: 'Upbeat country song with classic structure',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['D', 'A'] },
+                            { name: 'Verse', icon: '🎵', progression: ['D', 'G', 'A', 'D'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['D', 'G', 'A', 'D'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] },
+                            { name: 'Bridge', icon: '🌉', progression: ['Em', 'G', 'A'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['G', 'D', 'A', 'D'] }
+                        ],
+                        key: 'D', genre: 'country', tempo: 130
+                    }
+                ]
+            },
+            // Electronic
+            {
+                category: 'Electronic', icon: '🎛️',
+                templates: [
+                    {
+                        name: 'EDM Drop Structure', badge: '', desc: 'Build-up, drop, breakdown pattern',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['Am', 'F'] },
+                            { name: 'Build-Up', icon: '🎶', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Drop', icon: '🔊', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Breakdown', icon: '🎵', progression: ['F', 'C'] },
+                            { name: 'Build-Up 2', icon: '🎶', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Drop 2', icon: '🔊', progression: ['Am', 'F', 'C', 'G'] },
+                            { name: 'Outro', icon: '🏁', progression: ['Am', 'F'] }
+                        ],
+                        key: 'Am', genre: 'electronic', tempo: 128
+                    }
+                ]
+            },
+            // Gospel
+            {
+                category: 'Gospel / R&B', icon: '🙏',
+                templates: [
+                    {
+                        name: 'Gospel Praise Song', badge: '', desc: 'Uplifting worship structure with builds',
+                        sections: [
+                            { name: 'Intro', icon: '🎼', progression: ['C', 'Am'] },
+                            { name: 'Verse', icon: '🎵', progression: ['C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Verse 2', icon: '🎵', progression: ['C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Bridge (Build)', icon: '🌉', progression: ['Dm', 'G', 'C', 'Am', 'F', 'G'] },
+                            { name: 'Chorus (Big)', icon: '🎤', progression: ['F', 'G', 'C', 'Am'] },
+                            { name: 'Tag', icon: '🏁', progression: ['C'] }
+                        ],
+                        key: 'C', genre: 'gospel', tempo: 108
+                    }
+                ]
+            }
+        ];
+
+        function openTemplates() {
+            closeSheet();
+            const list = document.getElementById('templatesList');
+            if (!list) return;
+            list.innerHTML = SONG_TEMPLATES.map(cat => `
+                <div class="template-category">
+                    <div class="template-category-title">${cat.icon} ${cat.category}</div>
+                    ${cat.templates.map((t, ti) => `
+                        <div class="template-item" onclick="loadTemplate('${cat.category}', ${ti})">
+                            <div class="template-item-header">
+                                <span class="template-item-icon">${cat.icon}</span>
+                                <span class="template-item-name">${t.name}</span>
+                                ${t.badge ? `<span class="template-item-badge">${t.badge}</span>` : ''}
+                            </div>
+                            <div class="template-item-desc">${t.desc}</div>
+                            <div class="template-item-structure">
+                                ${t.sections.map(s => `<span class="template-section-pill">${s.icon} ${s.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+            document.getElementById('templatesModal').classList.add('active');
+        }
+        function closeTemplates() {
+            document.getElementById('templatesModal').classList.remove('active');
+        }
+        function loadTemplate(categoryName, templateIndex) {
+            const category = SONG_TEMPLATES.find(c => c.category === categoryName);
+            if (!category) return;
+            const template = category.templates[templateIndex];
+            if (!template) return;
+            saveStateForUndo();
+            state.sections = template.sections.map(s => ({
+                name: s.name,
+                icon: s.icon,
+                progression: [...s.progression]
+            }));
+            state.key = template.key;
+            state.genre = template.genre;
+            state.baseTempo = template.tempo;
+            state.tempo = Math.round(template.tempo * state.speedMultiplier);
+            state.currentSection = 0;
+            state.currentChordIndex = 0;
+            closeTemplates();
+            renderAll();
+            showToast(`🎼 Loaded "${template.name}" template`);
+        }
+
+        // ============ LOCK SCREEN / BACKGROUND AUDIO (Media Session API) ============
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            const chords = getTransposedProgression();
+            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `${chords.join(' → ')}`,
+                    artist: `${sectionName} | ${getKeyInfo().display}`,
+                    album: `ChordFlow v${VERSION}`,
+                });
+                navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
+                navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    if (state.currentChordIndex > 0) { state.currentChordIndex--; renderAll(); playChord(getTransposedProgression()[state.currentChordIndex], '4n'); }
+                });
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    advanceChord();
+                });
+                navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
+            } catch(e) {}
+        }
+
         function renderAll() {
             renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
-            const keyDisplay = document.getElementById('keyDisplay'); 
+            renderTheoryHint(); updateMediaSession();
+            const keyDisplay = document.getElementById('keyDisplay');
             if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
-            const genreDisplay = document.getElementById('genreDisplay'); 
+            const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+        }
+
+        function renderTheoryHint() {
+            const hint = document.getElementById('theoryHint');
+            const text = document.getElementById('theoryHintText');
+            if (!hint || !text) return;
+            const chords = getTransposedProgression();
+            const hintStr = getTheoryHint(chords, state.key);
+            if (hintStr) {
+                text.textContent = hintStr;
+                hint.style.display = 'flex';
+            } else {
+                hint.style.display = 'none';
+            }
         }
 
         // Bottom Sheets
@@ -2211,7 +4475,7 @@
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
-            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); }
+            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); closeAuthModal(); closeCommunity(); closeTemplates(); closePublishModal(); }
             if (e.code === 'ArrowLeft' && state.uiMode === 'cards') cdPrevCard();
             if (e.code === 'ArrowRight' && state.uiMode === 'cards') cdNextCard();
         });
@@ -2229,9 +4493,15 @@
 
         // Init
         function init() {
+            // Load shared progression from URL
+            const loaded = loadSharedProgression();
+            if (loaded) showToast('🔗 Loaded shared progression!');
+            // Apply theme
+            const themeLabel = document.getElementById('themeLabel');
+            if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Time sigs, swing, piano/bass diagrams`);
+            console.log(`🎵 ChordFlow v${VERSION} - Auth, Cloud Sync, Community Hub, Song Templates, Drums, inline edit, arrangement, melody, presets, QR`);
         }
         init();
     </script>
