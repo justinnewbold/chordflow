@@ -2207,32 +2207,37 @@
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
             await initAudio();
             if (!recorder) { showToast('⚠️ Recorder not available'); return; }
-            
+
             state.isRecording = true;
             document.getElementById('recordingOverlay').classList.add('active');
             showToast('🎵 Recording started...');
-            
-            recorder.start();
-            const chords = getTransposedProgression();
-            const beatMs = 60000 / state.tempo;
-            
-            for (let i = 0; i < chords.length; i++) {
-                if (!state.isRecording) break;
-                await playChord(chords[i], '2n');
-                await new Promise(r => setTimeout(r, beatMs * 4));
+
+            try {
+                recorder.start();
+                const chords = getTransposedProgression();
+                const beatMs = 60000 / state.tempo;
+
+                for (let i = 0; i < chords.length; i++) {
+                    if (!state.isRecording) break;
+                    await playChord(chords[i], '2n');
+                    await new Promise(r => setTimeout(r, beatMs * 4));
+                }
+                await new Promise(r => setTimeout(r, 1000));
+
+                const recording = await recorder.stop();
+                const url = URL.createObjectURL(recording);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'chordflow.wav';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('🎵 WAV exported!');
+            } catch (e) {
+                console.warn('WAV export error:', e);
+                showToast('⚠️ Export failed');
+            } finally {
+                state.isRecording = false;
+                document.getElementById('recordingOverlay').classList.remove('active');
             }
-            await new Promise(r => setTimeout(r, 1000));
-            
-            const recording = await recorder.stop();
-            state.isRecording = false;
-            document.getElementById('recordingOverlay').classList.remove('active');
-            
-            const url = URL.createObjectURL(recording);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'chordflow.wav';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('🎵 WAV exported!');
         }
         
         function downloadFile(data, filename, mimeType) {
@@ -2267,6 +2272,7 @@
         function loadSong(index) {
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             if (songs[index]) {
+                ensurePlaybackStopped();
                 const { data } = songs[index];
                 Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
                 closeSheet(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
@@ -2284,6 +2290,7 @@
             const reader = new FileReader();
             reader.onload = e => {
                 try {
+                    ensurePlaybackStopped();
                     const data = JSON.parse(e.target.result);
                     Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
                     renderAll(); showToast('📂 Loaded from file');
@@ -2589,9 +2596,10 @@
         function handleDrop(e, targetIndex) {
             e.preventDefault();
             const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const prog = state.sections[state.currentSection].progression;
+            if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= prog.length) return;
             if (sourceIndex === targetIndex) return;
             saveStateForUndo();
-            const prog = state.sections[state.currentSection].progression;
             const [moved] = prog.splice(sourceIndex, 1);
             prog.splice(targetIndex, 0, moved);
             state.currentChordIndex = 0;
@@ -2690,12 +2698,19 @@
         function renderCardDeckUI() { if (state.uiMode === 'cards') renderCardStack(); }
 
         // Playback
+        let playTogglePending = false;
         async function togglePlay() {
-            await initAudio();
-            if (!state.isPlaying && state.countInEnabled) await doCountIn();
-            state.isPlaying = !state.isPlaying;
-            updatePlayButtons();
-            if (state.isPlaying) startPlayback(); else stopPlaybackTimers();
+            if (playTogglePending) return;
+            playTogglePending = true;
+            try {
+                await initAudio();
+                if (!state.isPlaying && state.countInEnabled) await doCountIn();
+                state.isPlaying = !state.isPlaying;
+                updatePlayButtons();
+                if (state.isPlaying) startPlayback(); else stopPlaybackTimers();
+            } finally {
+                playTogglePending = false;
+            }
         }
         function updatePlayButtons() {
             const icon = state.isPlaying ? '⏸️' : '▶️';
@@ -2772,6 +2787,9 @@
         function stopPlaybackTimers() {
             if (beatInterval) { clearInterval(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
+        }
+        function ensurePlaybackStopped() {
+            if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); }
         }
         function stopPlayback() {
             state.isPlaying = false;
@@ -2932,6 +2950,7 @@
 
         function loadLearnSongToEditor() {
             if (!currentLearnSong) return;
+            ensurePlaybackStopped();
             saveStateForUndo();
             // Reverse-transpose learn song chords to store in relative form
             const learnKey = currentLearnSong.key;
@@ -3615,6 +3634,7 @@
         function loadPreset(index) {
             const preset = CHORD_PRESETS[index];
             if (!preset) return;
+            ensurePlaybackStopped();
             saveStateForUndo();
             // Reverse-transpose preset chords to store in relative form
             const keyRoot = normalizeNote(state.key.replace('m', ''));
@@ -3701,25 +3721,32 @@
             state.isRecording = true;
             document.getElementById('recordingOverlay').classList.add('active');
             showToast('📀 Recording for MP3...');
-            recorder.start();
-            const chords = getTransposedProgression();
-            const beatMs = 60000 / state.tempo;
-            for (let i = 0; i < chords.length; i++) {
-                if (!state.isRecording) break;
-                await playChord(chords[i], '2n');
-                await new Promise(r => setTimeout(r, beatMs * 4));
+
+            try {
+                recorder.start();
+                const chords = getTransposedProgression();
+                const beatMs = 60000 / state.tempo;
+                for (let i = 0; i < chords.length; i++) {
+                    if (!state.isRecording) break;
+                    await playChord(chords[i], '2n');
+                    await new Promise(r => setTimeout(r, beatMs * 4));
+                }
+                await new Promise(r => setTimeout(r, 1000));
+                const recording = await recorder.stop();
+                // Tone.js records as webm/ogg - download as audio file
+                const url = URL.createObjectURL(recording);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'chordflow.webm';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('📀 Audio exported! (WebM format)');
+            } catch (e) {
+                console.warn('MP3 export error:', e);
+                showToast('⚠️ Export failed');
+            } finally {
+                state.isRecording = false;
+                document.getElementById('recordingOverlay').classList.remove('active');
             }
-            await new Promise(r => setTimeout(r, 1000));
-            const recording = await recorder.stop();
-            state.isRecording = false;
-            document.getElementById('recordingOverlay').classList.remove('active');
-            // Tone.js records as webm/ogg - download as audio file
-            const url = URL.createObjectURL(recording);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'chordflow.webm';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('📀 Audio exported! (WebM format)');
         }
         function exportPDFEnhanced() {
             const chords = getTransposedProgression(), keyInfo = getKeyInfo();
@@ -3920,6 +3947,7 @@
                 const res = await fetch(`/api/songs?action=get&id=${id}`);
                 const data = await res.json();
                 if (data.song) {
+                    ensurePlaybackStopped();
                     const songData = JSON.parse(data.song.song_data);
                     Object.assign(state, {
                         sections: songData.sections || state.sections,
@@ -4076,6 +4104,7 @@
         }
         function loadCommunitySong(song) {
             const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+            ensurePlaybackStopped();
             saveStateForUndo();
             const newKey = song.key_signature || state.key;
             const keyRoot = normalizeNote(newKey.replace('m', ''));
@@ -4396,6 +4425,7 @@
             if (!category) return;
             const template = category.templates[templateIndex];
             if (!template) return;
+            ensurePlaybackStopped();
             saveStateForUndo();
             // Reverse-transpose template chords to store in relative form
             const keyRoot = normalizeNote(template.key.replace('m', ''));
