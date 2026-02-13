@@ -1397,6 +1397,11 @@
         const VERSION = '0.73';
         // API key removed from client - calls routed through /api/gemini
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         // Data
         const instruments = [
             // Keys
@@ -2242,7 +2247,7 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            closeSaveModal(); renderSavedSongs(); renderLearnSongs();
+            closeSaveModal(); renderSavedSongs();
             // Also save to cloud if logged in
             if (authState.user) {
                 saveToCloud(name).then(cloudSaved => {
@@ -2256,7 +2261,7 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             if (songs[index]) {
                 const { data } = songs[index];
-                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: data.tempo, currentSection: 0, currentChordIndex: 0 });
+                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
                 closeSheet(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
             }
         }
@@ -2265,7 +2270,7 @@
             const name = songs[index]?.name;
             songs.splice(index, 1);
             localStorage.setItem('chordflow-songs', JSON.stringify(songs));
-            renderSavedSongs(); renderLearnSongs(); showToast(`🗑️ Deleted "${name}"`);
+            renderSavedSongs(); showToast(`🗑️ Deleted "${name}"`);
         }
         function loadSongFile(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -2273,7 +2278,7 @@
             reader.onload = e => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: data.tempo || state.tempo, currentSection: 0, currentChordIndex: 0 });
+                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
                     renderAll(); showToast('📂 Loaded from file');
                 } catch { showToast('⚠️ Invalid file'); }
             };
@@ -2283,7 +2288,7 @@
         function renderSavedSongs() {
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             const html = songs.length === 0 ? '<p style="color:var(--text-secondary);text-align:center;">No saved songs yet</p>' :
-                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${s.name}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
+                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
             const savedList = document.getElementById('savedSongsList');
             if (savedList) savedList.innerHTML = html;
             const songsBody = document.getElementById('songsSheetBody');
@@ -2395,7 +2400,7 @@
         }
         function setPlayMode(mode) {
             state.playMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.play-mode-btn').forEach(btn => btn.classList.remove('active'));
             const btn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
             if (btn) btn.classList.add('active');
             const icons = { block: '🎹', strum: '🎸', arpeggio: '🎵' };
@@ -3860,8 +3865,8 @@
                         ${data.songs.map((s, i) => `
                             <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
                                 <div>
-                                    <div class="saved-song-name">${s.title}</div>
-                                    <div class="saved-song-meta">${s.genre || ''} | ${s.key_signature || ''} | ${new Date(s.created_at).toLocaleDateString()}</div>
+                                    <div class="saved-song-name">${escapeHtml(s.title)}</div>
+                                    <div class="saved-song-meta">${escapeHtml(s.genre) || ''} | ${escapeHtml(s.key_signature) || ''} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
                                 <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
                             </div>
@@ -3885,7 +3890,7 @@
                         key: data.song.key_signature || state.key,
                         genre: data.song.genre || state.genre,
                         baseTempo: data.song.tempo || state.baseTempo,
-                        tempo: data.song.tempo || state.tempo,
+                        tempo: Math.round((data.song.tempo || state.baseTempo) * state.speedMultiplier),
                         currentSection: 0, currentChordIndex: 0
                     });
                     closeSheet(); renderAll();
@@ -4014,11 +4019,11 @@
                 return `
                     <div class="community-song-card" onclick="previewCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">
                         <div class="community-song-header">
-                            <div class="community-song-title">${song.title}</div>
-                            <span class="community-song-genre">${genreLabel}</span>
+                            <div class="community-song-title">${escapeHtml(song.title)}</div>
+                            <span class="community-song-genre">${escapeHtml(genreLabel)}</span>
                         </div>
                         <div class="community-song-meta">
-                            <span>👤 ${song.user_name || 'Anonymous'}</span>
+                            <span>👤 ${escapeHtml(song.user_name) || 'Anonymous'}</span>
                             <span>🎵 ${song.key_signature || 'C'}</span>
                             <span>🥁 ${song.tempo || 120} BPM</span>
                             ${song.likes ? `<span>❤️ ${song.likes}</span>` : ''}
