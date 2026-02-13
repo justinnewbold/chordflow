@@ -1395,7 +1395,7 @@
 
     <script>
         const VERSION = '0.73';
-        const GEMINI_API_KEY = 'AIzaSyBR1mD1zdnn39IbaQQs99mL5nFxsoNB9dM';
+        // API key removed from client - calls routed through /api/gemini
 
         // Data
         const instruments = [
@@ -2116,13 +2116,12 @@
 
         // AI
         async function callGeminiAI(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             try {
-                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.8, maxOutputTokens: 200 } }) });
+                const res = await fetch('/api/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt }) });
                 if (!res.ok) throw new Error('API error');
                 const data = await res.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+                return data.result || null;
             } catch { return null; }
         }
         function parseChordResponse(text) {
@@ -2178,8 +2177,7 @@
             chords.forEach(chord => {
                 const midiNotes = getChordNotes(chord).map(noteToMidi);
                 midiNotes.forEach(n => trackEvents.push([0x00, 0x90, n, 100]));
-                trackEvents.push([...varLength(ticksPerBeat * beatsPerChord)]);
-                midiNotes.forEach((n, j) => trackEvents.push([...(j === 0 ? [] : [0x00]), 0x80, n, 0]));
+                midiNotes.forEach((n, j) => trackEvents.push([...(j === 0 ? varLength(ticksPerBeat * beatsPerChord) : [0x00]), 0x80, n, 0]));
             });
             trackEvents.push([0x00, 0xFF, 0x2F, 0x00]);
             const trackData = trackEvents.flat();
@@ -2910,7 +2908,7 @@
             state.sections = [{
                 name: currentLearnSong.title.substring(0, 20),
                 icon: '📚',
-                progression: [...new Set(currentLearnSong.chords)]
+                progression: [...currentLearnSong.chords]
             }];
             state.key = currentLearnSong.key.includes('m') ? currentLearnSong.key : currentLearnSong.key;
             state.baseTempo = currentLearnSong.tempo;
@@ -2933,7 +2931,10 @@
             if (!chord) { showToast('⚠️ Enter a chord name'); return; }
             if (!isValidChord(chord)) { showToast('⚠️ Unknown chord: ' + chord); return; }
             saveStateForUndo();
-            state.sections[state.currentSection].progression.push(chord);
+            // Reverse-transpose to store in relative form (display shows transposed)
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[state.currentSection].progression.push(transposeChord(chord, -semitones));
             input.value = '';
             renderAll();
             showToast(`➕ Added ${chord}`);
@@ -2948,7 +2949,10 @@
             const valid = chords.filter(c => isValidChord(c));
             if (valid.length === 0) { showToast('⚠️ No valid chords found'); return; }
             saveStateForUndo();
-            state.sections[state.currentSection].progression = valid;
+            // Reverse-transpose to store in relative form (display shows transposed)
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[state.currentSection].progression = valid.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
             input.value = '';
             renderAll();
@@ -3423,7 +3427,10 @@
             if (!newChord) { showToast('⚠️ Enter a chord name'); return; }
             if (!isValidChord(newChord)) { showToast('⚠️ Unknown chord: ' + newChord); return; }
             saveStateForUndo();
-            state.sections[state.currentSection].progression[editingChordIndex] = newChord;
+            // Reverse-transpose to store in relative form (display shows transposed)
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[state.currentSection].progression[editingChordIndex] = transposeChord(newChord, -semitones);
             closeChordEditModal();
             renderAll();
             showToast(`✏️ Changed to ${newChord}`);
@@ -4419,7 +4426,7 @@
             if (type === 'instrument') renderInstrumentOptions();
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
-            if (type === 'songs') renderSavedSongs(); renderLearnSongs();
+            if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
         }
         function closeSheet() { 
             const overlay = document.getElementById('sheetOverlay');
@@ -4448,7 +4455,7 @@
             const list = document.getElementById('genreList'); if (!list) return;
             list.innerHTML = genres.map(g => `<div class="option-item ${state.genre === g.id ? 'selected' : ''}" onclick="selectGenre('${g.id}')"><span class="option-icon">${g.icon}</span><div class="option-text"><div class="option-title">${g.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-        function selectGenre(id) { saveStateForUndo(); state.genre = id; generateProgression(); closeSheet(); }
+        function selectGenre(id) { state.genre = id; generateProgression(); closeSheet(); }
 
         // Modals
         function showShortcuts() { closeSheet(); document.getElementById('shortcutsModal').classList.add('active'); }
@@ -4471,7 +4478,7 @@
             if (e.code === 'KeyA' && !e.ctrlKey && !e.metaKey) aiGenerate('smart');
             if (e.code === 'KeyM' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportMIDI(); }
             if (e.code === 'KeyP' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportPDF(); }
-            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportWAV(); }
+            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); exportWAV(); }
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();

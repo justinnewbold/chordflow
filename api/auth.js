@@ -1,7 +1,7 @@
 // ChordFlow Auth API - Supabase Integration
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://your-project.supabase.co';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 export default async function handler(req, res) {
