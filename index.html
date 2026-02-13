@@ -2029,11 +2029,10 @@
         function switchDgm(view, btn) {
             document.querySelectorAll('.dgm-tab').forEach(t => t.classList.remove('active'));
             if (btn) btn.classList.add('active');
-            document.getElementById('guitarDgm').style.display = view === 'guitar' ? 'block' : 'none';
-            document.getElementById('pianoDgm').style.display = view === 'piano' ? 'block' : 'none';
-            document.getElementById('bassDgm').style.display = view === 'bass' ? 'block' : 'none';
-            const g7El = document.getElementById('guitar7Dgm');
-            if (g7El) g7El.style.display = view === 'guitar7' ? 'block' : 'none';
+            const gEl = document.getElementById('guitarDgm'); if (gEl) gEl.style.display = view === 'guitar' ? 'block' : 'none';
+            const pEl = document.getElementById('pianoDgm'); if (pEl) pEl.style.display = view === 'piano' ? 'block' : 'none';
+            const bEl = document.getElementById('bassDgm'); if (bEl) bEl.style.display = view === 'bass' ? 'block' : 'none';
+            const g7El = document.getElementById('guitar7Dgm'); if (g7El) g7El.style.display = view === 'guitar7' ? 'block' : 'none';
         }
         function mkPiano(chord) {
             const notes = getChordNotes(chord).map(n => n.replace(/\d/, ''));
@@ -2184,7 +2183,7 @@
             const header = [0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, (ticksPerBeat >> 8) & 0xFF, ticksPerBeat & 0xFF];
             const trackEvents = [[0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20], [0x00, 0xC0, 0x00]];
             const noteMap = { 'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11 };
-            const noteToMidi = n => { const m = n.match(/([A-G]#?)(\d)/); return m ? noteMap[m[1]] + (parseInt(m[2]) + 1) * 12 : 60; };
+            const noteToMidi = n => { const m = n.match(/([A-G][#b]?)(\d)/); if (!m) return 60; const norm = normalizeNote(m[1]); return (noteMap[norm] ?? 0) + (parseInt(m[2]) + 1) * 12; };
             const varLength = v => { if (v < 128) return [v]; const b = []; b.unshift(v & 0x7F); v >>= 7; while (v > 0) { b.unshift((v & 0x7F) | 0x80); v >>= 7; } return b; };
             chords.forEach(chord => {
                 const midiNotes = getChordNotes(chord).map(noteToMidi);
@@ -3068,8 +3067,10 @@
                 const isMinorChord = chord.includes('m') && !chord.includes('maj');
                 const is7th = chord.includes('7');
                 const isDim = chord.includes('dim');
-                if (isMinorChord && !isMinorKey && degreeIdx !== 1 && degreeIdx !== 2 && degreeIdx !== 5) {
+                if (isMinorChord) {
                     degree = degree.toLowerCase();
+                } else if (!isDim) {
+                    degree = degree.toUpperCase();
                 }
                 if (is7th) degree += '7';
                 if (isDim) degree = degree.toLowerCase() + '°';
