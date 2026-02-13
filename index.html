@@ -2258,7 +2258,8 @@
             if (!name) { showToast('⚠️ Enter a name'); return; }
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
-            localStorage.setItem('chordflow-songs', JSON.stringify(songs));
+            try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); }
+            catch(e) { showToast('⚠️ Storage full — delete old songs to free space'); return; }
             closeSaveModal(); renderSavedSongs();
             // Also save to cloud if logged in
             if (authState.user) {
@@ -2282,7 +2283,7 @@
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
             const name = songs[index]?.name;
             songs.splice(index, 1);
-            localStorage.setItem('chordflow-songs', JSON.stringify(songs));
+            try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); } catch(e) {}
             renderSavedSongs(); showToast(`🗑️ Deleted "${name}"`);
         }
         function loadSongFile(event) {
@@ -2521,7 +2522,9 @@
             const name = state.sections[i].name;
             state.sections.splice(i, 1);
             if (state.currentSection >= state.sections.length) state.currentSection = state.sections.length - 1;
+            else if (state.currentSection > i) state.currentSection--;
             if (state.arrangementSectionIndex >= state.sections.length) state.arrangementSectionIndex = 0;
+            else if (state.arrangementSectionIndex > i) state.arrangementSectionIndex--;
             state.currentChordIndex = 0;
             renderAll(); showToast(`🗑️ Deleted ${name}`);
         }
@@ -3229,16 +3232,17 @@
         function loadSharedProgression() {
             const params = new URLSearchParams(window.location.search);
             if (!params.has('c')) return false;
-            const chords = params.get('c').split(',').filter(c => c.length > 0);
+            const chords = params.get('c').split(',').filter(c => c.length > 0 && isValidChord(c));
             if (chords.length === 0) return false;
             const newKey = params.has('k') ? params.get('k') : state.key;
             const keyRoot = normalizeNote(newKey.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
+            if (semitones === -1) return false;
             state.sections[0].progression = chords.map(c => transposeChord(c, -semitones));
             if (params.has('k')) state.key = newKey;
-            if (params.has('g')) state.genre = params.get('g');
-            if (params.has('t')) { state.baseTempo = parseInt(params.get('t')); state.tempo = Math.round(state.baseTempo * state.speedMultiplier); }
-            if (params.has('ts')) state.timeSignature = params.get('ts');
+            if (params.has('g')) { const g = params.get('g'); if (genres.find(x => x.id === g)) state.genre = g; }
+            if (params.has('t')) { const t = parseInt(params.get('t')); if (t >= 20 && t <= 300) { state.baseTempo = t; state.tempo = Math.round(t * state.speedMultiplier); } }
+            if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4'].includes(ts)) state.timeSignature = ts; }
             state.currentSection = 0;
             state.currentChordIndex = 0;
             // Clean URL without reloading
@@ -4210,7 +4214,7 @@
             // Add to local community cache
             const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
             localCommunity.unshift(localSong);
-            localStorage.setItem('chordflow-community', JSON.stringify(localCommunity));
+            try { localStorage.setItem('chordflow-community', JSON.stringify(localCommunity)); } catch(e) {}
             DEMO_COMMUNITY_SONGS.unshift(localSong);
             closePublishModal();
             showToast('🌍 Published locally! (Will sync when online)');
