@@ -2345,6 +2345,7 @@
             // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
             if (versionDisplay) versionDisplay.textContent = VERSION;
+            updateBeatDotContainers();
         }
         function switchUIMode(mode) {
             state.uiMode = mode;
@@ -2421,10 +2422,24 @@
             if (headerBtn) headerBtn.classList.toggle('active', state.metronomeEnabled);
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
         }
+        function getBeatsPerMeasure() {
+            return parseInt(state.timeSignature.split('/')[0]) || 4;
+        }
+        function updateBeatDotContainers() {
+            const beats = getBeatsPerMeasure();
+            ['beatDots', 'sfBeatDots'].forEach(id => {
+                const container = document.getElementById(id);
+                if (container) container.innerHTML = Array.from({length: beats}, () => '<div class="beat-dot"></div>').join('');
+            });
+            const metro = document.getElementById('visualMetronome');
+            if (metro) metro.innerHTML = Array.from({length: beats}, (_, i) => `<div class="metro-beat-num" data-beat="${i}">${i+1}</div>`).join('');
+        }
         function setTimeSig(sig, btn) {
             state.timeSignature = sig;
             document.querySelectorAll('.ts-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
+            updateBeatDotContainers();
+            if (state.isPlaying) restartPlayback();
             showToast('🎼 ' + sig + ' time');
         }
         function setSwing(val) {
@@ -2695,16 +2710,17 @@
             const overlay = document.getElementById('countInOverlay'), numEl = document.getElementById('countInNumber');
             if (overlay) overlay.classList.add('active');
             const beatMs = 60000 / state.tempo;
-            for (let i = 4; i >= 1; i--) {
+            const beats = getBeatsPerMeasure();
+            for (let i = beats; i >= 1; i--) {
                 if (numEl) numEl.textContent = i;
-                playMetronomeTick(i === 4);
+                playMetronomeTick(i === beats);
                 await new Promise(r => setTimeout(r, beatMs));
             }
             if (overlay) overlay.classList.remove('active');
         }
         function startPlayback() {
             const beatMs = 60000 / state.tempo;
-            const beatsPerChord = 4;
+            const beatsPerChord = getBeatsPerMeasure();
             state.currentBeat = 0;
             
             beatInterval = setInterval(() => {
@@ -4044,12 +4060,12 @@
                         </div>
                         <div class="community-song-meta">
                             <span>👤 ${escapeHtml(song.user_name) || 'Anonymous'}</span>
-                            <span>🎵 ${song.key_signature || 'C'}</span>
-                            <span>🥁 ${song.tempo || 120} BPM</span>
+                            <span>🎵 ${escapeHtml(song.key_signature) || 'C'}</span>
+                            <span>🥁 ${parseInt(song.tempo) || 120} BPM</span>
                             ${song.likes ? `<span>❤️ ${song.likes}</span>` : ''}
                         </div>
                         <div class="community-song-chords">
-                            ${chords.map(c => `<span class="song-chord-pill">${c}</span>`).join('')}
+                            ${chords.map(c => `<span class="song-chord-pill">${escapeHtml(c)}</span>`).join('')}
                         </div>
                         <div class="community-song-actions">
                             <button class="community-action-btn primary" onclick="event.stopPropagation(); loadCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">📥 Load</button>
@@ -4140,7 +4156,7 @@
                 genre: state.genre,
                 key_signature: state.key,
                 tempo: state.baseTempo,
-                chords: [...state.sections[state.currentSection].progression],
+                chords: getTransposedProgression(),
                 user_name: authState.user?.email?.split('@')[0] || 'You',
                 likes: 0,
                 created_at: new Date().toISOString()
