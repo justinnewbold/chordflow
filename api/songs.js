@@ -90,10 +90,10 @@ async function loadSongs(req, res, supabase) {
     return res.status(200).json({ songs: data });
 }
 
-// Get a specific song by ID (for sharing)
+// Get a specific song by ID (for sharing or loading user's own)
 async function getSong(req, res, supabase) {
-    const { id } = req.query;
-    
+    const { id, userId } = req.query;
+
     if (!id) return res.status(400).json({ error: 'Song ID required' });
 
     const { data, error } = await supabase
@@ -103,9 +103,9 @@ async function getSong(req, res, supabase) {
         .single();
 
     if (error) return res.status(404).json({ error: 'Song not found' });
-    
-    // Only return if public or owned by user
-    if (!data.is_public) {
+
+    // Allow access if public or owned by the requesting user
+    if (!data.is_public && data.user_id !== userId) {
         return res.status(403).json({ error: 'This song is private' });
     }
 
@@ -131,8 +131,8 @@ async function deleteSong(req, res, supabase) {
 // Make a song public/shareable
 async function shareSong(req, res, supabase) {
     const { id, userId, isPublic } = req.body;
-    
-    if (!id) return res.status(400).json({ error: 'Song ID required' });
+
+    if (!id || !userId) return res.status(400).json({ error: 'Song ID and user required' });
 
     const { data, error } = await supabase
         .from('songs')

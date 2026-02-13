@@ -3944,7 +3944,8 @@
         }
         async function loadCloudSong(id) {
             try {
-                const res = await fetch(`/api/songs?action=get&id=${id}`);
+                const userParam = authState.user ? `&userId=${authState.user.id}` : '';
+                const res = await fetch(`/api/songs?action=get&id=${id}${userParam}`);
                 const data = await res.json();
                 if (data.song) {
                     ensurePlaybackStopped();
