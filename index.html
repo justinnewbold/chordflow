@@ -2151,12 +2151,19 @@
             const response = await callGeminiAI(prompt);
             const chords = response ? parseChordResponse(response) : null;
             if (chords && chords.length >= 3) {
-                state.sections[state.currentSection].progression = chords;
+                // Reverse-transpose AI results to store in relative form
+                const keyRoot = normalizeNote(state.key.replace('m', ''));
+                const semitones = ALL_NOTES.indexOf(keyRoot);
+                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
                 state.currentChordIndex = 0;
                 renderAll();
                 showToast(`✨ AI generated ${chords.length} chords!`);
             } else {
-                generateProgression();
+                // Inline fallback to avoid double undo from generateProgression()
+                const progs = progressions[state.genre] || progressions.pop;
+                state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
+                state.currentChordIndex = 0;
+                renderAll();
                 showToast('🎲 Used smart fallback');
             }
             state.aiLoading = false;
@@ -2910,14 +2917,18 @@
         function loadLearnSongToEditor() {
             if (!currentLearnSong) return;
             saveStateForUndo();
+            // Reverse-transpose learn song chords to store in relative form
+            const learnKey = currentLearnSong.key;
+            const keyRoot = normalizeNote(learnKey.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections = [{
                 name: currentLearnSong.title.substring(0, 20),
                 icon: '📚',
-                progression: [...currentLearnSong.chords]
+                progression: currentLearnSong.chords.map(c => transposeChord(c, -semitones))
             }];
-            state.key = currentLearnSong.key.includes('m') ? currentLearnSong.key : currentLearnSong.key;
+            state.key = learnKey;
             state.baseTempo = currentLearnSong.tempo;
-            state.tempo = currentLearnSong.tempo;
+            state.tempo = Math.round(currentLearnSong.tempo * state.speedMultiplier);
             state.timeSignature = currentLearnSong.timeSignature;
             state.currentSection = 0;
             state.currentChordIndex = 0;
@@ -3179,8 +3190,11 @@
             if (!params.has('c')) return false;
             const chords = params.get('c').split(',').filter(c => c.length > 0);
             if (chords.length === 0) return false;
-            state.sections[0].progression = chords;
-            if (params.has('k')) state.key = params.get('k');
+            const newKey = params.has('k') ? params.get('k') : state.key;
+            const keyRoot = normalizeNote(newKey.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[0].progression = chords.map(c => transposeChord(c, -semitones));
+            if (params.has('k')) state.key = newKey;
             if (params.has('g')) state.genre = params.get('g');
             if (params.has('t')) { state.baseTempo = parseInt(params.get('t')); state.tempo = Math.round(state.baseTempo * state.speedMultiplier); }
             if (params.has('ts')) state.timeSignature = params.get('ts');
@@ -3346,8 +3360,11 @@
             const response = await callGeminiAI(prompt);
             const chords = response ? parseChordResponse(response) : null;
 
+            // Reverse-transpose to store in relative form
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
             if (chords && chords.length >= 3) {
-                state.sections[state.currentSection].progression = chords;
+                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
                 state.currentChordIndex = 0;
                 renderAll();
                 showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
@@ -3359,12 +3376,12 @@
                         if (c.includes('m') && !c.includes('maj')) return c + '7';
                         return c + 'maj7';
                     });
-                    state.sections[state.currentSection].progression = jazzified;
+                    state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
                 } else {
                     const simplified = getTransposedProgression().map(c => {
                         return c.replace(/maj7|m7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
                     });
-                    state.sections[state.currentSection].progression = simplified;
+                    state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
                 }
                 state.currentChordIndex = 0;
                 renderAll();
@@ -3583,7 +3600,10 @@
             const preset = CHORD_PRESETS[index];
             if (!preset) return;
             saveStateForUndo();
-            state.sections[state.currentSection].progression = [...preset.chords];
+            // Reverse-transpose preset chords to store in relative form
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[state.currentSection].progression = preset.chords.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
             closePresets();
             renderAll();
@@ -3824,7 +3844,7 @@
                     <div class="user-badge">
                         <div class="user-avatar">${initial}</div>
                         <div class="user-info">
-                            <div class="user-email">${authState.user.email}</div>
+                            <div class="user-email">${escapeHtml(authState.user.email)}</div>
                             <div class="user-status">${isOffline ? '<span class="cloud-sync-badge offline">Local Mode</span>' : '<span class="cloud-sync-badge">Cloud Synced</span>'}</div>
                         </div>
                         <button class="user-logout-btn" onclick="logoutUser()">Sign Out</button>
@@ -4041,7 +4061,10 @@
         function loadCommunitySong(song) {
             const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
             saveStateForUndo();
-            state.sections[state.currentSection].progression = [...chords];
+            const newKey = song.key_signature || state.key;
+            const keyRoot = normalizeNote(newKey.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
             if (song.key_signature) state.key = song.key_signature;
             if (song.genre) state.genre = song.genre;
             if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
@@ -4358,10 +4381,13 @@
             const template = category.templates[templateIndex];
             if (!template) return;
             saveStateForUndo();
+            // Reverse-transpose template chords to store in relative form
+            const keyRoot = normalizeNote(template.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections = template.sections.map(s => ({
                 name: s.name,
                 icon: s.icon,
-                progression: [...s.progression]
+                progression: s.progression.map(c => transposeChord(c, -semitones))
             }));
             state.key = template.key;
             state.genre = template.genre;
