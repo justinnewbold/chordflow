@@ -2206,10 +2206,9 @@
         }
         async function exportWAV() {
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
-            await initAudio();
-            if (!recorder) { showToast('⚠️ Recorder not available'); return; }
-
             state.isRecording = true;
+            await initAudio();
+            if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
             document.getElementById('recordingOverlay').classList.add('active');
             showToast('🎵 Recording started...');
 
@@ -2799,6 +2798,8 @@
             stopPlaybackTimers();
             state.currentChordIndex = 0;
             state.currentBeat = 0;
+            state.arrangementSectionIndex = 0;
+            autoSpeedLoopCount = 0;
             updatePlayButtons();
             updateBeatDots(0);
             renderAll();
@@ -2911,6 +2912,8 @@
                 stopLearnSongPlay();
                 return;
             }
+            // Clear any orphaned interval before creating a new one
+            if (learnSongInterval) { clearInterval(learnSongInterval); learnSongInterval = null; }
             learnSongPlaying = true;
             learnSongChordIndex = 0;
             const btn = document.getElementById('learnPlayBtn');
@@ -3719,9 +3722,9 @@
         async function exportMP3() {
             // Use WAV export + convert
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
-            await initAudio();
-            if (!recorder) { showToast('⚠️ Recorder not available'); return; }
             state.isRecording = true;
+            await initAudio();
+            if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
             document.getElementById('recordingOverlay').classList.add('active');
             showToast('📀 Recording for MP3...');
 
@@ -4081,7 +4084,9 @@
                 return;
             }
             grid.innerHTML = filtered.map(song => {
-                const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+                let chords;
+                try { chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F']; }
+                catch(e) { chords = ['C', 'G', 'Am', 'F']; }
                 const genreObj = genres.find(g => g.id === song.genre);
                 const genreLabel = genreObj ? `${genreObj.icon} ${genreObj.name}` : song.genre;
                 return `
@@ -4107,7 +4112,9 @@
             }).join('');
         }
         function loadCommunitySong(song) {
-            const chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F'];
+            let chords;
+            try { chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F']; }
+            catch(e) { chords = ['C', 'G', 'Am', 'F']; }
             ensurePlaybackStopped();
             saveStateForUndo();
             const newKey = song.key_signature || state.key;
@@ -4154,14 +4161,20 @@
             if (!title) { showToast('⚠️ Enter a title'); return; }
             if (!authState.user) { showToast('⚠️ Sign in first'); return; }
 
-            // Save to cloud first
+            // Save to cloud first — transpose sections to absolute chords for storage
+            const pubKeyRoot = normalizeNote(state.key.replace('m', ''));
+            const pubSemitones = ALL_NOTES.indexOf(pubKeyRoot);
+            const transposedSections = state.sections.map(s => ({
+                ...s,
+                progression: s.progression.map(c => transposeChord(c, pubSemitones))
+            }));
             try {
                 const res = await fetch('/api/songs?action=save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title,
-                        song: { sections: state.sections },
+                        song: { sections: transposedSections },
                         key: state.key,
                         scale: state.key.includes('m') ? 'minor' : 'major',
                         genre: state.genre,
@@ -4451,16 +4464,10 @@
         }
 
         // ============ LOCK SCREEN / BACKGROUND AUDIO (Media Session API) ============
-        function updateMediaSession() {
-            if (!('mediaSession' in navigator)) return;
-            const chords = getTransposedProgression();
-            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+        let mediaSessionHandlersSet = false;
+        function initMediaSessionHandlers() {
+            if (mediaSessionHandlersSet || !('mediaSession' in navigator)) return;
             try {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: `${chords.join(' → ')}`,
-                    artist: `${sectionName} | ${getKeyInfo().display}`,
-                    album: `ChordFlow v${VERSION}`,
-                });
                 navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
                 navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
@@ -4468,6 +4475,20 @@
                 });
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
                     advanceChord();
+                });
+                mediaSessionHandlersSet = true;
+            } catch(e) {}
+        }
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            initMediaSessionHandlers();
+            const chords = getTransposedProgression();
+            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+            try {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: `${chords.join(' → ')}`,
+                    artist: `${sectionName} | ${getKeyInfo().display}`,
+                    album: `ChordFlow v${VERSION}`,
                 });
                 navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
             } catch(e) {}
