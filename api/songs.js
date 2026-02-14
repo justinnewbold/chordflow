@@ -150,14 +150,16 @@ async function shareSong(req, res, supabase) {
 
 // Get community (public) songs
 async function getCommunity(req, res, supabase) {
-    const { genre, limit = 20, offset = 0 } = req.query;
-    
+    const { genre, limit: limitStr = '20', offset: offsetStr = '0' } = req.query;
+    const parsedLimit = Math.min(Math.max(parseInt(limitStr, 10) || 20, 1), 100);
+    const parsedOffset = Math.max(parseInt(offsetStr, 10) || 0, 0);
+
     let query = supabase
         .from('songs')
         .select('id, title, key_signature, scale, genre, tempo, created_at, user_id')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
-        .range(offset, offset + parseInt(limit) - 1);
+        .range(parsedOffset, parsedOffset + parsedLimit - 1);
 
     if (genre && genre !== 'all') {
         query = query.eq('genre', genre);

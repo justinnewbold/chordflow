@@ -1792,7 +1792,7 @@
 
         // Audio
         let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
-        let playInterval = null, beatInterval = null;
+        let playInterval = null, beatInterval = null, arpeggioTimeouts = [];
 
         async function initAudio() {
             if (audioInit) return;
@@ -1883,18 +1883,19 @@
             try {
                 if (state.playMode === 'arpeggio') {
                     // Arpeggio mode - play notes one at a time
-                    const noteDelay = state.arpeggioSpeed / 1000;
+                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
                     notes.forEach((note, i) => {
-                        setTimeout(() => {
+                        arpeggioTimeouts.push(setTimeout(() => {
                             synth.triggerAttackRelease(note, '8n');
-                        }, i * state.arpeggioSpeed);
+                        }, i * state.arpeggioSpeed));
                     });
                 } else if (state.playMode === 'strum') {
                     // Strum mode - quick cascade
+                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
                     notes.forEach((note, i) => {
-                        setTimeout(() => {
+                        arpeggioTimeouts.push(setTimeout(() => {
                             synth.triggerAttackRelease(note, duration);
-                        }, i * 30);
+                        }, i * 30));
                     });
                 } else {
                     // Block chord (default)
@@ -2129,7 +2130,7 @@
             } catch { return null; }
         }
         function parseChordResponse(text) {
-            const matches = text.match(/[A-G][#b]?(m|maj|dim|aug)?7?/g);
+            const matches = text.match(/[A-G][#b]?(maj|dim|aug|m)?7?/g);
             if (matches && matches.length >= 3) return matches.filter(c => CHORD_NOTES[c] || CHORD_NOTES[c.replace('7', '')]).slice(0, 8);
             return null;
         }
@@ -2264,7 +2265,7 @@
             if (authState.user) {
                 saveToCloud(name).then(cloudSaved => {
                     showToast(cloudSaved ? `☁️ Saved "${name}" to cloud` : `💾 Saved "${name}" locally`);
-                });
+                }).catch(() => showToast('💾 Saved locally'));
             } else {
                 showToast(`💾 Saved "${name}"`);
             }
@@ -2791,6 +2792,7 @@
         function stopPlaybackTimers() {
             if (beatInterval) { clearInterval(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
+            arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
         }
         function ensurePlaybackStopped() {
             if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); }
@@ -3534,7 +3536,8 @@
             if (state.lastDeletedChord === null) return;
             const section = state.sections[state.lastDeletedSection];
             if (!section) return;
-            section.progression.splice(state.lastDeletedIndex, 0, state.lastDeletedChord);
+            const safeIdx = Math.min(state.lastDeletedIndex, section.progression.length);
+            section.progression.splice(safeIdx, 0, state.lastDeletedChord);
             state.lastDeletedChord = null;
             document.getElementById('undoToast')?.classList.remove('show');
             renderAll();
@@ -3793,9 +3796,10 @@
         }
 
         // ============ v0.73: AUTH & CLOUD SYNC ============
+        function safeJsonParse(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { localStorage.removeItem(key); return null; } }
         const authState = {
-            user: JSON.parse(localStorage.getItem('chordflow-user') || 'null'),
-            session: JSON.parse(localStorage.getItem('chordflow-session') || 'null'),
+            user: safeJsonParse('chordflow-user'),
+            session: safeJsonParse('chordflow-session'),
             authTab: 'login'
         };
 
