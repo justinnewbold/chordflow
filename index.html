@@ -4583,7 +4583,7 @@
 
         // Event Listeners
         document.addEventListener('keydown', e => {
-            if (e.target.tagName === 'INPUT') return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
             if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
             if (e.code === 'KeyG' && !e.ctrlKey && !e.metaKey) generateProgression();
             if (e.code === 'KeyA' && !e.ctrlKey && !e.metaKey) aiGenerate('smart');
