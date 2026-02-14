@@ -3004,7 +3004,7 @@
             closeSongPlayer();
             setMode('create');
             setProduceTab('mixer');
-            renderAll();
+            updateBeatDotContainers(); renderAll();
             showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
         }
 
@@ -3680,7 +3680,7 @@
             state.sections[state.currentSection].progression = preset.chords.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
             closePresets();
-            renderAll();
+            updateBeatDotContainers(); renderAll();
             showToast(`📚 Loaded "${preset.name}"`);
         }
 
@@ -4172,9 +4172,10 @@
             if (song.key_signature) state.key = song.key_signature;
             if (song.genre) state.genre = song.genre;
             if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
+            state.timeSignature = '4/4';
             state.currentChordIndex = 0;
             closeCommunity();
-            renderAll();
+            updateBeatDotContainers(); renderAll();
             showToast(`📥 Loaded "${song.title}"`);
         }
         async function playCommunitySong(song) {
@@ -4504,10 +4505,11 @@
             state.genre = template.genre;
             state.baseTempo = template.tempo;
             state.tempo = Math.round(template.tempo * state.speedMultiplier);
+            state.timeSignature = template.timeSignature || '4/4';
             state.currentSection = 0;
             state.currentChordIndex = 0;
             closeTemplates();
-            renderAll();
+            updateBeatDotContainers(); renderAll();
             showToast(`🎼 Loaded "${template.name}" template`);
         }
 

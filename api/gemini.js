@@ -99,10 +99,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // Detect key
-  const keyMatch = promptLower.match(/key of ([a-g](?:#|m)?)/i);
+  // Detect key from prompt (handles "in C Major", "key of Am", "in F# Minor")
+  const keyMatch = promptLower.match(/(?:key of |in )([a-g][#b]?)\s*(major|minor)?/i);
   if (keyMatch) {
     key = keyMatch[1].charAt(0).toUpperCase() + keyMatch[1].slice(1);
+    if (keyMatch[2] === 'minor') key += 'm';
   }
 
   // Get progressions for this genre/key

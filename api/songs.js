@@ -156,7 +156,7 @@ async function getCommunity(req, res, supabase) {
 
     let query = supabase
         .from('songs')
-        .select('id, title, key_signature, scale, genre, tempo, created_at, user_id')
+        .select('id, title, key_signature, scale, genre, tempo, created_at, user_id, song_data')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range(parsedOffset, parsedOffset + parsedLimit - 1);
