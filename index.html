@@ -2029,7 +2029,7 @@
             for (let i = 1; i < frets; i++) html += `<line x1="10" y1="${10 + i * 20}" x2="90" y2="${10 + i * 20}" stroke="#666"/>`;
             for (let i = 0; i < strings; i++) html += `<line x1="${10 + i * 16}" y1="10" x2="${10 + i * 16}" y2="110" stroke="#888"/>`;
             const patterns = { 'C': [[0,1,0], [1,1,2], [2,2,3], [3,3,0]], 'Am': [[0,1,1], [1,2,2], [2,2,3]], 'G': [[0,2,3], [1,3,0], [5,3,0]], 'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0],[4,3,0],[5,1,0]] };
-            const p = patterns[chord.replace(/7|m|dim|aug|sus\d/g, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
+            const p = patterns[chord.replace(/maj7|dim7|dim|aug|m7|7|m|sus\d/g, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
             p.forEach(([string, fret, finger]) => {
                 const x = 10 + string * 16, y = fret * 20;
                 html += `<circle cx="${x}" cy="${y}" r="7" fill="${fret === 0 ? 'none' : 'var(--accent)'}" stroke="${fret === 0 ? '#888' : 'none'}"/>`;
@@ -2151,7 +2151,7 @@
         }
         function parseChordResponse(text) {
             const matches = text.match(/[A-G][#b]?(maj|dim|aug|m)?7?/g);
-            if (matches && matches.length >= 3) return matches.filter(c => CHORD_NOTES[c] || CHORD_NOTES[c.replace('7', '')]).slice(0, 8);
+            if (matches && matches.length >= 3) return matches.filter(c => isValidChord(c)).slice(0, 8);
             return null;
         }
         async function aiGenerate(type) {
@@ -2314,6 +2314,7 @@
             reader.onload = e => {
                 try {
                     ensurePlaybackStopped();
+                    saveStateForUndo();
                     const data = JSON.parse(e.target.result);
                     Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
                     updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
@@ -2948,7 +2949,7 @@
             if (btn) { btn.textContent = '⏸️ Pause'; btn.classList.add('playing'); }
 
             const beatMs = 60000 / currentLearnSong.tempo;
-            const beatsPerChord = currentLearnSong.timeSignature === '3/4' ? 3 : 4;
+            const beatsPerChord = parseInt(currentLearnSong.timeSignature.split('/')[0]) || 4;
 
             // Play first chord
             highlightLyricLine(0);
