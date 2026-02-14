@@ -2258,7 +2258,7 @@
             const name = document.getElementById('songNameInput').value.trim();
             if (!name) { showToast('⚠️ Enter a name'); return; }
             const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
-            songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo } });
+            songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo, timeSignature: state.timeSignature } });
             try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); }
             catch(e) { showToast('⚠️ Storage full — delete old songs to free space'); return; }
             closeSaveModal(); renderSavedSongs();
@@ -2276,8 +2276,8 @@
             if (songs[index]) {
                 ensurePlaybackStopped();
                 const { data } = songs[index];
-                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
-                closeSheet(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
+                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
+                closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
             }
         }
         function deleteSong(index) {
@@ -2294,8 +2294,8 @@
                 try {
                     ensurePlaybackStopped();
                     const data = JSON.parse(e.target.result);
-                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), currentSection: 0, currentChordIndex: 0 });
-                    renderAll(); showToast('📂 Loaded from file');
+                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
+                    updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
                 } catch { showToast('⚠️ Invalid file'); }
             };
             reader.readAsText(file);
@@ -3986,9 +3986,10 @@
                         genre: data.song.genre || state.genre,
                         baseTempo: data.song.tempo || state.baseTempo,
                         tempo: Math.round((data.song.tempo || state.baseTempo) * state.speedMultiplier),
+                        timeSignature: songData.timeSignature || '4/4',
                         currentSection: 0, currentChordIndex: 0
                     });
-                    closeSheet(); renderAll();
+                    closeSheet(); updateBeatDotContainers(); renderAll();
                     showToast(`☁️ Loaded "${data.song.title}"`);
                 }
             } catch (e) {
@@ -4017,7 +4018,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title: name,
-                        song: { sections: state.sections },
+                        song: { sections: state.sections, timeSignature: state.timeSignature },
                         key: state.key,
                         scale: state.key.includes('m') ? 'minor' : 'major',
                         genre: state.genre,
@@ -4198,7 +4199,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         title,
-                        song: { sections: transposedSections },
+                        song: { sections: transposedSections, timeSignature: state.timeSignature },
                         key: state.key,
                         scale: state.key.includes('m') ? 'minor' : 'major',
                         genre: state.genre,
