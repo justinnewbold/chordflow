@@ -1876,7 +1876,25 @@
             }
         }
 
-        function getChordNotes(chord) { return CHORD_NOTES[chord] || CHORD_NOTES[chord.replace('7', '')] || CHORD_NOTES['C']; }
+        const REVERSE_ENHARMONIC = { 'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb' };
+        function getChordNotes(chord) {
+            if (CHORD_NOTES[chord]) return CHORD_NOTES[chord];
+            const no7 = chord.replace('7', '');
+            if (CHORD_NOTES[no7]) return CHORD_NOTES[no7];
+            // Strip to root + basic quality (m but not maj)
+            const m = chord.match(/^([A-G][#b]?)(m(?!aj)|)(.*)/);
+            if (m) {
+                const [, root, quality] = m;
+                const basic = root + quality;
+                if (CHORD_NOTES[basic]) return CHORD_NOTES[basic];
+                // Try enharmonic: sharp→flat or flat→sharp
+                const flat = REVERSE_ENHARMONIC[root];
+                if (flat && CHORD_NOTES[flat + quality]) return CHORD_NOTES[flat + quality];
+                const sharp = normalizeNote(root);
+                if (sharp !== root && CHORD_NOTES[sharp + quality]) return CHORD_NOTES[sharp + quality];
+            }
+            return CHORD_NOTES['C'];
+        }
         async function playChord(chord, duration = '2n') {
             await initAudio();
             const notes = getChordNotes(chord);
@@ -2180,9 +2198,10 @@
         // Export
         function exportMIDI() {
             const chords = getTransposedProgression();
-            const ticksPerBeat = 480, beatsPerChord = 2;
+            const ticksPerBeat = 480, beatsPerChord = getBeatsPerMeasure();
             const header = [0x4D, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06, 0x00, 0x00, 0x00, 0x01, (ticksPerBeat >> 8) & 0xFF, ticksPerBeat & 0xFF];
-            const trackEvents = [[0x00, 0xFF, 0x51, 0x03, 0x07, 0xA1, 0x20], [0x00, 0xC0, 0x00]];
+            const microsecondsPerBeat = Math.round(60000000 / state.tempo);
+            const trackEvents = [[0x00, 0xFF, 0x51, 0x03, (microsecondsPerBeat >> 16) & 0xFF, (microsecondsPerBeat >> 8) & 0xFF, microsecondsPerBeat & 0xFF], [0x00, 0xC0, 0x00]];
             const noteMap = { 'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11 };
             const noteToMidi = n => { const m = n.match(/([A-G][#b]?)(\d)/); if (!m) return 60; const norm = normalizeNote(m[1]); return (noteMap[norm] ?? 0) + (parseInt(m[2]) + 1) * 12; };
             const varLength = v => { if (v < 128) return [v]; const b = []; b.unshift(v & 0x7F); v >>= 7; while (v > 0) { b.unshift((v & 0x7F) | 0x80); v >>= 7; } return b; };
@@ -2385,7 +2404,9 @@
             if (cdLoopBtn) cdLoopBtn.classList.toggle('active', state.isLooping);
             const countInBtn = document.getElementById('countInBtn');
             if (countInBtn) countInBtn.classList.toggle('active', state.countInEnabled);
-            
+            // Sync time signature buttons
+            document.querySelectorAll('.ts-btn').forEach(b => b.classList.toggle('active', b.textContent === state.timeSignature));
+
             const chordVol = document.getElementById('chordVolume');
             if (chordVol) chordVol.value = state.chordVolume;
             const bassVol = document.getElementById('bassVolume');
@@ -3246,7 +3267,7 @@
             if (params.has('k')) state.key = newKey;
             if (params.has('g')) { const g = params.get('g'); if (genres.find(x => x.id === g)) state.genre = g; }
             if (params.has('t')) { const t = parseInt(params.get('t')); if (t >= 20 && t <= 300) { state.baseTempo = t; state.tempo = Math.round(t * state.speedMultiplier); } }
-            if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4'].includes(ts)) state.timeSignature = ts; }
+            if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4', '6/8'].includes(ts)) state.timeSignature = ts; }
             state.currentSection = 0;
             state.currentChordIndex = 0;
             // Clean URL without reloading
