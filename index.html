@@ -1963,9 +1963,11 @@
 
         // Progression
         function generateProgression() {
+            const section = state.sections[state.currentSection];
+            if (!section) return;
             saveStateForUndo();
             const progs = progressions[state.genre] || progressions.pop;
-            state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
+            section.progression = [...progs[Math.floor(Math.random() * progs.length)]];
             state.currentChordIndex = 0;
             renderAll();
             showToast(`🎲 Generated ${state.genre} progression`);
@@ -2064,7 +2066,7 @@
         }
         function mkBass(chord) {
             const root = getChordNotes(chord)[0].replace(/\d/, '');
-            const fm = {'E':0,'F':1,'F#':2,'Gb':2,'G':3,'G#':4,'Ab':4,'A':0,'A#':1,'Bb':1,'B':2,'C':3,'C#':4,'Db':4,'D':5,'D#':6,'Eb':6};
+            const fm = {'E':0,'F':1,'F#':2,'Gb':2,'G':3,'G#':4,'Ab':4,'A':5,'A#':6,'Bb':6,'B':7,'C':8,'C#':9,'Db':9,'D':10,'D#':11,'Eb':11};
             const f = fm[root] ?? 0;
             const onE = f <= 4;
             return `<div class="bass-tab">G|--------<br>D|--------<br>A|${onE?'--------':'--'+(f-5)+'--'}<br>E|${onE?'--'+f+'--':'--------'}</div>`;
@@ -2276,7 +2278,7 @@
         function confirmSaveSong() {
             const name = document.getElementById('songNameInput').value.trim();
             if (!name) { showToast('⚠️ Enter a name'); return; }
-            const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
+            const songs = safeJsonParse('chordflow-songs') || [];
             songs.push({ name, date: new Date().toISOString(), data: { sections: state.sections, key: state.key, genre: state.genre, tempo: state.baseTempo, timeSignature: state.timeSignature } });
             try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); }
             catch(e) { showToast('⚠️ Storage full — delete old songs to free space'); return; }
@@ -2291,7 +2293,7 @@
             }
         }
         function loadSong(index) {
-            const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
+            const songs = safeJsonParse('chordflow-songs') || [];
             if (songs[index]) {
                 ensurePlaybackStopped();
                 const { data } = songs[index];
@@ -2300,7 +2302,7 @@
             }
         }
         function deleteSong(index) {
-            const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
+            const songs = safeJsonParse('chordflow-songs') || [];
             const name = songs[index]?.name;
             songs.splice(index, 1);
             try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); } catch(e) {}
@@ -2321,7 +2323,7 @@
             event.target.value = '';
         }
         function renderSavedSongs() {
-            const songs = JSON.parse(localStorage.getItem('chordflow-songs') || '[]');
+            const songs = safeJsonParse('chordflow-songs') || [];
             const html = songs.length === 0 ? '<p style="color:var(--text-secondary);text-align:center;">No saved songs yet</p>' :
                 songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
             const savedList = document.getElementById('savedSongsList');
@@ -2368,7 +2370,7 @@
             renderCloudSongsPrompt();
             if (authState.user) loadCloudSongs();
             // Load locally published community songs
-            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            const localCommunity = safeJsonParse('chordflow-community') || [];
             localCommunity.forEach(s => { if (!DEMO_COMMUNITY_SONGS.find(d => d.id === s.id)) DEMO_COMMUNITY_SONGS.unshift(s); });
             // Update version display
             const versionDisplay = document.getElementById('versionDisplay');
@@ -4254,7 +4256,7 @@
                 created_at: new Date().toISOString()
             };
             // Add to local community cache
-            const localCommunity = JSON.parse(localStorage.getItem('chordflow-community') || '[]');
+            const localCommunity = safeJsonParse('chordflow-community') || [];
             localCommunity.unshift(localSong);
             try { localStorage.setItem('chordflow-community', JSON.stringify(localCommunity)); } catch(e) {}
             DEMO_COMMUNITY_SONGS.unshift(localSong);
