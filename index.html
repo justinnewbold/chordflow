@@ -2628,6 +2628,7 @@
             const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
             const prog = state.sections[state.currentSection].progression;
             if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= prog.length) return;
+            if (targetIndex < 0 || targetIndex >= prog.length) return;
             if (sourceIndex === targetIndex) return;
             saveStateForUndo();
             const [moved] = prog.splice(sourceIndex, 1);
@@ -2934,8 +2935,11 @@
             currentLearnSong = null;
         }
 
+        let learnTogglePending = false;
         async function toggleLearnSongPlay() {
-            if (!currentLearnSong) return;
+            if (learnTogglePending || !currentLearnSong) return;
+            learnTogglePending = true;
+            try {
             await initAudio();
             if (learnSongPlaying) {
                 stopLearnSongPlay();
@@ -2964,6 +2968,9 @@
                 highlightLyricLine(learnSongChordIndex);
                 playChord(currentLearnSong.lyrics[learnSongChordIndex].chord, '2n');
             }, beatMs * beatsPerChord);
+            } finally {
+                learnTogglePending = false;
+            }
         }
 
         function stopLearnSongPlay() {
