@@ -178,6 +178,13 @@
         .toggle-switch::after { content: ''; position: absolute; width: 26px; height: 26px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all var(--transition-fast); }
         .toggle-switch.active { background: var(--accent-green); }
         .toggle-switch.active::after { left: 23px; }
+        .ts-btns { display: flex; gap: var(--spacing-xs); }
+        .ts-btn { padding: 6px 12px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .ts-btn.active { background: var(--accent); color: white; }
+        .swing-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
+        .swing-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .swing-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .dgm-tab.active { background: var(--accent) !important; color: white !important; }
 
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
         .export-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; }
@@ -3276,7 +3283,7 @@
             state.sections[0].progression = chords.map(c => transposeChord(c, -semitones));
             if (params.has('k')) state.key = newKey;
             if (params.has('g')) { const g = params.get('g'); if (genres.find(x => x.id === g)) state.genre = g; }
-            if (params.has('t')) { const t = parseInt(params.get('t')); if (t >= 20 && t <= 300) { state.baseTempo = t; state.tempo = Math.round(t * state.speedMultiplier); } }
+            if (params.has('t')) { const t = parseInt(params.get('t')); if (t >= 40 && t <= 200) { state.baseTempo = t; state.tempo = Math.round(t * state.speedMultiplier); } }
             if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4', '6/8'].includes(ts)) state.timeSignature = ts; }
             state.currentSection = 0;
             state.currentChordIndex = 0;
