@@ -1999,26 +1999,28 @@
 
         // Undo/Redo
         function saveStateForUndo() {
-            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre }));
+            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             if (state.undoStack.length > 30) state.undoStack.shift();
             state.redoStack = [];
             updateUndoButtons();
         }
         function undo() {
             if (state.undoStack.length === 0) return;
-            state.redoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre }));
+            state.redoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const prev = JSON.parse(state.undoStack.pop());
             Object.assign(state, prev);
+            state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
             state.currentChordIndex = 0;
-            renderAll(); showToast('↩️ Undo');
+            updateBeatDotContainers(); updateTempoDisplay(); renderAll(); showToast('↩️ Undo');
         }
         function redo() {
             if (state.redoStack.length === 0) return;
-            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre }));
+            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const next = JSON.parse(state.redoStack.pop());
             Object.assign(state, next);
+            state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
             state.currentChordIndex = 0;
-            renderAll(); showToast('↪️ Redo');
+            updateBeatDotContainers(); updateTempoDisplay(); renderAll(); showToast('↪️ Redo');
         }
         function updateUndoButtons() {
             const undoBtn = document.getElementById('undoBtn'), redoBtn = document.getElementById('redoBtn');
@@ -2303,6 +2305,7 @@
             const songs = safeJsonParse('chordflow-songs') || [];
             if (songs[index]) {
                 ensurePlaybackStopped();
+                saveStateForUndo();
                 const { data } = songs[index];
                 Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
                 closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
@@ -4006,6 +4009,7 @@
                 const data = await res.json();
                 if (data.song) {
                     ensurePlaybackStopped();
+                    saveStateForUndo();
                     const songData = JSON.parse(data.song.song_data);
                     // Published songs store absolute chords — reverse-transpose to relative
                     if (data.song.is_public && songData.sections) {
