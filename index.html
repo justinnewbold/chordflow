@@ -1885,6 +1885,7 @@
 
         const REVERSE_ENHARMONIC = { 'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab', 'A#': 'Bb' };
         function getChordNotes(chord) {
+            if (!chord) return CHORD_NOTES['C'];
             if (CHORD_NOTES[chord]) return CHORD_NOTES[chord];
             const no7 = chord.replace('7', '');
             if (CHORD_NOTES[no7]) return CHORD_NOTES[no7];
@@ -2159,7 +2160,7 @@
             } catch { return null; }
         }
         function parseChordResponse(text) {
-            const matches = text.match(/[A-G][#b]?(maj|dim|aug|m)?7?/g);
+            const matches = text.match(/[A-G][#b]?(?:maj|dim|aug|sus[24]|add|m)?(?:7|9|11|13)?/g);
             if (matches && matches.length >= 3) return matches.filter(c => isValidChord(c)).slice(0, 8);
             return null;
         }
@@ -2797,8 +2798,8 @@
         function advanceChord() {
             const displayChords = getTransposedProgression();
             const hasABLoop = state.abLoopStart >= 0 && state.abLoopEnd >= 0 && state.abLoopStart !== state.abLoopEnd;
-            const loopStart = hasABLoop ? Math.min(state.abLoopStart, state.abLoopEnd) : 0;
-            const loopEnd = hasABLoop ? Math.max(state.abLoopStart, state.abLoopEnd) : displayChords.length - 1;
+            const loopStart = hasABLoop ? Math.min(Math.min(state.abLoopStart, state.abLoopEnd), displayChords.length - 1) : 0;
+            const loopEnd = hasABLoop ? Math.min(Math.max(state.abLoopStart, state.abLoopEnd), displayChords.length - 1) : displayChords.length - 1;
 
             state.currentChordIndex++;
             if (state.currentChordIndex > loopEnd || state.currentChordIndex >= displayChords.length) {
@@ -3989,7 +3990,7 @@
                             <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
-                                    <div class="saved-song-meta">${escapeHtml(s.genre) || ''} | ${escapeHtml(s.key_signature) || ''} | ${new Date(s.created_at).toLocaleDateString()}</div>
+                                    <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
                                 <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
                             </div>
@@ -4163,8 +4164,8 @@
                             <span class="community-song-genre">${escapeHtml(genreLabel)}</span>
                         </div>
                         <div class="community-song-meta">
-                            <span>👤 ${escapeHtml(song.user_name) || 'Anonymous'}</span>
-                            <span>🎵 ${escapeHtml(song.key_signature) || 'C'}</span>
+                            <span>👤 ${escapeHtml(song.user_name || 'Anonymous')}</span>
+                            <span>🎵 ${escapeHtml(song.key_signature || 'C')}</span>
                             <span>🥁 ${parseInt(song.tempo) || 120} BPM</span>
                             ${song.likes ? `<span>❤️ ${song.likes}</span>` : ''}
                         </div>
@@ -4626,7 +4627,17 @@
             const list = document.getElementById('genreList'); if (!list) return;
             list.innerHTML = genres.map(g => `<div class="option-item ${state.genre === g.id ? 'selected' : ''}" onclick="selectGenre('${g.id}')"><span class="option-icon">${g.icon}</span><div class="option-text"><div class="option-title">${g.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-        function selectGenre(id) { state.genre = id; generateProgression(); closeSheet(); }
+        function selectGenre(id) {
+            saveStateForUndo();
+            state.genre = id;
+            const section = state.sections[state.currentSection];
+            if (section) {
+                const progs = progressions[id] || progressions.pop;
+                section.progression = [...progs[Math.floor(Math.random() * progs.length)]];
+            }
+            state.currentChordIndex = 0;
+            renderAll(); closeSheet();
+        }
 
         // Modals
         function showShortcuts() { closeSheet(); document.getElementById('shortcutsModal').classList.add('active'); }
