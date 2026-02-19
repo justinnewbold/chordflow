@@ -2559,7 +2559,7 @@
             state.sections.splice(i, 1);
             if (state.currentSection >= state.sections.length) state.currentSection = state.sections.length - 1;
             else if (state.currentSection > i) state.currentSection--;
-            if (state.arrangementSectionIndex >= state.sections.length) state.arrangementSectionIndex = 0;
+            if (state.arrangementSectionIndex >= state.sections.length) state.arrangementSectionIndex = state.sections.length - 1;
             else if (state.arrangementSectionIndex > i) state.arrangementSectionIndex--;
             state.currentChordIndex = 0;
             renderAll(); showToast(`🗑️ Deleted ${name}`);
@@ -2648,7 +2648,7 @@
             renderAll();
             showToast('🔀 Chords reordered');
         }
-        async function playChordAtIndex(i) { state.currentChordIndex = i; renderAll(); await playChord(getTransposedProgression()[i], '4n'); }
+        async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); await playChord(chords[i], '4n'); }
 
         // Sheet Flow
         function renderSheetFlowUI() {
@@ -2673,7 +2673,7 @@
             const sfTempo = document.getElementById('sfTempo');
             if (sfTempo) sfTempo.textContent = state.tempo;
         }
-        function sfSelectChord(i) { state.currentChordIndex = i; renderAll(); playChord(getTransposedProgression()[i], '4n'); }
+        function sfSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); playChord(chords[i], '4n'); }
         function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); }
         function openSFPanel(side) { 
             const overlay = document.getElementById('sfOverlay');
@@ -2736,7 +2736,7 @@
         function cdGoToCard(i) { state.currentCardIndex = i; renderCardStack(); }
         function cdExpandCard(card) { if (cdExpandedCard) return; cdExpandedCard = card; card.classList.add('expanded'); }
         function cdCollapseCard() { if (cdExpandedCard) { cdExpandedCard.classList.remove('expanded'); cdExpandedCard = null; } }
-        function cdSelectChord(i) { state.currentChordIndex = i; renderAll(); playChord(getTransposedProgression()[i], '4n'); }
+        function cdSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); playChord(chords[i], '4n'); }
         function renderCardDeckUI() { if (state.uiMode === 'cards') renderCardStack(); }
 
         // Playback
@@ -2825,7 +2825,7 @@
                         state.currentSection = 0;
                         renderAll();
                     }
-                    handleAutoSpeedUp();
+                    if (handleAutoSpeedUp()) return; // restartPlayback already played the chord
                 } else { stopPlayback(); return; }
             }
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
@@ -2963,13 +2963,14 @@
             }
             // Clear any orphaned interval before creating a new one
             if (learnSongInterval) { clearInterval(learnSongInterval); learnSongInterval = null; }
+            if (!currentLearnSong.lyrics || currentLearnSong.lyrics.length === 0) { showToast('⚠️ No chords to play'); return; }
             learnSongPlaying = true;
             learnSongChordIndex = 0;
             const btn = document.getElementById('learnPlayBtn');
             if (btn) { btn.textContent = '⏸️ Pause'; btn.classList.add('playing'); }
 
-            const beatMs = 60000 / currentLearnSong.tempo;
-            const beatsPerChord = parseInt(currentLearnSong.timeSignature.split('/')[0]) || 4;
+            const beatMs = 60000 / (currentLearnSong.tempo || 120);
+            const beatsPerChord = parseInt(currentLearnSong.timeSignature?.split('/')[0]) || 4;
 
             // Play first chord
             highlightLyricLine(0);
@@ -3017,7 +3018,7 @@
             state.sections = [{
                 name: currentLearnSong.title.substring(0, 20),
                 icon: '📚',
-                progression: currentLearnSong.chords.map(c => transposeChord(c, -semitones))
+                progression: semitones > 0 ? currentLearnSong.chords.map(c => transposeChord(c, -semitones)) : [...currentLearnSong.chords]
             }];
             state.key = learnKey;
             state.baseTempo = currentLearnSong.tempo;
@@ -3242,7 +3243,7 @@
             if (state.autoSpeedUp && label) label.textContent = `🏃 Auto Speed-Up: +${val} BPM/loop`;
         }
         function handleAutoSpeedUp() {
-            if (!state.autoSpeedUp) return;
+            if (!state.autoSpeedUp) return false;
             autoSpeedLoopCount++;
             const newTempo = state.baseTempo + (state.autoSpeedIncrement * autoSpeedLoopCount);
             if (newTempo <= 200) {
@@ -3250,12 +3251,14 @@
                 updateTempoDisplay();
                 restartPlayback();
                 showToast(`🏃 Tempo → ${state.tempo} BPM`);
+                return true;
             } else {
                 showToast('🏁 Max tempo reached!');
                 state.autoSpeedUp = false;
                 const btn = document.getElementById('autoSpeedBtn');
                 if (btn) { btn.textContent = 'OFF'; btn.classList.remove('active'); }
             }
+            return false;
         }
 
         // ============ SHARE PROGRESSION VIA LINK ============
@@ -3527,8 +3530,10 @@
         // ============ INLINE CHORD EDITING ============
         let editingChordIndex = -1;
         function openChordEditModal(index) {
+            const chords = getTransposedProgression();
+            if (index < 0 || index >= chords.length) return;
             editingChordIndex = index;
-            const chord = getTransposedProgression()[index];
+            const chord = chords[index];
             const input = document.getElementById('chordEditInput');
             if (input) { input.value = chord; }
             document.getElementById('chordEditModal').classList.add('active');
@@ -4193,7 +4198,7 @@
             const newKey = song.key_signature || state.key;
             const keyRoot = normalizeNote(newKey.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
-            state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
+            state.sections[state.currentSection].progression = semitones > 0 ? chords.map(c => transposeChord(c, -semitones)) : [...chords];
             if (song.key_signature) state.key = song.key_signature;
             if (song.genre) state.genre = song.genre;
             if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
