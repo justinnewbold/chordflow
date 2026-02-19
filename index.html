@@ -2779,7 +2779,14 @@
             const beatMs = 60000 / state.tempo;
             const beatsPerChord = getBeatsPerMeasure();
             state.currentBeat = 0;
-            
+
+            // Play first beat immediately with chord
+            playMetronomeTick(true);
+            playDrumBeat(0);
+            updateBeatDots(0);
+            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
+            state.currentBeat = 1;
+
             beatInterval = setInterval(() => {
                 playMetronomeTick(state.currentBeat === 0);
                 playDrumBeat(state.currentBeat);
@@ -2790,9 +2797,7 @@
                     advanceChord();
                 }
             }, beatMs);
-            
-            // Play first chord immediately
-            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
+
             renderAll();
         }
         function advanceChord() {
