@@ -2358,6 +2358,10 @@
             setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
         }
         function skipOnboarding() {
+            if (state.selectedOnboardingMode) {
+                state.uiMode = state.selectedOnboardingMode;
+                localStorage.setItem('chordflow-ui', state.uiMode);
+            }
             localStorage.setItem('chordflow-onboarding', 'complete');
             state.onboardingComplete = true;
             document.getElementById('onboarding').classList.add('hidden');
@@ -2541,7 +2545,7 @@
                 </button>
             `).join('') + `<button class="add-section-btn" onclick="addSection()">+ Add</button>`;
         }
-        function selectSection(i) { state.currentSection = i; state.currentChordIndex = 0; renderAll(); showToast(`${state.sections[i].icon} ${state.sections[i].name}`); }
+        function selectSection(i) { if (i < 0 || i >= state.sections.length) return; state.currentSection = i; state.currentChordIndex = 0; renderAll(); showToast(`${state.sections[i].icon} ${state.sections[i].name}`); }
         function addSection() {
             saveStateForUndo();
             const names = ['Intro', 'Verse 2', 'Pre-Chorus', 'Outro', 'Solo'];
@@ -2674,7 +2678,7 @@
             if (sfTempo) sfTempo.textContent = state.tempo;
         }
         function sfSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); playChord(chords[i], '4n'); }
-        function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); }
+        function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); const inst = instruments.find(i => i.id === id); showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`); }
         function openSFPanel(side) { 
             const overlay = document.getElementById('sfOverlay');
             if (overlay) overlay.classList.add('active'); 
@@ -4190,9 +4194,15 @@
             }).join('');
         }
         function loadCommunitySong(song) {
-            let chords;
-            try { chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F']; }
-            catch(e) { chords = ['C', 'G', 'Am', 'F']; }
+            let chords, songTS = '4/4';
+            try {
+                if (song.chords) { chords = song.chords; }
+                else if (song.song_data) {
+                    const parsed = JSON.parse(song.song_data);
+                    chords = parsed.sections?.[0]?.progression || ['C', 'G', 'Am', 'F'];
+                    if (parsed.timeSignature) songTS = parsed.timeSignature;
+                } else { chords = ['C', 'G', 'Am', 'F']; }
+            } catch(e) { chords = ['C', 'G', 'Am', 'F']; }
             ensurePlaybackStopped();
             saveStateForUndo();
             const newKey = song.key_signature || state.key;
@@ -4202,7 +4212,7 @@
             if (song.key_signature) state.key = song.key_signature;
             if (song.genre) state.genre = song.genre;
             if (song.tempo) { state.baseTempo = song.tempo; state.tempo = Math.round(song.tempo * state.speedMultiplier); }
-            state.timeSignature = '4/4';
+            state.timeSignature = songTS;
             state.currentChordIndex = 0;
             closeCommunity();
             updateBeatDotContainers(); renderAll();
@@ -4619,13 +4629,14 @@
             const list = document.getElementById('instrumentList'); if (!list) return;
             list.innerHTML = instruments.map(inst => `<div class="option-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="selectInstrument('${inst.id}')"><span class="option-icon">${inst.icon}</span><div class="option-text"><div class="option-title">${inst.name}</div></div><span class="option-check">✓</span></div>`).join('');
         }
-        function selectInstrument(id) { 
-            state.instrument = id; 
-            if (audioInit) createSynth(); 
+        function selectInstrument(id) {
+            state.instrument = id;
+            if (audioInit) createSynth();
+            const inst = instruments.find(i => i.id === id);
             const btn = document.getElementById('instrumentBtn');
-            if (btn) btn.textContent = instruments.find(i => i.id === id).icon; 
-            closeSheet(); 
-            showToast(`${instruments.find(i => i.id === id).icon} ${instruments.find(i => i.id === id).name}`); 
+            if (btn) btn.textContent = inst?.icon || '🎵';
+            closeSheet();
+            showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`);
         }
         function renderKeyOptions() {
             const majorList = document.getElementById('majorKeyList'), minorList = document.getElementById('minorKeyList');

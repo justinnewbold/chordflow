@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     
     if (req.method === 'OPTIONS') return res.status(200).end();
 
+    if (!supabaseKey) return res.status(500).json({ error: 'Supabase not configured' });
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { action } = req.query;
 
@@ -144,7 +145,9 @@ async function shareSong(req, res, supabase) {
 
     if (error) return res.status(400).json({ error: error.message });
     
-    const shareUrl = `https://chordflow-newbold-cloud.vercel.app/?song=${data.id}`;
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'chordflow-newbold-cloud.vercel.app';
+    const shareUrl = `${proto}://${host}/?song=${data.id}`;
     return res.status(200).json({ shareUrl, song: data });
 }
 
