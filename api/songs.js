@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     
     if (req.method === 'OPTIONS') return res.status(200).end();
 
+    if (!supabaseKey) return res.status(500).json({ error: 'Supabase not configured' });
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { action } = req.query;
 
@@ -90,10 +91,10 @@ async function loadSongs(req, res, supabase) {
     return res.status(200).json({ songs: data });
 }
 
-// Get a specific song by ID (for sharing)
+// Get a specific song by ID (for sharing or loading user's own)
 async function getSong(req, res, supabase) {
-    const { id } = req.query;
-    
+    const { id, userId } = req.query;
+
     if (!id) return res.status(400).json({ error: 'Song ID required' });
 
     const { data, error } = await supabase
@@ -103,9 +104,9 @@ async function getSong(req, res, supabase) {
         .single();
 
     if (error) return res.status(404).json({ error: 'Song not found' });
-    
-    // Only return if public or owned by user
-    if (!data.is_public) {
+
+    // Allow access if public or owned by the requesting user
+    if (!data.is_public && data.user_id !== userId) {
         return res.status(403).json({ error: 'This song is private' });
     }
 
@@ -131,8 +132,8 @@ async function deleteSong(req, res, supabase) {
 // Make a song public/shareable
 async function shareSong(req, res, supabase) {
     const { id, userId, isPublic } = req.body;
-    
-    if (!id) return res.status(400).json({ error: 'Song ID required' });
+
+    if (!id || !userId) return res.status(400).json({ error: 'Song ID and user required' });
 
     const { data, error } = await supabase
         .from('songs')
@@ -144,20 +145,24 @@ async function shareSong(req, res, supabase) {
 
     if (error) return res.status(400).json({ error: error.message });
     
-    const shareUrl = `https://chordflow-newbold-cloud.vercel.app/?song=${data.id}`;
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host || 'chordflow-newbold-cloud.vercel.app';
+    const shareUrl = `${proto}://${host}/?song=${data.id}`;
     return res.status(200).json({ shareUrl, song: data });
 }
 
 // Get community (public) songs
 async function getCommunity(req, res, supabase) {
-    const { genre, limit = 20, offset = 0 } = req.query;
-    
+    const { genre, limit: limitStr = '20', offset: offsetStr = '0' } = req.query;
+    const parsedLimit = Math.min(Math.max(parseInt(limitStr, 10) || 20, 1), 100);
+    const parsedOffset = Math.max(parseInt(offsetStr, 10) || 0, 0);
+
     let query = supabase
         .from('songs')
-        .select('id, title, key_signature, scale, genre, tempo, created_at, user_id')
+        .select('id, title, key_signature, scale, genre, tempo, created_at, user_id, song_data')
         .eq('is_public', true)
         .order('created_at', { ascending: false })
-        .range(offset, offset + parseInt(limit) - 1);
+        .range(parsedOffset, parsedOffset + parsedLimit - 1);
 
     if (genre && genre !== 'all') {
         query = query.eq('genre', genre);
