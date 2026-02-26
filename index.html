@@ -3172,8 +3172,8 @@
                 } else if (!isDim) {
                     degree = degree.toUpperCase();
                 }
-                if (is7th) degree += '7';
                 if (isDim) degree = degree.toLowerCase() + '°';
+                if (is7th) degree += '7';
                 return degree;
             }
             return chromMap[interval] || '';
@@ -3615,6 +3615,10 @@
             if (prog.length <= 1) { showToast('⚠️ Need at least one chord'); closeChordEditModal(); return; }
             saveStateForUndo();
             const deleted = prog[editingChordIndex];
+            // Transpose to display name before showing in toast
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            const displayName = transposeChord(deleted, semitones);
             const deletedIdx = editingChordIndex;
             const deletedSection = state.currentSection;
             prog.splice(editingChordIndex, 1);
@@ -3625,7 +3629,7 @@
             state.lastDeletedSection = deletedSection;
             closeChordEditModal();
             renderAll();
-            showUndoToast(`Deleted "${deleted}"`);
+            showUndoToast(`Deleted "${displayName}"`);
         }
         function showUndoToast(msg) {
             const toast = document.getElementById('undoToast');
@@ -4032,12 +4036,12 @@
                             <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
                         </div>
                         ${data.songs.map((s, i) => `
-                            <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
+                            <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id)})">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
                                     <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
+                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id)})" title="Delete">🗑️</button>
                             </div>
                         `).join('')}`;
                 } else {
