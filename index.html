@@ -2076,7 +2076,8 @@
             for (let i = 1; i < frets; i++) html += `<line x1="10" y1="${10 + i * 20}" x2="90" y2="${10 + i * 20}" stroke="#666"/>`;
             for (let i = 0; i < strings; i++) html += `<line x1="${10 + i * 16}" y1="10" x2="${10 + i * 16}" y2="110" stroke="#888"/>`;
             const patterns = { 'C': [[0,1,0], [1,1,2], [2,2,3], [3,3,0]], 'Am': [[0,1,1], [1,2,2], [2,2,3]], 'G': [[0,2,3], [1,3,0], [5,3,0]], 'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0],[4,3,0],[5,1,0]] };
-            const p = patterns[chord.replace(/maj7|dim7|dim|aug|m7|7|m|sus\d/g, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
+            const strippedChord = chord.replace(/maj7|dim7|dim|aug|7|sus\d/g, '');
+            const p = patterns[strippedChord] || patterns[strippedChord.replace(/m$/, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
             p.forEach(([string, fret, finger]) => {
                 const x = 10 + string * 16, y = fret * 20;
                 html += `<circle cx="${x}" cy="${y}" r="7" fill="${fret === 0 ? 'none' : 'var(--accent)'}" stroke="${fret === 0 ? '#888' : 'none'}"/>`;
@@ -3193,8 +3194,10 @@
             const degrees = chords.map(c => getScaleDegree(c, key)).filter(Boolean);
             if (degrees.length < 2) return '';
 
-            // Detect common patterns
-            const degreeStr = degrees.join('-');
+            // Detect common patterns - strip extension suffixes (7, °) for matching
+            // so that e.g. vi7 still matches patterns expecting vi
+            const baseDegrees = degrees.map(d => d.replace(/[7°]/g, ''));
+            const degreeStr = baseDegrees.join('-');
             if (degreeStr.includes('I-V-vi-IV') || degreeStr.includes('I-V-VI-IV')) return 'The "Axis of Awesome" progression - used in hundreds of pop hits!';
             if (degreeStr.includes('I-IV-V')) return 'Classic I-IV-V: The foundation of rock, blues, and country music.';
             if (degreeStr.includes('vi-IV-I-V') || degreeStr.includes('VI-IV-I-V')) return 'The "sensitive" progression - common in emotional pop ballads.';
@@ -3384,8 +3387,8 @@
             const labels = ['B', 'E', 'A', 'D', 'G', 'B', 'e'];
             for (let s = 0; s < strings; s++) svg += `<text x="${padL+s*sw}" y="${padT-5}" text-anchor="middle" fill="var(--text-tertiary)" font-size="9">${labels[s]}</text>`;
             // Dots
-            const key = chord.replace(/7|maj7|m7|dim|aug|sus[24]/g, '');
-            const dots = GUITAR7_DIAGRAMS[key] || GUITAR7_DIAGRAMS['C'];
+            const stripped7 = chord.replace(/maj7|dim7|dim|aug|7|sus[24]/g, '');
+            const dots = GUITAR7_DIAGRAMS[stripped7] || GUITAR7_DIAGRAMS[stripped7.replace(/m$/, '')] || GUITAR7_DIAGRAMS['C'];
             dots.forEach(([str, fret]) => {
                 if (fret === 0) {
                     svg += `<circle cx="${padL+str*sw}" cy="${padT-1}" r="3" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>`;
