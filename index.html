@@ -1920,9 +1920,12 @@
         function getChordNotes(chord) {
             if (!chord) return CHORD_NOTES['C'];
             if (CHORD_NOTES[chord]) return CHORD_NOTES[chord];
-            const no7 = chord.replace('7', '');
-            if (CHORD_NOTES[no7]) return CHORD_NOTES[no7];
-            // Strip to root + basic quality (m but not maj)
+            // Dynamically compute notes from music theory to preserve extensions (7ths, etc.)
+            // This must run BEFORE stripping suffixes, otherwise chords like F#m7 or Bbmaj7
+            // would match the base triad (F#m, Bb) and lose their 7th/extension notes
+            const computed = computeChordNotes(chord);
+            if (computed) return computed;
+            // Fallback: strip to root + basic quality for enharmonic lookup
             const m = chord.match(/^([A-G][#b]?)(m(?!aj)|)(.*)/);
             if (m) {
                 const [, root, quality] = m;
@@ -1934,9 +1937,6 @@
                 const sharp = normalizeNote(root);
                 if (sharp !== root && CHORD_NOTES[sharp + quality]) return CHORD_NOTES[sharp + quality];
             }
-            // Dynamically compute notes from music theory instead of falling back to C
-            const computed = computeChordNotes(chord);
-            if (computed) return computed;
             return CHORD_NOTES['C'];
         }
         async function playChord(chord, duration = '2n') {
@@ -2278,6 +2278,7 @@
         }
         async function exportWAV() {
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
+            ensurePlaybackStopped();
             state.isRecording = true;
             await initAudio();
             if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
