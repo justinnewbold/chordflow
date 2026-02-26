@@ -2889,6 +2889,9 @@
             state.currentBeat = 0;
             state.arrangementSectionIndex = 0;
             autoSpeedLoopCount = 0;
+            // Reset tempo to base after auto speed-up inflation
+            state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
+            updateTempoDisplay();
             updatePlayButtons();
             updateBeatDots(0);
             renderAll();
@@ -3115,7 +3118,7 @@
         function isValidChord(chord) {
             // Check if we have notes for it or a stripped version
             if (CHORD_NOTES[chord]) return true;
-            const stripped = chord.replace(/7|maj7|m7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+            const stripped = chord.replace(/maj7|dim7|dim|aug|sus[24]|add\d|7|9|11|13/g, '');
             if (CHORD_NOTES[stripped] || CHORD_NOTES[stripped + 'm'] || ALL_NOTES.includes(normalizeNote(stripped))) return true;
             return false;
         }
@@ -4042,7 +4045,7 @@
         async function loadCloudSong(id) {
             try {
                 const userParam = authState.user ? `&userId=${encodeURIComponent(authState.user.id)}` : '';
-                const res = await fetch(`/api/songs?action=get&id=${id}${userParam}`);
+                const res = await fetch(`/api/songs?action=get&id=${encodeURIComponent(id)}${userParam}`);
                 const data = await res.json();
                 if (data.song) {
                     ensurePlaybackStopped();
@@ -4059,8 +4062,9 @@
                             }));
                         }
                     }
+                    const cloudSections = songData.sections?.length > 0 ? songData.sections : state.sections;
                     Object.assign(state, {
-                        sections: songData.sections || state.sections,
+                        sections: cloudSections,
                         key: data.song.key_signature || state.key,
                         genre: data.song.genre || state.genre,
                         baseTempo: data.song.tempo || state.baseTempo,
