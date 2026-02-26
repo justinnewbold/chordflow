@@ -39,9 +39,16 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // API calls: network only (don't cache)
+  // API calls: network only (don't cache), with offline fallback
   if (url.pathname.includes('/api/')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        new Response(JSON.stringify({ error: 'You are offline' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      )
+    );
     return;
   }
 
@@ -88,7 +95,10 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
             return response;
           })
-          .catch(() => cached);
+          .catch(() => {
+            if (cached) return cached;
+            return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+          });
         return cached || fetchPromise;
       })
   );

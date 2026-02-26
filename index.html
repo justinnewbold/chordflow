@@ -620,6 +620,13 @@
             .generate-btn { max-width: 600px; }
         }
 
+        /* Recording Overlay */
+        .recording-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-md); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .recording-overlay.active { opacity: 1; pointer-events: auto; }
+        .recording-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--accent-pink); animation: recordPulse 1s ease-in-out infinite; }
+        @keyframes recordPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+        .recording-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
         /* Delete undo toast */
         .undo-toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: var(--spacing-sm); z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: all 0.3s ease; }
         .undo-toast.show { opacity: 1; pointer-events: auto; }
@@ -3511,7 +3518,7 @@
                     state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
                 } else {
                     const simplified = getTransposedProgression().map(c => {
-                        return c.replace(/maj7|m7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+                        return c.replace(/maj7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
                     });
                     state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
                 }
@@ -4004,7 +4011,7 @@
             const cloudList = document.getElementById('cloudSongsList');
             if (!cloudList) return;
             try {
-                const res = await fetch(`/api/songs?action=load&userId=${authState.user.id}`);
+                const res = await fetch(`/api/songs?action=load&userId=${encodeURIComponent(authState.user.id)}`);
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
@@ -4030,7 +4037,7 @@
         }
         async function loadCloudSong(id) {
             try {
-                const userParam = authState.user ? `&userId=${authState.user.id}` : '';
+                const userParam = authState.user ? `&userId=${encodeURIComponent(authState.user.id)}` : '';
                 const res = await fetch(`/api/songs?action=get&id=${id}${userParam}`);
                 const data = await res.json();
                 if (data.song) {
