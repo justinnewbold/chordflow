@@ -9,14 +9,15 @@ export default async function handler(req, res) {
 
     const { action, chords, key, scale, genre, mood, theme } = req.body;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
-    
+
     if (!GEMINI_KEY) return res.status(500).json({ error: 'API key not configured' });
 
+    const chordStr = Array.isArray(chords) ? chords.join(' - ') : (chords || 'C - G - Am - F');
     const prompts = {
-        lyrics: `Write 4 song lyric lines for chords: ${chords?.join(' - ')}. Genre: ${genre}, Mood: ${mood}, Theme: ${theme || 'life'}. Return ONLY JSON array of 4 strings.`,
-        analyze: `Analyze chord progression ${chords?.join(' - ')} in ${key} ${scale} (${genre}). Brief analysis: what works, emotional journey, similar songs, one variation tip. Under 100 words.`,
-        continue: `Continue this ${genre} progression in ${key} ${scale}: ${chords?.join(' - ')}. Suggest 2 more chords. Return ONLY JSON array like ["Dm","G7"].`,
-        melody: `For chords ${chords?.join(' - ')} in ${key}, suggest 4 melody notes per chord. Return JSON array of arrays like [["C4","E4","G4","E4"]].`
+        lyrics: `Write 4 song lyric lines for chords: ${chordStr}. Genre: ${genre}, Mood: ${mood}, Theme: ${theme || 'life'}. Return ONLY JSON array of 4 strings.`,
+        analyze: `Analyze chord progression ${chordStr} in ${key} ${scale} (${genre}). Brief analysis: what works, emotional journey, similar songs, one variation tip. Under 100 words.`,
+        continue: `Continue this ${genre} progression in ${key} ${scale}: ${chordStr}. Suggest 2 more chords. Return ONLY JSON array like ["Dm","G7"].`,
+        melody: `For chords ${chordStr} in ${key}, suggest 4 melody notes per chord. Return JSON array of arrays like [["C4","E4","G4","E4"]].`
     };
 
     const prompt = prompts[action];

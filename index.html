@@ -2206,35 +2206,38 @@
             state.aiLoading = true;
             setAIButtonsLoading(true);
             saveStateForUndo();
-            const keyInfo = getKeyInfo();
-            let prompt = '';
-            switch (type) {
-                case 'smart': prompt = `Generate a ${state.genre} chord progression in ${keyInfo.display}. Give exactly 4 chords. Just list chord names.`; break;
-                case 'surprise': prompt = `Generate a surprising unique chord progression. Use unexpected changes. Give 4-6 chords. Just list chord names.`; break;
-                case 'enhance': prompt = `Take these chords: ${getTransposedProgression().join(' ')} and make them more interesting with 7ths. Give 4-6 enhanced chords.`; break;
-                case 'genre': prompt = `Transform these chords: ${getTransposedProgression().join(' ')} into jazz style with 7ths. Give 4-6 chords.`; break;
+            try {
+                const keyInfo = getKeyInfo();
+                let prompt = '';
+                switch (type) {
+                    case 'smart': prompt = `Generate a ${state.genre} chord progression in ${keyInfo.display}. Give exactly 4 chords. Just list chord names.`; break;
+                    case 'surprise': prompt = `Generate a surprising unique chord progression. Use unexpected changes. Give 4-6 chords. Just list chord names.`; break;
+                    case 'enhance': prompt = `Take these chords: ${getTransposedProgression().join(' ')} and make them more interesting with 7ths. Give 4-6 enhanced chords.`; break;
+                    case 'genre': prompt = `Transform these chords: ${getTransposedProgression().join(' ')} into jazz style with 7ths. Give 4-6 chords.`; break;
+                }
+                showToast('✨ Asking AI...');
+                const response = await callGeminiAI(prompt);
+                const chords = response ? parseChordResponse(response) : null;
+                if (chords && chords.length >= 3) {
+                    // Reverse-transpose AI results to store in relative form
+                    const keyRoot = normalizeNote(state.key.replace('m', ''));
+                    const semitones = ALL_NOTES.indexOf(keyRoot);
+                    state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(`✨ AI generated ${chords.length} chords!`);
+                } else {
+                    // Inline fallback to avoid double undo from generateProgression()
+                    const progs = progressions[state.genre] || progressions.pop;
+                    state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast('🎲 Used smart fallback');
+                }
+            } finally {
+                state.aiLoading = false;
+                setAIButtonsLoading(false);
             }
-            showToast('✨ Asking AI...');
-            const response = await callGeminiAI(prompt);
-            const chords = response ? parseChordResponse(response) : null;
-            if (chords && chords.length >= 3) {
-                // Reverse-transpose AI results to store in relative form
-                const keyRoot = normalizeNote(state.key.replace('m', ''));
-                const semitones = ALL_NOTES.indexOf(keyRoot);
-                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(`✨ AI generated ${chords.length} chords!`);
-            } else {
-                // Inline fallback to avoid double undo from generateProgression()
-                const progs = progressions[state.genre] || progressions.pop;
-                state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast('🎲 Used smart fallback');
-            }
-            state.aiLoading = false;
-            setAIButtonsLoading(false);
         }
         function setAIButtonsLoading(loading) {
             ['aiMagicBtn', 'aiSurpriseBtn', 'aiEnhanceBtn', 'aiGenreBtn'].forEach(id => {
@@ -2663,9 +2666,9 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram('${chord}')">🎸</button>
-                    <div class="chord-name">${chord}</div>
-                    <div class="chord-type">${getChordTypeLabel(chord)}</div>
+                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord)})">🎸</button>
+                    <div class="chord-name">${escapeHtml(chord)}</div>
+                    <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
                 </div>`;
             }).join('');
@@ -2702,7 +2705,7 @@
             const label = document.getElementById('sfChordLabel');
             if (label) label.textContent = `${getChordTypeLabel(chord)} • Chord ${state.currentChordIndex + 1} of ${displayChords.length}`;
             const strip = document.getElementById('sfChordStrip');
-            if (strip) strip.innerHTML = displayChords.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${c}</div><div class="sf-strip-num">${i + 1}</div></div>`).join('');
+            if (strip) strip.innerHTML = displayChords.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${escapeHtml(c)}</div><div class="sf-strip-num">${i + 1}</div></div>`).join('');
             const instList = document.getElementById('sfInstrumentList');
             if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
             const secList = document.getElementById('sfSectionsList');
@@ -2747,7 +2750,7 @@
                 const offset = (i - state.currentCardIndex + cardTypes.length) % cardTypes.length;
                 const cardClass = offset === 0 ? 'active' : offset === 1 ? 'next' : offset === 2 ? 'behind' : 'hidden-card';
                 let body = '';
-                if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${chord}</div><div class="cd-chord-info">${getChordTypeLabel(chord)} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${c}</div>`).join('')}</div></div>`;
+                if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${escapeHtml(chord)}</div><div class="cd-chord-info">${escapeHtml(getChordTypeLabel(chord))} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${escapeHtml(c)}</div>`).join('')}</div></div>`;
                 else if (card.type === 'ai') body = `<div class="cd-tool-grid"><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('smart')"><span class="icon">✨</span><span class="label">AI Magic</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div></div>`;
                 else if (card.type === 'mixer') body = `<div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.chordVolume}" oninput="updateFader('chord', this.value)"><span class="fader-value cd-chord-vol">${state.chordVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.bassVolume}" oninput="updateFader('bass', this.value)"><span class="fader-value cd-bass-vol">${state.bassVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🔊 Master</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.masterVolume}" oninput="updateFader('master', this.value)"><span class="fader-value cd-master-vol">${state.masterVolume}%</span></div></div>`;
                 else body = `<div class="cd-tool-grid"><div class="cd-tool-item" onclick="event.stopPropagation(); exportMIDI()"><span class="icon">🎹</span><span class="label">MIDI</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportPDF()"><span class="icon">📄</span><span class="label">PDF</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSaveModal()"><span class="icon">💾</span><span class="label">Save</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSheet('songs')"><span class="icon">📂</span><span class="label">Load</span></div></div>`;
@@ -3675,44 +3678,47 @@
             state.aiLoading = true;
             const btn = document.getElementById('melodyBtn');
             if (btn) { btn.disabled = true; btn.classList.add('loading'); }
-            const chords = getTransposedProgression().join(' ');
-            const keyInfo = getKeyInfo();
-            const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
-            showToast('🎶 Getting melody idea...');
-            const response = await callGeminiAI(prompt);
-            const display = document.getElementById('melodyDisplay');
-            const text = document.getElementById('melodyText');
-            if (response && display && text) {
-                // Parse note names from response
-                const notes = response.match(/[A-G][#b]?\d/g);
-                if (notes && notes.length > 0) {
-                    text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
-                    display.classList.add('visible');
-                    // Play the melody
-                    await initAudio();
-                    notes.forEach((note, i) => {
-                        setTimeout(() => {
-                            try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
-                        }, i * 500);
-                    });
-                    showToast('🎶 Melody suggested!');
+            try {
+                const chords = getTransposedProgression().join(' ');
+                const keyInfo = getKeyInfo();
+                const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
+                showToast('🎶 Getting melody idea...');
+                const response = await callGeminiAI(prompt);
+                const display = document.getElementById('melodyDisplay');
+                const text = document.getElementById('melodyText');
+                if (response && display && text) {
+                    // Parse note names from response
+                    const notes = response.match(/[A-G][#b]?\d/g);
+                    if (notes && notes.length > 0) {
+                        text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
+                        display.classList.add('visible');
+                        // Play the melody
+                        await initAudio();
+                        notes.forEach((note, i) => {
+                            setTimeout(() => {
+                                try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
+                            }, i * 500);
+                        });
+                        showToast('🎶 Melody suggested!');
+                    } else {
+                        text.textContent = response.substring(0, 150);
+                        display.classList.add('visible');
+                        showToast('🎶 Got a suggestion');
+                    }
                 } else {
-                    text.textContent = response.substring(0, 150);
-                    display.classList.add('visible');
-                    showToast('🎶 Got a suggestion');
+                    // Fallback: generate simple melody from chord tones
+                    const prog = getTransposedProgression();
+                    const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
+                    if (display && text) {
+                        text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
+                        display.classList.add('visible');
+                    }
+                    showToast('🎶 Simple melody (root notes)');
                 }
-            } else {
-                // Fallback: generate simple melody from chord tones
-                const prog = getTransposedProgression();
-                const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
-                if (display && text) {
-                    text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
-                    display.classList.add('visible');
-                }
-                showToast('🎶 Simple melody (root notes)');
+            } finally {
+                state.aiLoading = false;
+                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
             }
-            state.aiLoading = false;
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
         }
 
         // ============ CHORD PRESET LIBRARY ============
