@@ -2023,11 +2023,12 @@
             return 'major';
         }
         function getChordTypeLabel(chord) {
+            if (chord.includes('dim7')) return chord.replace('dim7', '') + ' Diminished 7';
+            if (chord.includes('dim')) return chord.replace('dim', '') + ' Diminished';
+            if (chord.includes('aug')) return chord.replace('aug', '') + ' Augmented';
             if (chord.includes('maj7')) return chord.replace('maj7', '') + ' Major 7';
             if (chord.includes('m7')) return chord.replace('m7', '') + ' Minor 7';
             if (chord.includes('7')) return chord.replace('7', '') + ' Dominant 7';
-            if (chord.includes('dim')) return chord.replace('dim', '') + ' Diminished';
-            if (chord.includes('aug')) return chord.replace('aug', '') + ' Augmented';
             if (chord.includes('sus4')) return chord.replace('sus4', '') + ' Sus4';
             if (chord.includes('sus2')) return chord.replace('sus2', '') + ' Sus2';
             if (chord.includes('m')) return chord.replace('m', '') + ' minor';
@@ -2344,7 +2345,8 @@
                 ensurePlaybackStopped();
                 saveStateForUndo();
                 const { data } = songs[index];
-                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
+                const loadedSections = data.sections?.length > 0 ? data.sections : state.sections;
+                Object.assign(state, { sections: loadedSections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
                 closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
             }
         }
@@ -2363,7 +2365,8 @@
                     ensurePlaybackStopped();
                     saveStateForUndo();
                     const data = JSON.parse(e.target.result);
-                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
+                    const fileSections = data.sections?.length > 0 ? data.sections : state.sections;
+                    Object.assign(state, { sections: fileSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
                     updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
                 } catch { showToast('⚠️ Invalid file'); }
             };
@@ -3486,49 +3489,51 @@
             if (btn) { btn.disabled = true; btn.classList.add('loading'); }
             saveStateForUndo();
 
-            const currentChords = getTransposedProgression().join(' ');
-            const keyInfo = getKeyInfo();
-            let prompt = '';
-            if (type === 'jazzy') {
-                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
-            } else {
-                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
-            }
-
-            showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
-            const response = await callGeminiAI(prompt);
-            const chords = response ? parseChordResponse(response) : null;
-
-            // Reverse-transpose to store in relative form
-            const keyRoot = normalizeNote(state.key.replace('m', ''));
-            const semitones = ALL_NOTES.indexOf(keyRoot);
-            if (chords && chords.length >= 3) {
-                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
-            } else {
-                // Fallback: do it locally
+            try {
+                const currentChords = getTransposedProgression().join(' ');
+                const keyInfo = getKeyInfo();
+                let prompt = '';
                 if (type === 'jazzy') {
-                    const jazzified = getTransposedProgression().map(c => {
-                        if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
-                        if (c.includes('m') && !c.includes('maj')) return c + '7';
-                        return c + 'maj7';
-                    });
-                    state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
+                    prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
                 } else {
-                    const simplified = getTransposedProgression().map(c => {
-                        return c.replace(/maj7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
-                    });
-                    state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
+                    prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
                 }
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
-            }
 
-            state.aiLoading = false;
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+                showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
+                const response = await callGeminiAI(prompt);
+                const chords = response ? parseChordResponse(response) : null;
+
+                // Reverse-transpose to store in relative form
+                const keyRoot = normalizeNote(state.key.replace('m', ''));
+                const semitones = ALL_NOTES.indexOf(keyRoot);
+                if (chords && chords.length >= 3) {
+                    state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
+                } else {
+                    // Fallback: do it locally
+                    if (type === 'jazzy') {
+                        const jazzified = getTransposedProgression().map(c => {
+                            if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
+                            if (c.includes('m') && !c.includes('maj')) return c + '7';
+                            return c + 'maj7';
+                        });
+                        state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
+                    } else {
+                        const simplified = getTransposedProgression().map(c => {
+                            return c.replace(/maj7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+                        });
+                        state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
+                    }
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
+                }
+            } finally {
+                state.aiLoading = false;
+                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+            }
         }
 
         // ============ DRUM PATTERNS ============
@@ -3841,7 +3846,6 @@
             const chords = getTransposedProgression(), keyInfo = getKeyInfo();
             const pdfKeyRoot = normalizeNote(state.key.replace('m', ''));
             const pdfSemitones = ALL_NOTES.indexOf(pdfKeyRoot);
-            const allSections = state.sections.map(s => `${s.icon} ${s.name}: ${s.progression.map(c => transposeChord(c, pdfSemitones)).join(' - ')}`).join('\\n');
             // Build chord diagram text
             const diagrams = chords.map(c => {
                 const notes = getChordNotes(c).map(n => n.replace(/\d/, '')).join('-');
