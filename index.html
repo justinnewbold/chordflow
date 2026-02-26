@@ -2536,7 +2536,7 @@
             state.swing = parseInt(val);
             const el = document.getElementById('swingVal');
             if (el) el.textContent = val + '%';
-            Tone.Transport.swing = val / 200;
+            if (state.isPlaying) restartPlayback();
         }
         function toggleLoop() {
             state.isLooping = !state.isLooping;
@@ -2822,7 +2822,6 @@
             if (overlay) overlay.classList.remove('active');
         }
         function startPlayback() {
-            const beatMs = 60000 / state.tempo;
             const beatsPerChord = getBeatsPerMeasure();
             state.currentBeat = 0;
 
@@ -2833,16 +2832,25 @@
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             state.currentBeat = 1;
 
-            beatInterval = setInterval(() => {
-                playMetronomeTick(state.currentBeat === 0);
-                playDrumBeat(state.currentBeat);
-                updateBeatDots(state.currentBeat);
-                state.currentBeat++;
-                if (state.currentBeat >= beatsPerChord) {
-                    state.currentBeat = 0;
-                    advanceChord();
-                }
-            }, beatMs);
+            function scheduleNextBeat() {
+                const beatMs = 60000 / state.tempo;
+                // Apply swing: delay odd beats by swing amount
+                const swingFactor = state.swing / 100;
+                const isOddBeat = state.currentBeat % 2 === 1;
+                const ms = isOddBeat ? beatMs * (1 + swingFactor * 0.33) : beatMs * (1 - swingFactor * 0.33);
+                beatInterval = setTimeout(() => {
+                    playMetronomeTick(state.currentBeat === 0);
+                    playDrumBeat(state.currentBeat);
+                    updateBeatDots(state.currentBeat);
+                    state.currentBeat++;
+                    if (state.currentBeat >= beatsPerChord) {
+                        state.currentBeat = 0;
+                        advanceChord();
+                    }
+                    if (state.isPlaying) scheduleNextBeat();
+                }, ms);
+            }
+            scheduleNextBeat();
 
             renderAll();
         }
@@ -2878,7 +2886,7 @@
             renderAll();
         }
         function stopPlaybackTimers() {
-            if (beatInterval) { clearInterval(beatInterval); beatInterval = null; }
+            if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
             arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
         }
@@ -3571,10 +3579,13 @@
         function playDrumBeat(beat) {
             if (!state.drumsEnabled || !audioInit) return;
             const pattern = DRUM_PATTERNS[state.genre] || DRUM_PATTERNS.pop;
+            // For time signatures with more than 4 beats (e.g. 6/8),
+            // map higher beats into the pattern range using modulo
+            const patternBeat = beat < 4 ? beat : beat % 4;
             try {
-                if (pattern.kick.includes(beat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
-                if (pattern.snare.includes(beat) && snareDrum) snareDrum.triggerAttackRelease('8n');
-                if (pattern.hihat.includes(beat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
+                if (pattern.kick.includes(patternBeat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
+                if (pattern.snare.includes(patternBeat) && snareDrum) snareDrum.triggerAttackRelease('8n');
+                if (pattern.hihat.includes(patternBeat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
             } catch(e) {}
         }
 
