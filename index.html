@@ -620,6 +620,13 @@
             .generate-btn { max-width: 600px; }
         }
 
+        /* Recording Overlay */
+        .recording-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-md); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
+        .recording-overlay.active { opacity: 1; pointer-events: auto; }
+        .recording-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--accent-pink); animation: recordPulse 1s ease-in-out infinite; }
+        @keyframes recordPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+        .recording-text { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
         /* Delete undo toast */
         .undo-toast { position: fixed; bottom: calc(var(--safe-bottom) + 100px); left: 50%; transform: translateX(-50%); background: var(--bg-elevated); color: var(--text-primary); padding: 12px 16px; border-radius: var(--radius-full); display: flex; align-items: center; gap: var(--spacing-sm); z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); opacity: 0; pointer-events: none; transition: all 0.3s ease; }
         .undo-toast.show { opacity: 1; pointer-events: auto; }
@@ -1913,9 +1920,12 @@
         function getChordNotes(chord) {
             if (!chord) return CHORD_NOTES['C'];
             if (CHORD_NOTES[chord]) return CHORD_NOTES[chord];
-            const no7 = chord.replace('7', '');
-            if (CHORD_NOTES[no7]) return CHORD_NOTES[no7];
-            // Strip to root + basic quality (m but not maj)
+            // Dynamically compute notes from music theory to preserve extensions (7ths, etc.)
+            // This must run BEFORE stripping suffixes, otherwise chords like F#m7 or Bbmaj7
+            // would match the base triad (F#m, Bb) and lose their 7th/extension notes
+            const computed = computeChordNotes(chord);
+            if (computed) return computed;
+            // Fallback: strip to root + basic quality for enharmonic lookup
             const m = chord.match(/^([A-G][#b]?)(m(?!aj)|)(.*)/);
             if (m) {
                 const [, root, quality] = m;
@@ -1927,9 +1937,6 @@
                 const sharp = normalizeNote(root);
                 if (sharp !== root && CHORD_NOTES[sharp + quality]) return CHORD_NOTES[sharp + quality];
             }
-            // Dynamically compute notes from music theory instead of falling back to C
-            const computed = computeChordNotes(chord);
-            if (computed) return computed;
             return CHORD_NOTES['C'];
         }
         async function playChord(chord, duration = '2n') {
@@ -1992,7 +1999,8 @@
             return { root, isMinor, display: isMinor ? `${root} Minor` : `${root} Major` };
         }
         function getTransposedProgression() {
-            const prog = state.sections[state.currentSection]?.progression || ['C', 'G', 'Am', 'F'];
+            const raw = state.sections[state.currentSection]?.progression;
+            const prog = (raw && raw.length > 0) ? raw : ['C', 'G', 'Am', 'F'];
             const keyRoot = normalizeNote(state.key.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             return prog.map(chord => transposeChord(chord, semitones));
@@ -2016,11 +2024,12 @@
             return 'major';
         }
         function getChordTypeLabel(chord) {
+            if (chord.includes('dim7')) return chord.replace('dim7', '') + ' Diminished 7';
+            if (chord.includes('dim')) return chord.replace('dim', '') + ' Diminished';
+            if (chord.includes('aug')) return chord.replace('aug', '') + ' Augmented';
             if (chord.includes('maj7')) return chord.replace('maj7', '') + ' Major 7';
             if (chord.includes('m7')) return chord.replace('m7', '') + ' Minor 7';
             if (chord.includes('7')) return chord.replace('7', '') + ' Dominant 7';
-            if (chord.includes('dim')) return chord.replace('dim', '') + ' Diminished';
-            if (chord.includes('aug')) return chord.replace('aug', '') + ' Augmented';
             if (chord.includes('sus4')) return chord.replace('sus4', '') + ' Sus4';
             if (chord.includes('sus2')) return chord.replace('sus2', '') + ' Sus2';
             if (chord.includes('m')) return chord.replace('m', '') + ' minor';
@@ -2036,6 +2045,7 @@
         }
         function undo() {
             if (state.undoStack.length === 0) return;
+            ensurePlaybackStopped();
             state.redoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const prev = JSON.parse(state.undoStack.pop());
             Object.assign(state, prev);
@@ -2045,6 +2055,7 @@
         }
         function redo() {
             if (state.redoStack.length === 0) return;
+            ensurePlaybackStopped();
             state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const next = JSON.parse(state.redoStack.pop());
             Object.assign(state, next);
@@ -2068,7 +2079,8 @@
             for (let i = 1; i < frets; i++) html += `<line x1="10" y1="${10 + i * 20}" x2="90" y2="${10 + i * 20}" stroke="#666"/>`;
             for (let i = 0; i < strings; i++) html += `<line x1="${10 + i * 16}" y1="10" x2="${10 + i * 16}" y2="110" stroke="#888"/>`;
             const patterns = { 'C': [[0,1,0], [1,1,2], [2,2,3], [3,3,0]], 'Am': [[0,1,1], [1,2,2], [2,2,3]], 'G': [[0,2,3], [1,3,0], [5,3,0]], 'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0],[4,3,0],[5,1,0]] };
-            const p = patterns[chord.replace(/maj7|dim7|dim|aug|m7|7|m|sus\d/g, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
+            const strippedChord = chord.replace(/maj7|dim7|dim|aug|7|sus\d/g, '');
+            const p = patterns[strippedChord] || patterns[strippedChord.replace(/m$/, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
             p.forEach(([string, fret, finger]) => {
                 const x = 10 + string * 16, y = fret * 20;
                 html += `<circle cx="${x}" cy="${y}" r="7" fill="${fret === 0 ? 'none' : 'var(--accent)'}" stroke="${fret === 0 ? '#888' : 'none'}"/>`;
@@ -2198,35 +2210,38 @@
             state.aiLoading = true;
             setAIButtonsLoading(true);
             saveStateForUndo();
-            const keyInfo = getKeyInfo();
-            let prompt = '';
-            switch (type) {
-                case 'smart': prompt = `Generate a ${state.genre} chord progression in ${keyInfo.display}. Give exactly 4 chords. Just list chord names.`; break;
-                case 'surprise': prompt = `Generate a surprising unique chord progression. Use unexpected changes. Give 4-6 chords. Just list chord names.`; break;
-                case 'enhance': prompt = `Take these chords: ${getTransposedProgression().join(' ')} and make them more interesting with 7ths. Give 4-6 enhanced chords.`; break;
-                case 'genre': prompt = `Transform these chords: ${getTransposedProgression().join(' ')} into jazz style with 7ths. Give 4-6 chords.`; break;
+            try {
+                const keyInfo = getKeyInfo();
+                let prompt = '';
+                switch (type) {
+                    case 'smart': prompt = `Generate a ${state.genre} chord progression in ${keyInfo.display}. Give exactly 4 chords. Just list chord names.`; break;
+                    case 'surprise': prompt = `Generate a surprising unique chord progression. Use unexpected changes. Give 4-6 chords. Just list chord names.`; break;
+                    case 'enhance': prompt = `Take these chords: ${getTransposedProgression().join(' ')} and make them more interesting with 7ths. Give 4-6 enhanced chords.`; break;
+                    case 'genre': prompt = `Transform these chords: ${getTransposedProgression().join(' ')} into jazz style with 7ths. Give 4-6 chords.`; break;
+                }
+                showToast('✨ Asking AI...');
+                const response = await callGeminiAI(prompt);
+                const chords = response ? parseChordResponse(response) : null;
+                if (chords && chords.length >= 3) {
+                    // Reverse-transpose AI results to store in relative form
+                    const keyRoot = normalizeNote(state.key.replace('m', ''));
+                    const semitones = ALL_NOTES.indexOf(keyRoot);
+                    state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(`✨ AI generated ${chords.length} chords!`);
+                } else {
+                    // Inline fallback to avoid double undo from generateProgression()
+                    const progs = progressions[state.genre] || progressions.pop;
+                    state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast('🎲 Used smart fallback');
+                }
+            } finally {
+                state.aiLoading = false;
+                setAIButtonsLoading(false);
             }
-            showToast('✨ Asking AI...');
-            const response = await callGeminiAI(prompt);
-            const chords = response ? parseChordResponse(response) : null;
-            if (chords && chords.length >= 3) {
-                // Reverse-transpose AI results to store in relative form
-                const keyRoot = normalizeNote(state.key.replace('m', ''));
-                const semitones = ALL_NOTES.indexOf(keyRoot);
-                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(`✨ AI generated ${chords.length} chords!`);
-            } else {
-                // Inline fallback to avoid double undo from generateProgression()
-                const progs = progressions[state.genre] || progressions.pop;
-                state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast('🎲 Used smart fallback');
-            }
-            state.aiLoading = false;
-            setAIButtonsLoading(false);
         }
         function setAIButtonsLoading(loading) {
             ['aiMagicBtn', 'aiSurpriseBtn', 'aiEnhanceBtn', 'aiGenreBtn'].forEach(id => {
@@ -2267,6 +2282,7 @@
         }
         async function exportWAV() {
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
+            ensurePlaybackStopped();
             state.isRecording = true;
             await initAudio();
             if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
@@ -2337,7 +2353,8 @@
                 ensurePlaybackStopped();
                 saveStateForUndo();
                 const { data } = songs[index];
-                Object.assign(state, { sections: data.sections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
+                const loadedSections = data.sections?.length > 0 ? data.sections : state.sections;
+                Object.assign(state, { sections: loadedSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0, arrangementSectionIndex: 0 });
                 closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
             }
         }
@@ -2356,7 +2373,8 @@
                     ensurePlaybackStopped();
                     saveStateForUndo();
                     const data = JSON.parse(e.target.result);
-                    Object.assign(state, { sections: data.sections || state.sections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
+                    const fileSections = data.sections?.length > 0 ? data.sections : state.sections;
+                    Object.assign(state, { sections: fileSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
                     updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
                 } catch { showToast('⚠️ Invalid file'); }
             };
@@ -2523,7 +2541,7 @@
             state.swing = parseInt(val);
             const el = document.getElementById('swingVal');
             if (el) el.textContent = val + '%';
-            Tone.Transport.swing = val / 200;
+            if (state.isPlaying) restartPlayback();
         }
         function toggleLoop() {
             state.isLooping = !state.isLooping;
@@ -2653,9 +2671,9 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram('${chord}')">🎸</button>
-                    <div class="chord-name">${chord}</div>
-                    <div class="chord-type">${getChordTypeLabel(chord)}</div>
+                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord)})">🎸</button>
+                    <div class="chord-name">${escapeHtml(chord)}</div>
+                    <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
                 </div>`;
             }).join('');
@@ -2692,7 +2710,7 @@
             const label = document.getElementById('sfChordLabel');
             if (label) label.textContent = `${getChordTypeLabel(chord)} • Chord ${state.currentChordIndex + 1} of ${displayChords.length}`;
             const strip = document.getElementById('sfChordStrip');
-            if (strip) strip.innerHTML = displayChords.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${c}</div><div class="sf-strip-num">${i + 1}</div></div>`).join('');
+            if (strip) strip.innerHTML = displayChords.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${escapeHtml(c)}</div><div class="sf-strip-num">${i + 1}</div></div>`).join('');
             const instList = document.getElementById('sfInstrumentList');
             if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
             const secList = document.getElementById('sfSectionsList');
@@ -2737,7 +2755,7 @@
                 const offset = (i - state.currentCardIndex + cardTypes.length) % cardTypes.length;
                 const cardClass = offset === 0 ? 'active' : offset === 1 ? 'next' : offset === 2 ? 'behind' : 'hidden-card';
                 let body = '';
-                if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${chord}</div><div class="cd-chord-info">${getChordTypeLabel(chord)} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${c}</div>`).join('')}</div></div>`;
+                if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${escapeHtml(chord)}</div><div class="cd-chord-info">${escapeHtml(getChordTypeLabel(chord))} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${escapeHtml(c)}</div>`).join('')}</div></div>`;
                 else if (card.type === 'ai') body = `<div class="cd-tool-grid"><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('smart')"><span class="icon">✨</span><span class="label">AI Magic</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div></div>`;
                 else if (card.type === 'mixer') body = `<div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.chordVolume}" oninput="updateFader('chord', this.value)"><span class="fader-value cd-chord-vol">${state.chordVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.bassVolume}" oninput="updateFader('bass', this.value)"><span class="fader-value cd-bass-vol">${state.bassVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🔊 Master</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.masterVolume}" oninput="updateFader('master', this.value)"><span class="fader-value cd-master-vol">${state.masterVolume}%</span></div></div>`;
                 else body = `<div class="cd-tool-grid"><div class="cd-tool-item" onclick="event.stopPropagation(); exportMIDI()"><span class="icon">🎹</span><span class="label">MIDI</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportPDF()"><span class="icon">📄</span><span class="label">PDF</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSaveModal()"><span class="icon">💾</span><span class="label">Save</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSheet('songs')"><span class="icon">📂</span><span class="label">Load</span></div></div>`;
@@ -2803,14 +2821,12 @@
             const beats = getBeatsPerMeasure();
             for (let i = beats; i >= 1; i--) {
                 if (numEl) numEl.textContent = i;
-                playMetronomeTick(i === beats);
+                playMetronomeTick(i === 1);
                 await new Promise(r => setTimeout(r, beatMs));
             }
             if (overlay) overlay.classList.remove('active');
         }
         function startPlayback() {
-            const beatMs = 60000 / state.tempo;
-            const beatsPerChord = getBeatsPerMeasure();
             state.currentBeat = 0;
 
             // Play first beat immediately with chord
@@ -2820,16 +2836,28 @@
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             state.currentBeat = 1;
 
-            beatInterval = setInterval(() => {
-                playMetronomeTick(state.currentBeat === 0);
-                playDrumBeat(state.currentBeat);
-                updateBeatDots(state.currentBeat);
-                state.currentBeat++;
-                if (state.currentBeat >= beatsPerChord) {
-                    state.currentBeat = 0;
-                    advanceChord();
-                }
-            }, beatMs);
+            function scheduleNextBeat() {
+                const beatMs = 60000 / state.tempo;
+                // Apply swing: delay odd beats by swing amount
+                const swingFactor = state.swing / 100;
+                const isOddBeat = state.currentBeat % 2 === 1;
+                const ms = isOddBeat ? beatMs * (1 + swingFactor * 0.33) : (state.currentBeat === 0 ? beatMs : beatMs * (1 - swingFactor * 0.33));
+                beatInterval = setTimeout(() => {
+                    playMetronomeTick(state.currentBeat === 0);
+                    playDrumBeat(state.currentBeat);
+                    updateBeatDots(state.currentBeat);
+                    state.currentBeat++;
+                    if (state.currentBeat >= getBeatsPerMeasure()) {
+                        state.currentBeat = 0;
+                        advanceChord();
+                        // advanceChord may call restartPlayback (e.g. auto speed-up),
+                        // which creates a new scheduling chain — don't double-schedule
+                        return;
+                    }
+                    if (state.isPlaying) scheduleNextBeat();
+                }, ms);
+            }
+            scheduleNextBeat();
 
             renderAll();
         }
@@ -2865,7 +2893,7 @@
             renderAll();
         }
         function stopPlaybackTimers() {
-            if (beatInterval) { clearInterval(beatInterval); beatInterval = null; }
+            if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
             arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
         }
@@ -2879,6 +2907,9 @@
             state.currentBeat = 0;
             state.arrangementSectionIndex = 0;
             autoSpeedLoopCount = 0;
+            // Reset tempo to base after auto speed-up inflation
+            state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
+            updateTempoDisplay();
             updatePlayButtons();
             updateBeatDots(0);
             renderAll();
@@ -3105,7 +3136,7 @@
         function isValidChord(chord) {
             // Check if we have notes for it or a stripped version
             if (CHORD_NOTES[chord]) return true;
-            const stripped = chord.replace(/7|maj7|m7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+            const stripped = chord.replace(/maj7|dim7|dim|aug|sus[24]|add\d|7|9|11|13/g, '');
             if (CHORD_NOTES[stripped] || CHORD_NOTES[stripped + 'm'] || ALL_NOTES.includes(normalizeNote(stripped))) return true;
             return false;
         }
@@ -3156,8 +3187,8 @@
                 } else if (!isDim) {
                     degree = degree.toUpperCase();
                 }
-                if (is7th) degree += '7';
                 if (isDim) degree = degree.toLowerCase() + '°';
+                if (is7th) degree += '7';
                 return degree;
             }
             return chromMap[interval] || '';
@@ -3168,8 +3199,10 @@
             const degrees = chords.map(c => getScaleDegree(c, key)).filter(Boolean);
             if (degrees.length < 2) return '';
 
-            // Detect common patterns
-            const degreeStr = degrees.join('-');
+            // Detect common patterns - strip extension suffixes (7, °) for matching
+            // so that e.g. vi7 still matches patterns expecting vi
+            const baseDegrees = degrees.map(d => d.replace(/[7°]/g, ''));
+            const degreeStr = baseDegrees.join('-');
             if (degreeStr.includes('I-V-vi-IV') || degreeStr.includes('I-V-VI-IV')) return 'The "Axis of Awesome" progression - used in hundreds of pop hits!';
             if (degreeStr.includes('I-IV-V')) return 'Classic I-IV-V: The foundation of rock, blues, and country music.';
             if (degreeStr.includes('vi-IV-I-V') || degreeStr.includes('VI-IV-I-V')) return 'The "sensitive" progression - common in emotional pop ballads.';
@@ -3332,6 +3365,7 @@
             if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4', '6/8'].includes(ts)) state.timeSignature = ts; }
             state.currentSection = 0;
             state.currentChordIndex = 0;
+            state.arrangementSectionIndex = 0;
             // Clean URL without reloading
             window.history.replaceState({}, '', window.location.pathname);
             return true;
@@ -3359,8 +3393,8 @@
             const labels = ['B', 'E', 'A', 'D', 'G', 'B', 'e'];
             for (let s = 0; s < strings; s++) svg += `<text x="${padL+s*sw}" y="${padT-5}" text-anchor="middle" fill="var(--text-tertiary)" font-size="9">${labels[s]}</text>`;
             // Dots
-            const key = chord.replace(/7|maj7|m7|dim|aug|sus[24]/g, '');
-            const dots = GUITAR7_DIAGRAMS[key] || GUITAR7_DIAGRAMS['C'];
+            const stripped7 = chord.replace(/maj7|dim7|dim|aug|7|sus[24]/g, '');
+            const dots = GUITAR7_DIAGRAMS[stripped7] || GUITAR7_DIAGRAMS[stripped7.replace(/m$/, '')] || GUITAR7_DIAGRAMS['C'];
             dots.forEach(([str, fret]) => {
                 if (fret === 0) {
                     svg += `<circle cx="${padL+str*sw}" cy="${padT-1}" r="3" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>`;
@@ -3479,49 +3513,51 @@
             if (btn) { btn.disabled = true; btn.classList.add('loading'); }
             saveStateForUndo();
 
-            const currentChords = getTransposedProgression().join(' ');
-            const keyInfo = getKeyInfo();
-            let prompt = '';
-            if (type === 'jazzy') {
-                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
-            } else {
-                prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
-            }
-
-            showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
-            const response = await callGeminiAI(prompt);
-            const chords = response ? parseChordResponse(response) : null;
-
-            // Reverse-transpose to store in relative form
-            const keyRoot = normalizeNote(state.key.replace('m', ''));
-            const semitones = ALL_NOTES.indexOf(keyRoot);
-            if (chords && chords.length >= 3) {
-                state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
-            } else {
-                // Fallback: do it locally
+            try {
+                const currentChords = getTransposedProgression().join(' ');
+                const keyInfo = getKeyInfo();
+                let prompt = '';
                 if (type === 'jazzy') {
-                    const jazzified = getTransposedProgression().map(c => {
-                        if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
-                        if (c.includes('m') && !c.includes('maj')) return c + '7';
-                        return c + 'maj7';
-                    });
-                    state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
+                    prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Make it more jazzy by adding 7ths, 9ths, extensions, and substitutions. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
                 } else {
-                    const simplified = getTransposedProgression().map(c => {
-                        return c.replace(/maj7|m7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
-                    });
-                    state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
+                    prompt = `Take this chord progression: ${currentChords} in ${keyInfo.display}. Simplify it by removing extensions and using only basic major/minor triads. Keep the same harmonic direction. Return exactly ${getTransposedProgression().length} chords. Just list the chord names, nothing else.`;
                 }
-                state.currentChordIndex = 0;
-                renderAll();
-                showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
-            }
 
-            state.aiLoading = false;
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+                showToast(type === 'jazzy' ? '🎷 Making it jazzy...' : '✨ Simplifying...');
+                const response = await callGeminiAI(prompt);
+                const chords = response ? parseChordResponse(response) : null;
+
+                // Reverse-transpose to store in relative form
+                const keyRoot = normalizeNote(state.key.replace('m', ''));
+                const semitones = ALL_NOTES.indexOf(keyRoot);
+                if (chords && chords.length >= 3) {
+                    state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(type === 'jazzy' ? '🎷 Jazzed up!' : '✨ Simplified!');
+                } else {
+                    // Fallback: do it locally
+                    if (type === 'jazzy') {
+                        const jazzified = getTransposedProgression().map(c => {
+                            if (c.includes('7') || c.includes('dim') || c.includes('aug')) return c;
+                            if (c.includes('m') && !c.includes('maj')) return c + '7';
+                            return c + 'maj7';
+                        });
+                        state.sections[state.currentSection].progression = jazzified.map(c => transposeChord(c, -semitones));
+                    } else {
+                        const simplified = getTransposedProgression().map(c => {
+                            return c.replace(/maj7|7|dim|aug|sus[24]|add\d|9|11|13/g, '');
+                        });
+                        state.sections[state.currentSection].progression = simplified.map(c => transposeChord(c, -semitones));
+                    }
+                    state.currentChordIndex = 0;
+                    renderAll();
+                    showToast(type === 'jazzy' ? '🎷 Jazzed up (local)!' : '✨ Simplified (local)!');
+                }
+            } finally {
+                state.aiLoading = false;
+                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+            }
         }
 
         // ============ DRUM PATTERNS ============
@@ -3553,10 +3589,13 @@
         function playDrumBeat(beat) {
             if (!state.drumsEnabled || !audioInit) return;
             const pattern = DRUM_PATTERNS[state.genre] || DRUM_PATTERNS.pop;
+            // For time signatures with more than 4 beats (e.g. 6/8),
+            // map higher beats into the pattern range using modulo
+            const patternBeat = beat < 4 ? beat : beat % 4;
             try {
-                if (pattern.kick.includes(beat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
-                if (pattern.snare.includes(beat) && snareDrum) snareDrum.triggerAttackRelease('8n');
-                if (pattern.hihat.includes(beat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
+                if (pattern.kick.includes(patternBeat) && kickDrum) kickDrum.triggerAttackRelease('C1', '8n');
+                if (pattern.snare.includes(patternBeat) && snareDrum) snareDrum.triggerAttackRelease('8n');
+                if (pattern.hihat.includes(patternBeat) && hihatDrum) hihatDrum.triggerAttackRelease('32n');
             } catch(e) {}
         }
 
@@ -3597,6 +3636,10 @@
             if (prog.length <= 1) { showToast('⚠️ Need at least one chord'); closeChordEditModal(); return; }
             saveStateForUndo();
             const deleted = prog[editingChordIndex];
+            // Transpose to display name before showing in toast
+            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            const displayName = transposeChord(deleted, semitones);
             const deletedIdx = editingChordIndex;
             const deletedSection = state.currentSection;
             prog.splice(editingChordIndex, 1);
@@ -3607,7 +3650,7 @@
             state.lastDeletedSection = deletedSection;
             closeChordEditModal();
             renderAll();
-            showUndoToast(`Deleted "${deleted}"`);
+            showUndoToast(`Deleted "${displayName}"`);
         }
         function showUndoToast(msg) {
             const toast = document.getElementById('undoToast');
@@ -3660,63 +3703,66 @@
             state.aiLoading = true;
             const btn = document.getElementById('melodyBtn');
             if (btn) { btn.disabled = true; btn.classList.add('loading'); }
-            const chords = getTransposedProgression().join(' ');
-            const keyInfo = getKeyInfo();
-            const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
-            showToast('🎶 Getting melody idea...');
-            const response = await callGeminiAI(prompt);
-            const display = document.getElementById('melodyDisplay');
-            const text = document.getElementById('melodyText');
-            if (response && display && text) {
-                // Parse note names from response
-                const notes = response.match(/[A-G][#b]?\d/g);
-                if (notes && notes.length > 0) {
-                    text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
-                    display.classList.add('visible');
-                    // Play the melody
-                    await initAudio();
-                    notes.forEach((note, i) => {
-                        setTimeout(() => {
-                            try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
-                        }, i * 500);
-                    });
-                    showToast('🎶 Melody suggested!');
+            try {
+                const chords = getTransposedProgression().join(' ');
+                const keyInfo = getKeyInfo();
+                const prompt = `Suggest a simple melody over these chords: ${chords} in ${keyInfo.display}. Give note names with octave numbers (like C4 D4 E4) - one note per chord. Just list the notes.`;
+                showToast('🎶 Getting melody idea...');
+                const response = await callGeminiAI(prompt);
+                const display = document.getElementById('melodyDisplay');
+                const text = document.getElementById('melodyText');
+                if (response && display && text) {
+                    // Parse note names from response
+                    const notes = response.match(/[A-G][#b]?\d/g);
+                    if (notes && notes.length > 0) {
+                        text.innerHTML = `<span class="melody-notes">${notes.join(' → ')}</span><br><small style="color:var(--text-secondary)">${response.replace(/[A-G][#b]?\d/g, '').replace(/[\[\],]/g, '').trim().substring(0, 100)}</small>`;
+                        display.classList.add('visible');
+                        // Play the melody
+                        await initAudio();
+                        notes.forEach((note, i) => {
+                            setTimeout(() => {
+                                try { synth.triggerAttackRelease(note, '4n'); } catch(e) {}
+                            }, i * 500);
+                        });
+                        showToast('🎶 Melody suggested!');
+                    } else {
+                        text.textContent = response.substring(0, 150);
+                        display.classList.add('visible');
+                        showToast('🎶 Got a suggestion');
+                    }
                 } else {
-                    text.textContent = response.substring(0, 150);
-                    display.classList.add('visible');
-                    showToast('🎶 Got a suggestion');
+                    // Fallback: generate simple melody from chord tones
+                    const prog = getTransposedProgression();
+                    const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
+                    if (display && text) {
+                        text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
+                        display.classList.add('visible');
+                    }
+                    showToast('🎶 Simple melody (root notes)');
                 }
-            } else {
-                // Fallback: generate simple melody from chord tones
-                const prog = getTransposedProgression();
-                const melodyNotes = prog.map(c => { const notes = getChordNotes(c); return notes[0]; });
-                if (display && text) {
-                    text.innerHTML = `<span class="melody-notes">${melodyNotes.join(' → ')}</span><br><small style="color:var(--text-secondary)">Root notes of each chord</small>`;
-                    display.classList.add('visible');
-                }
-                showToast('🎶 Simple melody (root notes)');
+            } finally {
+                state.aiLoading = false;
+                if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
             }
-            state.aiLoading = false;
-            if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
         }
 
         // ============ CHORD PRESET LIBRARY ============
         const CHORD_PRESETS = [
-            { name: 'Pachelbel\'s Canon', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
-            { name: '12-Bar Blues', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
-            { name: '50s Doo-Wop', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
-            { name: 'Axis of Awesome', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
-            { name: 'Jazz ii-V-I', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
-            { name: 'Andalusian Cadence', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
-            { name: 'Rhythm Changes', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
-            { name: 'Creep (Radiohead)', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
-            { name: 'Minor Plagal', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
-            { name: 'Reggae One Drop', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
-            { name: 'Coltrane Changes', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
-            { name: 'Country Roads', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
-            { name: 'Spooky Diminished', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
-            { name: 'Bossa Nova', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
-            { name: 'Power Ballad', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
+            { name: 'Pachelbel\'s Canon', key: 'D', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
+            { name: '12-Bar Blues', key: 'A', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
+            { name: '50s Doo-Wop', key: 'C', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
+            { name: 'Axis of Awesome', key: 'G', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
+            { name: 'Jazz ii-V-I', key: 'C', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
+            { name: 'Andalusian Cadence', key: 'Am', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
+            { name: 'Rhythm Changes', key: 'Bb', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
+            { name: 'Creep (Radiohead)', key: 'G', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
+            { name: 'Minor Plagal', key: 'C', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
+            { name: 'Reggae One Drop', key: 'Am', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
+            { name: 'Coltrane Changes', key: 'C', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
+            { name: 'Country Roads', key: 'G', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
+            { name: 'Spooky Diminished', key: 'Am', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
+            { name: 'Bossa Nova', key: 'C', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
+            { name: 'Power Ballad', key: 'C', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
         ];
         function openPresets() {
             const list = document.getElementById('presetsList');
@@ -3736,8 +3782,9 @@
             if (!preset) return;
             ensurePlaybackStopped();
             saveStateForUndo();
-            // Reverse-transpose preset chords to store in relative form
-            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            // Reverse-transpose using preset's native key to store in relative form
+            const presetKey = preset.key || 'C';
+            const keyRoot = normalizeNote(presetKey.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections[state.currentSection].progression = preset.chords.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
@@ -3834,7 +3881,6 @@
             const chords = getTransposedProgression(), keyInfo = getKeyInfo();
             const pdfKeyRoot = normalizeNote(state.key.replace('m', ''));
             const pdfSemitones = ALL_NOTES.indexOf(pdfKeyRoot);
-            const allSections = state.sections.map(s => `${s.icon} ${s.name}: ${s.progression.map(c => transposeChord(c, pdfSemitones)).join(' - ')}`).join('\\n');
             // Build chord diagram text
             const diagrams = chords.map(c => {
                 const notes = getChordNotes(c).map(n => n.replace(/\d/, '')).join('-');
@@ -4004,7 +4050,7 @@
             const cloudList = document.getElementById('cloudSongsList');
             if (!cloudList) return;
             try {
-                const res = await fetch(`/api/songs?action=load&userId=${authState.user.id}`);
+                const res = await fetch(`/api/songs?action=load&userId=${encodeURIComponent(authState.user.id)}`);
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
@@ -4012,12 +4058,12 @@
                             <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
                         </div>
                         ${data.songs.map((s, i) => `
-                            <div class="saved-song-item" onclick="loadCloudSong('${s.id}')">
+                            <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id)})">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
                                     <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong('${s.id}')" title="Delete">🗑️</button>
+                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id)})" title="Delete">🗑️</button>
                             </div>
                         `).join('')}`;
                 } else {
@@ -4030,8 +4076,8 @@
         }
         async function loadCloudSong(id) {
             try {
-                const userParam = authState.user ? `&userId=${authState.user.id}` : '';
-                const res = await fetch(`/api/songs?action=get&id=${id}${userParam}`);
+                const userParam = authState.user ? `&userId=${encodeURIComponent(authState.user.id)}` : '';
+                const res = await fetch(`/api/songs?action=get&id=${encodeURIComponent(id)}${userParam}`);
                 const data = await res.json();
                 if (data.song) {
                     ensurePlaybackStopped();
@@ -4048,8 +4094,9 @@
                             }));
                         }
                     }
+                    const cloudSections = songData.sections?.length > 0 ? songData.sections : state.sections;
                     Object.assign(state, {
-                        sections: songData.sections || state.sections,
+                        sections: cloudSections,
                         key: data.song.key_signature || state.key,
                         genre: data.song.genre || state.genre,
                         baseTempo: data.song.tempo || state.baseTempo,
