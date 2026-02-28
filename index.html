@@ -1999,7 +1999,8 @@
             return { root, isMinor, display: isMinor ? `${root} Minor` : `${root} Major` };
         }
         function getTransposedProgression() {
-            const prog = state.sections[state.currentSection]?.progression || ['C', 'G', 'Am', 'F'];
+            const raw = state.sections[state.currentSection]?.progression;
+            const prog = (raw && raw.length > 0) ? raw : ['C', 'G', 'Am', 'F'];
             const keyRoot = normalizeNote(state.key.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             return prog.map(chord => transposeChord(chord, semitones));
@@ -2044,6 +2045,7 @@
         }
         function undo() {
             if (state.undoStack.length === 0) return;
+            ensurePlaybackStopped();
             state.redoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const prev = JSON.parse(state.undoStack.pop());
             Object.assign(state, prev);
@@ -2053,6 +2055,7 @@
         }
         function redo() {
             if (state.redoStack.length === 0) return;
+            ensurePlaybackStopped();
             state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
             const next = JSON.parse(state.redoStack.pop());
             Object.assign(state, next);
@@ -2351,7 +2354,7 @@
                 saveStateForUndo();
                 const { data } = songs[index];
                 const loadedSections = data.sections?.length > 0 ? data.sections : state.sections;
-                Object.assign(state, { sections: loadedSections, key: data.key, genre: data.genre, baseTempo: data.tempo, tempo: Math.round(data.tempo * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0 });
+                Object.assign(state, { sections: loadedSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0, arrangementSectionIndex: 0 });
                 closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
             }
         }
@@ -2818,13 +2821,12 @@
             const beats = getBeatsPerMeasure();
             for (let i = beats; i >= 1; i--) {
                 if (numEl) numEl.textContent = i;
-                playMetronomeTick(i === beats);
+                playMetronomeTick(i === 1);
                 await new Promise(r => setTimeout(r, beatMs));
             }
             if (overlay) overlay.classList.remove('active');
         }
         function startPlayback() {
-            const beatsPerChord = getBeatsPerMeasure();
             state.currentBeat = 0;
 
             // Play first beat immediately with chord
@@ -2839,15 +2841,18 @@
                 // Apply swing: delay odd beats by swing amount
                 const swingFactor = state.swing / 100;
                 const isOddBeat = state.currentBeat % 2 === 1;
-                const ms = isOddBeat ? beatMs * (1 + swingFactor * 0.33) : beatMs * (1 - swingFactor * 0.33);
+                const ms = isOddBeat ? beatMs * (1 + swingFactor * 0.33) : (state.currentBeat === 0 ? beatMs : beatMs * (1 - swingFactor * 0.33));
                 beatInterval = setTimeout(() => {
                     playMetronomeTick(state.currentBeat === 0);
                     playDrumBeat(state.currentBeat);
                     updateBeatDots(state.currentBeat);
                     state.currentBeat++;
-                    if (state.currentBeat >= beatsPerChord) {
+                    if (state.currentBeat >= getBeatsPerMeasure()) {
                         state.currentBeat = 0;
                         advanceChord();
+                        // advanceChord may call restartPlayback (e.g. auto speed-up),
+                        // which creates a new scheduling chain — don't double-schedule
+                        return;
                     }
                     if (state.isPlaying) scheduleNextBeat();
                 }, ms);
@@ -3360,6 +3365,7 @@
             if (params.has('ts')) { const ts = params.get('ts'); if (['3/4', '4/4', '6/8'].includes(ts)) state.timeSignature = ts; }
             state.currentSection = 0;
             state.currentChordIndex = 0;
+            state.arrangementSectionIndex = 0;
             // Clean URL without reloading
             window.history.replaceState({}, '', window.location.pathname);
             return true;
@@ -3742,21 +3748,21 @@
 
         // ============ CHORD PRESET LIBRARY ============
         const CHORD_PRESETS = [
-            { name: 'Pachelbel\'s Canon', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
-            { name: '12-Bar Blues', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
-            { name: '50s Doo-Wop', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
-            { name: 'Axis of Awesome', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
-            { name: 'Jazz ii-V-I', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
-            { name: 'Andalusian Cadence', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
-            { name: 'Rhythm Changes', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
-            { name: 'Creep (Radiohead)', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
-            { name: 'Minor Plagal', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
-            { name: 'Reggae One Drop', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
-            { name: 'Coltrane Changes', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
-            { name: 'Country Roads', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
-            { name: 'Spooky Diminished', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
-            { name: 'Bossa Nova', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
-            { name: 'Power Ballad', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
+            { name: 'Pachelbel\'s Canon', key: 'D', chords: ['D', 'A', 'Bm', 'F#m', 'G', 'D', 'G', 'A'], desc: 'The most famous classical progression' },
+            { name: '12-Bar Blues', key: 'A', chords: ['A7', 'A7', 'A7', 'A7', 'D7', 'D7', 'A7', 'A7', 'E7', 'D7', 'A7', 'E7'], desc: 'Foundation of blues and rock' },
+            { name: '50s Doo-Wop', key: 'C', chords: ['C', 'Am', 'F', 'G'], desc: 'I-vi-IV-V: "Stand By Me", etc.' },
+            { name: 'Axis of Awesome', key: 'G', chords: ['G', 'D', 'Em', 'C'], desc: 'I-V-vi-IV: Hundreds of pop hits' },
+            { name: 'Jazz ii-V-I', key: 'C', chords: ['Dm7', 'G7', 'Cmaj7'], desc: 'The essential jazz cadence' },
+            { name: 'Andalusian Cadence', key: 'Am', chords: ['Am', 'G', 'F', 'E'], desc: 'Flamenco & rock classic' },
+            { name: 'Rhythm Changes', key: 'Bb', chords: ['Bb', 'Gm', 'Cm', 'F', 'Bb', 'Gm', 'Cm', 'F'], desc: 'Jazz standard form' },
+            { name: 'Creep (Radiohead)', key: 'G', chords: ['G', 'B', 'C', 'Cm'], desc: 'I-III-IV-iv: Dramatic tension' },
+            { name: 'Minor Plagal', key: 'C', chords: ['C', 'Fm', 'C', 'Fm'], desc: 'I-iv: Haunting, emotional feel' },
+            { name: 'Reggae One Drop', key: 'Am', chords: ['Am', 'Dm', 'G', 'C'], desc: 'Classic roots reggae feel' },
+            { name: 'Coltrane Changes', key: 'C', chords: ['Cmaj7', 'Ebmaj7', 'Abmaj7', 'Bmaj7'], desc: 'Giant Steps-inspired' },
+            { name: 'Country Roads', key: 'G', chords: ['G', 'Em', 'C', 'D'], desc: 'I-vi-IV-V in G: Country classic' },
+            { name: 'Spooky Diminished', key: 'Am', chords: ['Am', 'Bdim', 'C', 'Dm'], desc: 'Minor key with diminished tension' },
+            { name: 'Bossa Nova', key: 'C', chords: ['Dm7', 'G7', 'Cmaj7', 'A7'], desc: 'ii-V-I-VI: Smooth Brazilian jazz' },
+            { name: 'Power Ballad', key: 'C', chords: ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'G'], desc: '80s arena rock ballad' }
         ];
         function openPresets() {
             const list = document.getElementById('presetsList');
@@ -3776,8 +3782,9 @@
             if (!preset) return;
             ensurePlaybackStopped();
             saveStateForUndo();
-            // Reverse-transpose preset chords to store in relative form
-            const keyRoot = normalizeNote(state.key.replace('m', ''));
+            // Reverse-transpose using preset's native key to store in relative form
+            const presetKey = preset.key || 'C';
+            const keyRoot = normalizeNote(presetKey.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections[state.currentSection].progression = preset.chords.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
