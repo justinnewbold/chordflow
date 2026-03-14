@@ -1971,7 +1971,7 @@
         }
         function playMetronomeTick(accent = false) {
             if (!metronomeClick || !state.metronomeEnabled) return;
-            try { metronomeClick.triggerAttackRelease(accent ? 'C4' : 'C5', '32n'); } catch (e) {}
+            try { metronomeClick.triggerAttackRelease(accent ? 'C5' : 'C4', '32n'); } catch (e) {}
             // Haptic feedback on beat
             if (navigator.vibrate) {
                 try { navigator.vibrate(accent ? 30 : 10); } catch(e) {}
@@ -2849,9 +2849,10 @@
                     state.currentBeat++;
                     if (state.currentBeat >= getBeatsPerMeasure()) {
                         state.currentBeat = 0;
-                        advanceChord();
-                        // advanceChord may call restartPlayback (e.g. auto speed-up),
-                        // which creates a new scheduling chain — don't double-schedule
+                        const handled = advanceChord();
+                        // advanceChord returns true when it handled scheduling itself
+                        // (e.g. restartPlayback on auto speed-up, or stopPlayback)
+                        if (!handled && state.isPlaying) scheduleNextBeat();
                         return;
                     }
                     if (state.isPlaying) scheduleNextBeat();
@@ -2886,8 +2887,8 @@
                         state.currentSection = 0;
                         renderAll();
                     }
-                    if (handleAutoSpeedUp()) return; // restartPlayback already played the chord
-                } else { stopPlayback(); return; }
+                    if (handleAutoSpeedUp()) return true; // restartPlayback already played the chord
+                } else { stopPlayback(); return true; }
             }
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             renderAll();
