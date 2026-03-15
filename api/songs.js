@@ -38,24 +38,33 @@ export default async function handler(req, res) {
     }
 }
 
+// Verify JWT and return the authenticated user, or null if unauthenticated
+async function getAuthUser(req, supabase) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return null;
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    return error ? null : user;
+}
+
 // Save a song to user's library
 async function saveSong(req, res, supabase) {
-    const { title, song, key, scale, genre, tempo, userId } = req.body;
-    
-    if (!userId) {
+    const { title, song, key, scale, genre, tempo } = req.body;
+
+    const user = await getAuthUser(req, supabase);
+    if (!user) {
         // Save to localStorage fallback (return ID for client-side storage)
         const localId = 'local_' + Date.now();
-        return res.status(200).json({ 
-            id: localId, 
+        return res.status(200).json({
+            id: localId,
             message: 'Saved locally (sign in for cloud sync)',
-            local: true 
+            local: true
         });
     }
 
     const { data, error } = await supabase
         .from('songs')
         .insert({
-            user_id: userId,
+            user_id: user.id,
             title: title || 'Untitled Song',
             song_data: JSON.stringify(song),
             key_signature: key,
@@ -74,16 +83,16 @@ async function saveSong(req, res, supabase) {
 
 // Load user's songs
 async function loadSongs(req, res, supabase) {
-    const { userId } = req.query;
-    
-    if (!userId) {
+    const user = await getAuthUser(req, supabase);
+
+    if (!user) {
         return res.status(200).json({ songs: [], message: 'Sign in to see saved songs' });
     }
 
     const { data, error } = await supabase
         .from('songs')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -93,7 +102,7 @@ async function loadSongs(req, res, supabase) {
 
 // Get a specific song by ID (for sharing or loading user's own)
 async function getSong(req, res, supabase) {
-    const { id, userId } = req.query;
+    const { id } = req.query;
 
     if (!id) return res.status(400).json({ error: 'Song ID required' });
 
@@ -105,9 +114,12 @@ async function getSong(req, res, supabase) {
 
     if (error) return res.status(404).json({ error: 'Song not found' });
 
-    // Allow access if public or owned by the requesting user
-    if (!data.is_public && data.user_id !== userId) {
-        return res.status(403).json({ error: 'This song is private' });
+    // Public songs are accessible to anyone; private songs require the owner's token
+    if (!data.is_public) {
+        const user = await getAuthUser(req, supabase);
+        if (!user || user.id !== data.user_id) {
+            return res.status(403).json({ error: 'This song is private' });
+        }
     }
 
     return res.status(200).json({ song: data });
@@ -115,15 +127,18 @@ async function getSong(req, res, supabase) {
 
 // Delete a song
 async function deleteSong(req, res, supabase) {
-    const { id, userId } = req.body;
-    
-    if (!id || !userId) return res.status(400).json({ error: 'ID and user required' });
+    const { id } = req.body;
+
+    if (!id) return res.status(400).json({ error: 'Song ID required' });
+
+    const user = await getAuthUser(req, supabase);
+    if (!user) return res.status(401).json({ error: 'Authentication required' });
 
     const { error } = await supabase
         .from('songs')
         .delete()
         .eq('id', id)
-        .eq('user_id', userId);
+        .eq('user_id', user.id);
 
     if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ success: true });
@@ -131,20 +146,23 @@ async function deleteSong(req, res, supabase) {
 
 // Make a song public/shareable
 async function shareSong(req, res, supabase) {
-    const { id, userId, isPublic } = req.body;
+    const { id, isPublic } = req.body;
 
-    if (!id || !userId) return res.status(400).json({ error: 'Song ID and user required' });
+    if (!id) return res.status(400).json({ error: 'Song ID required' });
+
+    const user = await getAuthUser(req, supabase);
+    if (!user) return res.status(401).json({ error: 'Authentication required' });
 
     const { data, error } = await supabase
         .from('songs')
         .update({ is_public: isPublic !== false })
         .eq('id', id)
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .select()
         .single();
 
     if (error) return res.status(400).json({ error: error.message });
-    
+
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers['x-forwarded-host'] || req.headers.host || 'chordflow-newbold-cloud.vercel.app';
     const shareUrl = `${proto}://${host}/?song=${data.id}`;
