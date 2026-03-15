@@ -2284,12 +2284,12 @@
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
             ensurePlaybackStopped();
             state.isRecording = true;
-            await initAudio();
-            if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
-            document.getElementById('recordingOverlay').classList.add('active');
-            showToast('🎵 Recording started...');
 
             try {
+                await initAudio();
+                if (!recorder) { showToast('⚠️ Recorder not available'); return; }
+                document.getElementById('recordingOverlay').classList.add('active');
+                showToast('🎵 Recording started...');
                 recorder.start();
                 const chords = getTransposedProgression();
                 const beatMs = 60000 / state.tempo;
@@ -2836,12 +2836,20 @@
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             state.currentBeat = 1;
 
+            // Track absolute scheduled beat times to prevent drift from setTimeout imprecision
+            let nextBeatTime = Date.now();
+
             function scheduleNextBeat() {
                 const beatMs = 60000 / state.tempo;
-                // Apply swing: delay odd beats by swing amount
+                // Advance the absolute clock by one beat
+                nextBeatTime += beatMs;
+                // Apply swing as an offset from the scheduled time (doesn't shift overall clock)
                 const swingFactor = state.swing / 100;
                 const isOddBeat = state.currentBeat % 2 === 1;
-                const ms = isOddBeat ? beatMs * (1 + swingFactor * 0.33) : (state.currentBeat === 0 ? beatMs : beatMs * (1 - swingFactor * 0.33));
+                const swingOffset = isOddBeat
+                    ? beatMs * swingFactor * 0.33
+                    : (state.currentBeat === 0 ? 0 : -beatMs * swingFactor * 0.33);
+                const ms = Math.max(0, nextBeatTime + swingOffset - Date.now());
                 beatInterval = setTimeout(() => {
                     playMetronomeTick(state.currentBeat === 0);
                     playDrumBeat(state.currentBeat);
