@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.74</title>
+    <title>ChordFlow v0.75</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -773,6 +773,45 @@
         .diatonic-chip.role-dominant .dgm-degree { color: var(--accent-green); }
         .diatonic-chip.role-subdominant { border-color: var(--accent-purple); }
         .diatonic-chip.role-subdominant .dgm-degree { color: var(--accent-purple); }
+
+        /* ── Feature: Secondary Dominants Toggle ── */
+        .diatonic-view-toggle { display: flex; gap: 3px; background: var(--bg-elevated); border-radius: var(--radius-full); padding: 3px; }
+        .diatonic-view-btn { padding: 4px 9px; background: transparent; border: none; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 10px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .diatonic-view-btn.active { background: var(--accent); color: white; }
+        .diatonic-chip.role-secdom { border-color: var(--accent-pink); }
+        .diatonic-chip.role-secdom .dgm-degree { color: var(--accent-pink); }
+
+        /* ── Feature: Chord Substitutions in Edit Modal ── */
+        .chord-subs-section { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--separator); }
+        .chord-subs-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .chord-subs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chord-sub-chip { padding: 7px 11px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+        .chord-sub-chip:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+        .chord-sub-chip:active { transform: scale(0.93); }
+        .chord-sub-chip .sub-reason { display: block; font-size: 10px; color: var(--text-tertiary); font-weight: 500; margin-top: 1px; }
+
+        /* ── Feature: Progression Favorites ── */
+        .history-tabs { display: flex; gap: 3px; margin-bottom: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 3px; }
+        .history-tab { flex: 1; padding: 8px 4px; background: transparent; border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .history-tab.active { background: var(--accent); color: white; }
+        .history-item-actions { display: flex; align-items: center; gap: 6px; }
+        .history-item-star { background: none; border: none; font-size: 17px; cursor: pointer; padding: 2px; line-height: 1; opacity: 0.35; transition: all var(--transition-fast); flex-shrink: 0; }
+        .history-item-star.starred { opacity: 1; }
+        .history-item-star:active { transform: scale(1.4); }
+
+        /* ── Feature: Effects Controls + Presets ── */
+        .fx-section { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--separator); }
+        .fx-section-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); }
+        .fx-slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .fx-slider-name { font-size: 13px; color: var(--text-primary); font-weight: 600; min-width: 68px; }
+        .fx-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: var(--bg-elevated); border-radius: 2px; outline: none; }
+        .fx-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
+        .fx-slider::-moz-range-thumb { width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; border: none; }
+        .fx-val { min-width: 32px; font-size: 12px; color: var(--text-secondary); text-align: right; font-weight: 600; }
+        .fx-preset-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: var(--spacing-sm); }
+        .fx-preset-btn { flex: 1; min-width: 48px; padding: 7px 4px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); text-align: center; }
+        .fx-preset-btn:active { transform: scale(0.93); }
+        .fx-preset-btn.active { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(191,90,242,0.1); }
     </style>
 </head>
 <body>
@@ -926,8 +965,14 @@
                 <!-- Diatonic Chord Helper -->
                 <div class="diatonic-section" id="diatonicSection">
                     <div class="diatonic-header">
-                        <span class="diatonic-title">🎓 Diatonic Chords</span>
-                        <span class="diatonic-key-label" id="diatonicKeyLabel">C Major</span>
+                        <span class="diatonic-title">🎓 <span id="diatonicViewTitle">Diatonic</span></span>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="diatonic-key-label" id="diatonicKeyLabel">C Major</span>
+                            <div class="diatonic-view-toggle">
+                                <button class="diatonic-view-btn active" id="dvBtnDiatonic" onclick="setDiatonicView('diatonic')">Diatonic</button>
+                                <button class="diatonic-view-btn" id="dvBtnSecondary" onclick="setDiatonicView('secondary')">Sec. V</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="diatonic-chips" id="diatonicChips"></div>
                 </div>
@@ -1029,6 +1074,28 @@
                     <div class="toggle-row">
                         <div><div class="toggle-label">🎷 Swing</div><div class="toggle-desc" id="swingVal">0%</div></div>
                         <input type="range" class="swing-slider" min="0" max="100" value="0" oninput="setSwing(this.value)">
+                    </div>
+                    <!-- Effects Controls + Presets -->
+                    <div class="fx-section">
+                        <div class="fx-section-label">🎛️ Effects</div>
+                        <div class="fx-slider-row">
+                            <span class="fx-slider-name">🌊 Reverb</span>
+                            <input type="range" class="fx-slider" id="reverbSlider" min="0" max="100" value="30" oninput="updateEffectSlider('reverb', this.value)">
+                            <span class="fx-val" id="reverbValDisplay">30%</span>
+                        </div>
+                        <div class="fx-slider-row">
+                            <span class="fx-slider-name">🔁 Delay</span>
+                            <input type="range" class="fx-slider" id="delaySlider" min="0" max="100" value="15" oninput="updateEffectSlider('delay', this.value)">
+                            <span class="fx-val" id="delayValDisplay">15%</span>
+                        </div>
+                        <div class="fx-preset-row" id="fxPresetRow">
+                            <button class="fx-preset-btn" data-preset="Dry" onclick="applyEffectPreset('Dry', 0, 0)">🎙️ Dry</button>
+                            <button class="fx-preset-btn" data-preset="Studio" onclick="applyEffectPreset('Studio', 15, 8)">🎸 Studio</button>
+                            <button class="fx-preset-btn active" data-preset="Default" onclick="applyEffectPreset('Default', 30, 15)">⚙️ Default</button>
+                            <button class="fx-preset-btn" data-preset="Hall" onclick="applyEffectPreset('Hall', 55, 20)">🏛️ Hall</button>
+                            <button class="fx-preset-btn" data-preset="Concert" onclick="applyEffectPreset('Concert', 40, 30)">🎭 Concert</button>
+                            <button class="fx-preset-btn" data-preset="Ambient" onclick="applyEffectPreset('Ambient', 80, 50)">🌌 Ambient</button>
+                        </div>
                     </div>
                 </div>
                 <div class="produce-panel" id="exportPanel">
@@ -1352,10 +1419,19 @@
     <!-- Progression History Modal -->
     <div class="history-modal" id="historyModal" onclick="closeHistory()">
         <div class="history-card" onclick="event.stopPropagation()">
-            <div class="history-title">🕐 Progression History</div>
-            <div class="history-subtitle">Your last 20 generated progressions</div>
-            <button class="history-clear-btn" onclick="clearHistory()">🗑️ Clear History</button>
-            <div id="historyList"></div>
+            <div class="history-title">🕐 History &amp; Favorites</div>
+            <div class="history-tabs">
+                <button class="history-tab active" id="histTabHistory" onclick="switchHistoryTab('history')">🕐 History</button>
+                <button class="history-tab" id="histTabFavorites" onclick="switchHistoryTab('favorites')">⭐ Favorites</button>
+            </div>
+            <div id="historyPanel">
+                <button class="history-clear-btn" onclick="clearHistory()">🗑️ Clear History</button>
+                <div id="historyList"></div>
+            </div>
+            <div id="favoritesPanel" style="display:none">
+                <button class="history-clear-btn" onclick="clearFavorites()">🗑️ Clear Favorites</button>
+                <div id="favoritesList"></div>
+            </div>
             <button class="history-close" onclick="closeHistory()">Close</button>
         </div>
     </div>
@@ -1408,6 +1484,10 @@
                 <button class="chord-edit-cancel" onclick="closeChordEditModal()">Cancel</button>
                 <button class="chord-edit-delete" onclick="deleteChordFromEdit()">Delete</button>
                 <button class="chord-edit-save" onclick="saveChordEdit()">Save</button>
+            </div>
+            <div class="chord-subs-section" id="chordSubsSection">
+                <div class="chord-subs-label">💡 Try Instead</div>
+                <div class="chord-subs-chips" id="chordSubChips"></div>
             </div>
         </div>
     </div>
@@ -1512,7 +1592,7 @@
     <div class="metro-flash" id="metroFlash"></div>
 
     <script>
-        const VERSION = '0.74';
+        const VERSION = '0.75';
         // API key removed from client - calls routed through /api/gemini
 
         function escapeHtml(str) {
@@ -1911,7 +1991,10 @@
             drumsEnabled: false, arrangementMode: false, arrangementSectionIndex: 0,
             lastDeletedChord: null, lastDeletedIndex: -1, lastDeletedSection: -1,
             mood: '',
-            progressionHistory: JSON.parse(localStorage.getItem('chordflow-history') || '[]')
+            progressionHistory: JSON.parse(localStorage.getItem('chordflow-history') || '[]'),
+            favorites: JSON.parse(localStorage.getItem('chordflow-favorites') || '[]'),
+            diatonicView: 'diatonic',
+            activeFxPreset: 'Default'
         };
 
         // Audio
@@ -3725,6 +3808,7 @@
             const chord = chords[index];
             const input = document.getElementById('chordEditInput');
             if (input) { input.value = chord; }
+            renderChordSubs(chord);
             document.getElementById('chordEditModal').classList.add('active');
             setTimeout(() => { if (input) { input.focus(); input.select(); } }, 100);
         }
@@ -4869,51 +4953,16 @@
         }
         function openHistory() {
             closeSheet();
-            const list = document.getElementById('historyList');
-            if (list) {
-                if (state.progressionHistory.length === 0) {
-                    list.innerHTML = '<div class="history-empty">No history yet.<br>Generate some progressions first!</div>';
-                } else {
-                    list.innerHTML = state.progressionHistory.map((entry, i) => {
-                        const genreIcon = genres.find(g => g.id === entry.genre)?.icon || '🎵';
-                        const d = new Date(entry.timestamp);
-                        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        return `<div class="history-item" onclick="restoreFromHistory(${i})">
-                            <div class="history-item-header">
-                                <span class="history-item-meta">${genreIcon} ${entry.genre} · ${entry.key} · ${entry.tempo} BPM</span>
-                                <span class="history-item-meta">${timeStr}</span>
-                            </div>
-                            <div class="history-item-chords">${escapeHtml(entry.chords)}</div>
-                        </div>`;
-                    }).join('');
-                }
-            }
+            // Default to history tab and render it
+            switchHistoryTab('history');
             document.getElementById('historyModal').classList.add('active');
         }
         function closeHistory() { document.getElementById('historyModal').classList.remove('active'); }
         function clearHistory() {
             state.progressionHistory = [];
             try { localStorage.removeItem('chordflow-history'); } catch(e) {}
-            openHistory();
+            renderHistoryList();
             showToast('🗑️ History cleared');
-        }
-        function restoreFromHistory(index) {
-            const entry = state.progressionHistory[index];
-            if (!entry) return;
-            saveStateForUndo();
-            const keyRoot = normalizeNote(entry.key.replace('m', ''));
-            const semitones = ALL_NOTES.indexOf(keyRoot);
-            const chordArr = entry.chords.split(' - ');
-            state.sections[state.currentSection].progression = chordArr.map(c => transposeChord(c, -semitones));
-            state.key = entry.key;
-            state.genre = entry.genre;
-            state.baseTempo = entry.tempo;
-            state.tempo = entry.tempo;
-            state.currentChordIndex = 0;
-            updateTempoDisplay();
-            closeHistory();
-            renderAll();
-            showToast('🕐 Restored from history');
         }
 
         // ============ FEATURE: CIRCLE OF FIFTHS ============
@@ -5009,7 +5058,7 @@
             }
         }
 
-        // ============ FEATURE: DIATONIC CHORD HELPER ============
+        // ============ FEATURE: DIATONIC CHORD HELPER + SECONDARY DOMINANTS ============
         function getDiatonicChords(key) {
             const isMinor = key.endsWith('m') && key.length > 1;
             const root = normalizeNote(key.replace(/m$/, ''));
@@ -5024,15 +5073,44 @@
                 return { chord: ALL_NOTES[noteIdx] + qualities[i], degree: degrees[i], role: roles[i] };
             });
         }
+        function getSecondaryDominants(key) {
+            // Returns V7 chords that resolve to each diatonic chord (except the tonic & diminished)
+            const isMinor = key.endsWith('m') && key.length > 1;
+            const diatonic = getDiatonicChords(key);
+            // Skip tonic (i=0) and diminished (vii°)
+            const targets = diatonic.filter((c, i) => i !== 0 && !c.chord.includes('dim'));
+            return targets.map(t => {
+                const tRoot = normalizeNote(t.chord.replace(/m.*|7.*|maj.*|dim.*|aug.*|sus.*/g, ''));
+                const tRootIdx = ALL_NOTES.indexOf(tRoot);
+                if (tRootIdx < 0) return null;
+                // V7 of X = chord a P5th above X's root (dominant 7th)
+                const v7Root = ALL_NOTES[(tRootIdx + 7) % 12];
+                const secChord = v7Root + '7';
+                const degLabel = `V/${t.degree}`;
+                return { chord: secChord, degree: degLabel, role: 'secdom', resolvesTo: t.chord };
+            }).filter(Boolean);
+        }
+        function setDiatonicView(view) {
+            state.diatonicView = view;
+            document.getElementById('dvBtnDiatonic')?.classList.toggle('active', view === 'diatonic');
+            document.getElementById('dvBtnSecondary')?.classList.toggle('active', view === 'secondary');
+            const title = document.getElementById('diatonicViewTitle');
+            if (title) title.textContent = view === 'diatonic' ? 'Diatonic' : 'Secondary V';
+            renderDiatonicHelper();
+        }
         function renderDiatonicHelper() {
             const container = document.getElementById('diatonicChips');
             const keyLabel = document.getElementById('diatonicKeyLabel');
             if (!container) return;
             const keyInfo = getKeyInfo();
             if (keyLabel) keyLabel.textContent = keyInfo.display;
-            const chords = getDiatonicChords(state.key);
+            const chords = state.diatonicView === 'secondary' ? getSecondaryDominants(state.key) : getDiatonicChords(state.key);
+            if (chords.length === 0) {
+                container.innerHTML = '<div style="font-size:12px;color:var(--text-tertiary);padding:4px">No chords available</div>';
+                return;
+            }
             container.innerHTML = chords.map(c =>
-                `<div class="diatonic-chip role-${c.role}" onclick="addDiatonicChord('${c.chord}')" title="Add ${c.chord} to progression">
+                `<div class="diatonic-chip role-${c.role}" onclick="addDiatonicChord('${c.chord}')" title="${state.diatonicView === 'secondary' ? 'Resolves to ' + c.resolvesTo : 'Add ' + c.chord}">
                     <span class="dgm-degree">${c.degree}</span>${escapeHtml(c.chord)}
                 </div>`
             ).join('');
@@ -5046,6 +5124,203 @@
             state.sections[state.currentSection].progression.push(relChord);
             renderAll();
             showToast(`🎓 Added ${chord}`);
+        }
+
+        // ============ FEATURE: CHORD SUBSTITUTIONS ============
+        function getChordSubstitutions(chord) {
+            const subs = [];
+            const rootMatch = chord.match(/^([A-G][#b]?)/);
+            if (!rootMatch) return subs;
+            const root = normalizeNote(rootMatch[1]);
+            const rootIdx = ALL_NOTES.indexOf(root);
+            if (rootIdx < 0) return subs;
+            const nn = i => ALL_NOTES[((i % 12) + 12) % 12];
+
+            const isMinor = /^[A-G][#b]?m(?!aj)/.test(chord);
+            const hasMaj7 = chord.includes('maj7');
+            const has7 = !hasMaj7 && /7/.test(chord.replace(/^[A-G][#b]?(m(?:aj)?)?/, ''));
+            const hasDim = chord.includes('dim');
+            const hasAug = chord.includes('aug');
+            const hasSus = chord.includes('sus');
+
+            // 1. Add/remove 7th extension
+            if (!hasDim && !hasAug && !hasSus) {
+                if (!has7 && !hasMaj7) {
+                    subs.push({ chord: root + (isMinor ? 'm7' : 'maj7'), reason: isMinor ? 'minor 7th' : 'major 7th' });
+                } else {
+                    subs.push({ chord: root + (isMinor ? 'm' : ''), reason: 'simpler triad' });
+                }
+            }
+            // 2. Parallel quality flip
+            if (!hasDim && !hasAug && !hasSus && !has7 && !hasMaj7) {
+                subs.push({ chord: root + (isMinor ? '' : 'm'), reason: isMinor ? 'parallel major' : 'parallel minor' });
+            }
+            // 3. Relative major/minor
+            if (isMinor && !hasDim) {
+                subs.push({ chord: nn(rootIdx + 3), reason: 'relative major' });
+            } else if (!isMinor && !hasDim && !hasAug) {
+                subs.push({ chord: nn(rootIdx + 9) + 'm', reason: 'relative minor' });
+            }
+            // 4. Secondary dominant that leads here
+            subs.push({ chord: nn(rootIdx + 7) + '7', reason: 'secondary V→this' });
+            // 5. Tritone sub (for dominant 7ths) or sus4 (for plain major chords)
+            if (has7 && !isMinor) {
+                subs.push({ chord: nn(rootIdx + 6) + '7', reason: 'tritone sub' });
+            } else if (!isMinor && !has7 && !hasDim && !hasAug && !hasSus) {
+                subs.push({ chord: root + 'sus4', reason: 'sus4 variant' });
+            }
+            return subs.filter(s => s.chord !== chord && isValidChord(s.chord)).slice(0, 5);
+        }
+        function renderChordSubs(chord) {
+            const container = document.getElementById('chordSubChips');
+            if (!container) return;
+            const subs = getChordSubstitutions(chord);
+            if (subs.length === 0) {
+                container.innerHTML = '<span style="font-size:12px;color:var(--text-tertiary)">No suggestions available</span>';
+                return;
+            }
+            container.innerHTML = subs.map(s =>
+                `<div class="chord-sub-chip" onclick="applySubstitution('${s.chord}')">
+                    ${escapeHtml(s.chord)}<span class="sub-reason">${s.reason}</span>
+                </div>`
+            ).join('');
+        }
+        function applySubstitution(chord) {
+            const input = document.getElementById('chordEditInput');
+            if (input) {
+                input.value = chord;
+                input.focus();
+                renderChordSubs(chord);
+            }
+        }
+
+        // ============ FEATURE: PROGRESSION FAVORITES ============
+        function toggleFavorite(index, isFromFav) {
+            const list = isFromFav ? state.favorites : state.progressionHistory;
+            const entry = list[index];
+            if (!entry) return;
+            const key = entry.chords + '|' + entry.key;
+            const favIdx = state.favorites.findIndex(f => f.chords + '|' + f.key === key);
+            if (favIdx >= 0) {
+                state.favorites.splice(favIdx, 1);
+                showToast('⭐ Removed from favorites');
+            } else {
+                state.favorites.unshift({ ...entry });
+                if (state.favorites.length > 50) state.favorites.pop();
+                showToast('⭐ Saved to favorites!');
+            }
+            try { localStorage.setItem('chordflow-favorites', JSON.stringify(state.favorites)); } catch(e) {}
+            // Re-render current tab
+            const activeTab = document.getElementById('histTabFavorites')?.classList.contains('active');
+            if (activeTab) renderFavoritesList(); else renderHistoryList();
+        }
+        function isFavorited(entry) {
+            const key = entry.chords + '|' + entry.key;
+            return state.favorites.some(f => f.chords + '|' + f.key === key);
+        }
+        function buildEntryHTML(entry, index, isFromFav) {
+            const genreIcon = genres.find(g => g.id === entry.genre)?.icon || '🎵';
+            const d = new Date(entry.timestamp);
+            const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const starred = isFavorited(entry);
+            return `<div class="history-item">
+                <div class="history-item-header">
+                    <span class="history-item-meta">${genreIcon} ${entry.genre} · ${entry.key} · ${entry.tempo} BPM</span>
+                    <div class="history-item-actions">
+                        <span class="history-item-meta">${timeStr}</span>
+                        <button class="history-item-star ${starred ? 'starred' : ''}" onclick="event.stopPropagation(); toggleFavorite(${index}, ${isFromFav})" title="${starred ? 'Remove from favorites' : 'Add to favorites'}">${starred ? '⭐' : '☆'}</button>
+                    </div>
+                </div>
+                <div class="history-item-chords" onclick="restoreFromHistoryEntry(${JSON.stringify(entry).replace(/"/g, '&quot;')})">${escapeHtml(entry.chords)}</div>
+            </div>`;
+        }
+        function renderHistoryList() {
+            const list = document.getElementById('historyList');
+            if (!list) return;
+            if (state.progressionHistory.length === 0) {
+                list.innerHTML = '<div class="history-empty">No history yet.<br>Generate some progressions first!</div>';
+            } else {
+                list.innerHTML = state.progressionHistory.map((e, i) => buildEntryHTML(e, i, false)).join('');
+            }
+        }
+        function renderFavoritesList() {
+            const list = document.getElementById('favoritesList');
+            if (!list) return;
+            if (state.favorites.length === 0) {
+                list.innerHTML = '<div class="history-empty">No favorites yet.<br>Star progressions from History!</div>';
+            } else {
+                list.innerHTML = state.favorites.map((e, i) => buildEntryHTML(e, i, true)).join('');
+            }
+        }
+        function switchHistoryTab(tab) {
+            const histTab = document.getElementById('histTabHistory');
+            const favTab = document.getElementById('histTabFavorites');
+            const histPanel = document.getElementById('historyPanel');
+            const favPanel = document.getElementById('favoritesPanel');
+            if (tab === 'history') {
+                histTab?.classList.add('active'); favTab?.classList.remove('active');
+                if (histPanel) histPanel.style.display = ''; if (favPanel) favPanel.style.display = 'none';
+                renderHistoryList();
+            } else {
+                favTab?.classList.add('active'); histTab?.classList.remove('active');
+                if (favPanel) favPanel.style.display = ''; if (histPanel) histPanel.style.display = 'none';
+                renderFavoritesList();
+            }
+        }
+        function clearFavorites() {
+            state.favorites = [];
+            try { localStorage.removeItem('chordflow-favorites'); } catch(e) {}
+            renderFavoritesList();
+            showToast('🗑️ Favorites cleared');
+        }
+        function restoreFromHistoryEntry(entryJSON) {
+            let entry;
+            try { entry = typeof entryJSON === 'string' ? JSON.parse(entryJSON) : entryJSON; } catch(e) { return; }
+            if (!entry) return;
+            saveStateForUndo();
+            const keyRoot = normalizeNote(entry.key.replace('m', ''));
+            const semitones = ALL_NOTES.indexOf(keyRoot);
+            const chordArr = entry.chords.split(' - ');
+            state.sections[state.currentSection].progression = chordArr.map(c => transposeChord(c, -semitones));
+            state.key = entry.key;
+            state.genre = entry.genre;
+            state.baseTempo = entry.tempo;
+            state.tempo = entry.tempo;
+            state.currentChordIndex = 0;
+            updateTempoDisplay();
+            closeHistory();
+            renderAll();
+            showToast('🕐 Restored from history');
+        }
+
+        // ============ FEATURE: EFFECTS CONTROLS + PRESETS ============
+        function updateEffectSlider(type, value) {
+            value = parseInt(value);
+            updateEffect(type, value);
+            if (type === 'reverb') {
+                const d = document.getElementById('reverbValDisplay');
+                if (d) d.textContent = value + '%';
+            } else if (type === 'delay') {
+                const d = document.getElementById('delayValDisplay');
+                if (d) d.textContent = value + '%';
+            }
+            state.activeFxPreset = '';
+            document.querySelectorAll('.fx-preset-btn').forEach(b => b.classList.remove('active'));
+        }
+        function applyEffectPreset(name, reverbVal, delayVal) {
+            updateEffect('reverb', reverbVal);
+            updateEffect('delay', delayVal);
+            state.reverbAmount = reverbVal;
+            state.delayAmount = delayVal;
+            state.activeFxPreset = name;
+            // Update sliders
+            const rs = document.getElementById('reverbSlider'); if (rs) rs.value = reverbVal;
+            const ds = document.getElementById('delaySlider'); if (ds) ds.value = delayVal;
+            const rd = document.getElementById('reverbValDisplay'); if (rd) rd.textContent = reverbVal + '%';
+            const dd = document.getElementById('delayValDisplay'); if (dd) dd.textContent = delayVal + '%';
+            // Highlight active preset
+            document.querySelectorAll('.fx-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+            showToast(`🎛️ Effects: ${name}`);
         }
 
         // Event Listeners
@@ -5086,7 +5361,7 @@
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
             if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
-            console.log(`🎵 ChordFlow v${VERSION} - Progression History, Circle of Fifths, Mood Selector, Diatonic Helper, Auth, Cloud Sync, Community Hub, Song Templates, Drums, inline edit, arrangement, melody, presets, QR`);
+            console.log(`🎵 ChordFlow v${VERSION} - Chord Subs, Favorites, FX Presets, Sec.Dominants, History, COF, Mood, Diatonic, Auth, Cloud, Community, Templates, Drums, MIDI, PDF, WAV`);
         }
         init();
     </script>
