@@ -2883,7 +2883,7 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord)})">🎸</button>
+                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')})">🎸</button>
                     <div class="chord-name">${escapeHtml(chord)}</div>
                     <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
@@ -2987,15 +2987,23 @@
         function setupCardSwipe() {
             const container = document.getElementById('cdStackContainer');
             if (!container) return;
-            container.addEventListener('touchstart', e => { if (cdExpandedCard) return; cdTouchStartX = e.touches[0].clientX; cdIsSwiping = false; }, { passive: true });
-            container.addEventListener('touchmove', e => { if (cdExpandedCard) return; if (Math.abs(e.touches[0].clientX - cdTouchStartX) > 20) cdIsSwiping = true; }, { passive: true });
-            container.addEventListener('touchend', e => { 
-                if (cdExpandedCard) return; 
-                const dx = e.changedTouches[0].clientX - cdTouchStartX; 
+            container.addEventListener('touchstart', e => {
+                if (cdExpandedCard || e.touches.length === 0) return;
+                cdTouchStartX = e.touches[0].clientX;
+                cdIsSwiping = false;
+            }, { passive: true });
+            container.addEventListener('touchmove', e => {
+                if (cdExpandedCard || e.touches.length === 0) return;
+                if (Math.abs(e.touches[0].clientX - cdTouchStartX) > 20) cdIsSwiping = true;
+            }, { passive: true });
+            container.addEventListener('touchend', e => {
+                if (cdExpandedCard) return;
+                if (e.changedTouches.length === 0) { cdIsSwiping = false; return; }
+                const dx = e.changedTouches[0].clientX - cdTouchStartX;
                 if (cdIsSwiping && Math.abs(dx) > 70) { // Increased threshold from 50 to 70
-                    if (dx < 0) cdNextCard(); else cdPrevCard(); 
-                } 
-                cdIsSwiping = false; 
+                    if (dx < 0) cdNextCard(); else cdPrevCard();
+                }
+                cdIsSwiping = false;
             }, { passive: true });
             container.addEventListener('click', e => { const card = e.target.closest('.cd-card'); if (card && !cdExpandedCard && card.classList.contains('active')) cdExpandCard(card); });
         }
@@ -3569,10 +3577,12 @@
                 navigator.clipboard.writeText(url).then(() => {
                     showToast('🔗 Link copied to clipboard!');
                 }).catch(() => {
-                    prompt('Copy this link:', url);
+                    // Don't use window.prompt — iOS Safari suspends the audio context
+                    // when a native prompt opens, killing playback mid-song.
+                    showToast('⚠️ Could not copy — use the share button');
                 });
             } else {
-                prompt('Copy this link:', url);
+                showToast('⚠️ Clipboard unavailable — use the share button');
             }
         }
         function loadSharedProgression() {
@@ -4285,12 +4295,12 @@
                             <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
                         </div>
                         ${data.songs.map((s, i) => `
-                            <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id)})">
+                            <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
                                     <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id)})" title="Delete">🗑️</button>
+                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})" title="Delete">🗑️</button>
                             </div>
                         `).join('')}`;
                 } else {
@@ -5371,8 +5381,11 @@
         let sfTouchStartX = 0;
         const sfCanvas = document.getElementById('sfCanvas');
         if (sfCanvas) {
-            sfCanvas.addEventListener('touchstart', e => { sfTouchStartX = e.touches[0].clientX; }, { passive: true });
+            sfCanvas.addEventListener('touchstart', e => {
+                if (e.touches.length > 0) sfTouchStartX = e.touches[0].clientX;
+            }, { passive: true });
             sfCanvas.addEventListener('touchend', e => {
+                if (e.changedTouches.length === 0) return;
                 const dx = e.changedTouches[0].clientX - sfTouchStartX;
                 if (Math.abs(dx) > 100) { if (dx > 0) openSFPanel('left'); else openSFPanel('right'); }
             }, { passive: true });
