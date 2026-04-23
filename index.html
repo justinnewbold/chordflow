@@ -2799,7 +2799,7 @@
             if (!strip) return;
             strip.innerHTML = state.sections.map((s, i) => `
                 <button class="section-pill ${state.currentSection === i ? 'active' : ''} ${state.editingSections ? 'editing' : ''}" onclick="selectSection(${i})" oncontextmenu="event.preventDefault(); toggleSectionEdit()">
-                    <span class="section-icon">${s.icon}</span>${s.name}
+                    <span class="section-icon">${escapeHtml(s.icon)}</span>${escapeHtml(s.name)}
                     <span class="section-delete" onclick="event.stopPropagation(); deleteSection(${i})">✕</span>
                 </button>
             `).join('') + `<button class="add-section-btn" onclick="addSection()">+ Add</button>`;
@@ -2926,7 +2926,7 @@
             const instList = document.getElementById('sfInstrumentList');
             if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
             const secList = document.getElementById('sfSectionsList');
-            if (secList) secList.innerHTML = '<div class="option-list">' + state.sections.map((s, i) => `<div class="option-item ${state.currentSection === i ? 'selected' : ''}" onclick="selectSection(${i}); closeSFPanel('right')"><span class="option-icon">${s.icon}</span><div class="option-text"><div class="option-title">${s.name}</div></div></div>`).join('') + '</div>';
+            if (secList) secList.innerHTML = '<div class="option-list">' + state.sections.map((s, i) => `<div class="option-item ${state.currentSection === i ? 'selected' : ''}" onclick="selectSection(${i}); closeSFPanel('right')"><span class="option-icon">${escapeHtml(s.icon)}</span><div class="option-text"><div class="option-title">${escapeHtml(s.name)}</div></div></div>`).join('') + '</div>';
             // Update SF transport buttons
             const sfPlayBtn = document.getElementById('sfPlayBtn');
             if (sfPlayBtn) { 
@@ -3170,7 +3170,7 @@
                 const uniqueChords = [...new Set(song.chords)];
                 return `<div class="song-card" onclick="openSongPlayer('${song.id}')">
                     <div class="song-header">
-                        <div class="song-title">${song.title}</div>
+                        <div class="song-title">${escapeHtml(song.title)}</div>
                         <span class="song-difficulty ${song.difficulty.toLowerCase()}">${song.difficulty}</span>
                     </div>
                     <div class="song-meta">Key of ${song.key} | ${song.timeSignature} | ${song.tempo} BPM | ${song.year}</div>
@@ -3211,7 +3211,7 @@
             view.innerHTML = `
                 <div class="song-player">
                     <div class="song-player-header">
-                        <div class="song-player-title">${song.title}</div>
+                        <div class="song-player-title">${escapeHtml(song.title)}</div>
                         <button class="song-player-close" onclick="closeSongPlayer()">✕</button>
                     </div>
                     <div class="song-info-row">
