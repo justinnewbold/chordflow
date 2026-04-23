@@ -30,21 +30,29 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: 'Invalid action' });
         }
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        console.error('Auth error:', error);
+        return res.status(500).json({ error: 'Authentication service error' });
     }
 }
 
 async function signUp(req, res, supabase) {
     const { email, password } = req.body;
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) {
+        // Map Supabase errors to a generic response so we don't leak which emails are registered.
+        console.error('Signup error:', error.message);
+        return res.status(400).json({ error: 'Could not create account' });
+    }
     return res.status(200).json({ user: data.user, session: data.session });
 }
 
 async function login(req, res, supabase) {
     const { email, password } = req.body;
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) {
+        console.error('Login error:', error.message);
+        return res.status(400).json({ error: 'Invalid email or password' });
+    }
     return res.status(200).json({ user: data.user, session: data.session });
 }
 

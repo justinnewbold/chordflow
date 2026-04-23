@@ -155,7 +155,7 @@ async function shareSong(req, res, supabase) {
 
     const { data, error } = await supabase
         .from('songs')
-        .update({ is_public: isPublic !== false })
+        .update({ is_public: isPublic === true })
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -163,9 +163,10 @@ async function shareSong(req, res, supabase) {
 
     if (error) return res.status(400).json({ error: error.message });
 
-    const proto = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers['x-forwarded-host'] || req.headers.host || 'chordflow-newbold-cloud.vercel.app';
-    const shareUrl = `${proto}://${host}/?song=${data.id}`;
+    // Use the deployment's public URL only — proxy headers like x-forwarded-host are
+    // attacker-controllable and could be abused to mint phishing share links.
+    const publicHost = process.env.PUBLIC_APP_HOST || 'chordflow-newbold-cloud.vercel.app';
+    const shareUrl = `https://${publicHost}/?song=${data.id}`;
     return res.status(200).json({ shareUrl, song: data });
 }
 

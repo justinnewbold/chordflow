@@ -12,7 +12,12 @@ export default async function handler(req, res) {
 
     if (!GEMINI_KEY) return res.status(500).json({ error: 'API key not configured' });
 
-    const chordStr = Array.isArray(chords) ? chords.join(' - ') : (chords || 'C - G - Am - F');
+    // Cap chord input so a malicious caller can't blow up the prompt or burn quota.
+    const MAX_CHORDS = 64;
+    const safeChords = Array.isArray(chords)
+        ? chords.slice(0, MAX_CHORDS).filter(c => typeof c === 'string' && c.length > 0 && c.length <= 16)
+        : (typeof chords === 'string' && chords.length <= 256 ? [chords] : []);
+    const chordStr = safeChords.length > 0 ? safeChords.join(' - ') : 'C - G - Am - F';
     const prompts = {
         lyrics: `Write 4 song lyric lines for chords: ${chordStr}. Genre: ${genre}, Mood: ${mood}, Theme: ${theme || 'life'}. Return ONLY JSON array of 4 strings.`,
         analyze: `Analyze chord progression ${chordStr} in ${key} ${scale} (${genre}). Brief analysis: what works, emotional journey, similar songs, one variation tip. Under 100 words.`,
