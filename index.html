@@ -2025,7 +2025,9 @@
                 delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.3, wet: state.delayAmount / 100 }).connect(reverb);
                 masterGain = new Tone.Gain(1).connect(delay);
                 recorder = new Tone.Recorder();
-                masterGain.connect(recorder);
+                // Capture the post-effects (reverb/delay) signal so exported WAVs match
+                // what users actually hear, not the dry pre-effects bus.
+                reverb.connect(recorder);
                 await reverb.ready;
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
@@ -2576,14 +2578,15 @@
             const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = e => {
-                try {
-                    ensurePlaybackStopped();
-                    saveStateForUndo();
-                    const data = JSON.parse(e.target.result);
-                    const fileSections = data.sections?.length > 0 ? data.sections : state.sections;
-                    Object.assign(state, { sections: fileSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
-                    updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
-                } catch { showToast('⚠️ Invalid file'); }
+                let data;
+                try { data = JSON.parse(e.target.result); }
+                catch { showToast('⚠️ Invalid file'); return; }
+                if (data.sections && !Array.isArray(data.sections)) { showToast('⚠️ Invalid file'); return; }
+                ensurePlaybackStopped();
+                saveStateForUndo();
+                const fileSections = data.sections?.length > 0 ? data.sections : state.sections;
+                Object.assign(state, { sections: fileSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || state.timeSignature, currentSection: 0, currentChordIndex: 0 });
+                updateBeatDotContainers(); renderAll(); showToast('📂 Loaded from file');
             };
             reader.readAsText(file);
             event.target.value = '';
@@ -2776,6 +2779,8 @@
             document.querySelectorAll('.produce-tab').forEach(t => t.classList.remove('active'));
             // Close song player when switching tabs
             if (tab !== 'learn') {
+                // Stop the learn-song interval so audio doesn't keep playing under another tab.
+                if (typeof stopLearnSongPlay === 'function') stopLearnSongPlay();
                 const view = document.getElementById('songPlayerView');
                 const list = document.getElementById('learnSongsList');
                 if (view) view.style.display = 'none';
@@ -2939,11 +2944,16 @@
             const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
             if (panel) panel.classList.add('open'); 
         }
-        function closeSFPanel(side) { 
-            const overlay = document.getElementById('sfOverlay');
-            if (overlay) overlay.classList.remove('active'); 
+        function closeSFPanel(side) {
             const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
-            if (panel) panel.classList.remove('open'); 
+            if (panel) panel.classList.remove('open');
+            // Only drop the overlay once both panels are closed, otherwise the remaining
+            // panel is left floating without a backdrop.
+            const otherPanel = document.getElementById(side === 'left' ? 'sfRightPanel' : 'sfLeftPanel');
+            if (!otherPanel || !otherPanel.classList.contains('open')) {
+                const overlay = document.getElementById('sfOverlay');
+                if (overlay) overlay.classList.remove('active');
+            }
         }
         function closeAllSFPanels() { 
             const overlay = document.getElementById('sfOverlay');
@@ -3568,7 +3578,7 @@
         function loadSharedProgression() {
             const params = new URLSearchParams(window.location.search);
             if (!params.has('c')) return false;
-            const chords = params.get('c').split(',').filter(c => c.length > 0 && isValidChord(c));
+            const chords = params.get('c').split(',').map(c => c.trim()).filter(c => c.length > 0 && isValidChord(c));
             if (chords.length === 0) return false;
             const newKey = params.has('k') ? params.get('k') : state.key;
             const keyRoot = normalizeNote(newKey.replace('m', ''));
