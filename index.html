@@ -2957,7 +2957,7 @@
             renderAll();
             showToast('🔀 Chords reordered');
         }
-        async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); await playChord(chords[i], '4n'); }
+        async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); await playChord(chords[i], '4n'); }
 
         // Sheet Flow
         function renderSheetFlowUI() {
@@ -2982,7 +2982,7 @@
             const sfTempo = document.getElementById('sfTempo');
             if (sfTempo) sfTempo.textContent = state.tempo;
         }
-        function sfSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); playChord(chords[i], '4n'); }
+        function sfSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); playChord(chords[i], '4n'); }
         function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); const inst = instruments.find(i => i.id === id); showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`); }
         function openSFPanel(side) { 
             const overlay = document.getElementById('sfOverlay');
@@ -3058,7 +3058,7 @@
         function cdGoToCard(i) { state.currentCardIndex = i; renderCardStack(); }
         function cdExpandCard(card) { if (cdExpandedCard) return; cdExpandedCard = card; card.classList.add('expanded'); }
         function cdCollapseCard() { if (cdExpandedCard) { cdExpandedCard.classList.remove('expanded'); cdExpandedCard = null; } }
-        function cdSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderAll(); playChord(chords[i], '4n'); }
+        function cdSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); playChord(chords[i], '4n'); }
         function renderCardDeckUI() { if (state.uiMode === 'cards') renderCardStack(); }
 
         // Playback
@@ -3139,7 +3139,7 @@
             }
             scheduleNextBeat();
 
-            renderAll();
+            renderPlaybackTick();
         }
         function advanceChord() {
             const displayChords = getTransposedProgression();
@@ -3170,7 +3170,7 @@
                 } else { stopPlayback(); return true; }
             }
             playChord(getTransposedProgression()[state.currentChordIndex], '2n');
-            renderAll();
+            renderPlaybackTick();
         }
         function stopPlaybackTimers() {
             if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
@@ -3192,7 +3192,7 @@
             updateTempoDisplay();
             updatePlayButtons();
             updateBeatDots(0);
-            renderAll();
+            renderPlaybackTick();
         }
         function restartPlayback() {
             stopPlaybackTimers();
@@ -4917,7 +4917,7 @@
                 navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
                 navigator.mediaSession.setActionHandler('pause', () => { if (state.isPlaying) togglePlay(); });
                 navigator.mediaSession.setActionHandler('previoustrack', () => {
-                    if (state.currentChordIndex > 0) { state.currentChordIndex--; renderAll(); playChord(getTransposedProgression()[state.currentChordIndex], '4n'); }
+                    if (state.currentChordIndex > 0) { state.currentChordIndex--; renderPlaybackTick(); playChord(getTransposedProgression()[state.currentChordIndex], '4n'); }
                 });
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
                     advanceChord();
@@ -4948,6 +4948,51 @@
             const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+        }
+
+        // Lightweight per-beat / per-index update for the playback hot path. Only
+        // toggles highlight classes and short text bits — does NOT rebuild the chord
+        // grid / card stack / sheet-flow strip via innerHTML, which was causing the
+        // whole UI to flash on every chord boundary during playback. Use this when
+        // only state.currentChordIndex or state.isPlaying changed, not when the
+        // chord list, section, key, or genre changed.
+        function renderPlaybackTick() {
+            const displayChords = getTransposedProgression();
+            const idx = state.currentChordIndex;
+            const chord = displayChords[idx] || 'C';
+            const playing = state.isPlaying;
+
+            const grid = document.getElementById('chordGrid');
+            if (grid) {
+                grid.querySelectorAll('.chord-card').forEach(card => {
+                    const i = parseInt(card.dataset.index, 10);
+                    card.classList.toggle('playing', i === idx && playing);
+                });
+            }
+
+            const sfCurrent = document.getElementById('sfCurrentChord');
+            if (sfCurrent) {
+                sfCurrent.textContent = chord;
+                sfCurrent.classList.toggle('playing', playing);
+            }
+            const sfLabel = document.getElementById('sfChordLabel');
+            if (sfLabel) sfLabel.textContent = `${getChordTypeLabel(chord)} • Chord ${idx + 1} of ${displayChords.length}`;
+            const strip = document.getElementById('sfChordStrip');
+            if (strip) strip.querySelectorAll('.sf-strip-chord').forEach((el, i) => el.classList.toggle('active', i === idx));
+            const sfPlayBtn = document.getElementById('sfPlayBtn');
+            if (sfPlayBtn) {
+                sfPlayBtn.textContent = playing ? '⏸️' : '▶️';
+                sfPlayBtn.classList.toggle('playing', playing);
+            }
+
+            const cdBig = document.querySelector('#cdCardStack .cd-big-chord');
+            if (cdBig) {
+                cdBig.textContent = chord;
+                cdBig.classList.toggle('playing', playing);
+            }
+            document.querySelectorAll('#cdCardStack .cd-mini-chord').forEach((el, i) => el.classList.toggle('active', i === idx));
+
+            updateProgress();
         }
 
         function renderTheoryHint() {
