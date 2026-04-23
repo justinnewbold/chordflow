@@ -826,7 +826,7 @@
             <p class="onboarding-subtitle">AI-powered chord progressions. Choose your interface.</p>
         </div>
         <div class="onboarding-modes">
-            <div class="mode-option selected" data-mode="dual" onclick="selectOnboardingMode('dual')">
+            <div class="mode-option selected" data-mode="dual" tabindex="0" role="radio" aria-checked="true" onclick="selectOnboardingMode('dual')">
                 <div class="mode-option-icon">📱</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Dual Mode</div>
@@ -834,7 +834,7 @@
                 </div>
                 <div class="mode-option-check">✓</div>
             </div>
-            <div class="mode-option" data-mode="sheet" onclick="selectOnboardingMode('sheet')">
+            <div class="mode-option" data-mode="sheet" tabindex="0" role="radio" aria-checked="false" onclick="selectOnboardingMode('sheet')">
                 <div class="mode-option-icon">📄</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Sheet Flow</div>
@@ -842,7 +842,7 @@
                 </div>
                 <div class="mode-option-check">✓</div>
             </div>
-            <div class="mode-option" data-mode="cards" onclick="selectOnboardingMode('cards')">
+            <div class="mode-option" data-mode="cards" tabindex="0" role="radio" aria-checked="false" onclick="selectOnboardingMode('cards')">
                 <div class="mode-option-icon">🃏</div>
                 <div class="mode-option-content">
                     <div class="mode-option-title">Card Deck</div>
@@ -890,7 +890,7 @@
                 <div class="tempo-control-row">
                     <span class="tempo-label">Tempo</span>
                     <input type="range" class="tempo-slider" id="tempoSlider" min="40" max="200" value="120" oninput="setTempo(this.value)">
-                    <div class="tempo-value" id="tempoValueDisplay" onclick="handleTempoTap()">120</div>
+                    <div class="tempo-value" id="tempoValueDisplay" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">120</div>
                 </div>
 
                 <!-- Visual Metronome -->
@@ -1060,11 +1060,11 @@
                     </div>
                     <div class="toggle-row">
                         <div><div class="toggle-label">🎸 Bass Notes</div><div class="toggle-desc">Play root on beat 1</div></div>
-                        <div class="toggle-switch active" id="bassToggle" onclick="toggleBass()"></div>
+                        <div class="toggle-switch active" id="bassToggle" tabindex="0" role="switch" aria-checked="true" aria-label="Bass" onclick="toggleBass()"></div>
                     </div>
                     <div class="toggle-row">
                         <div><div class="toggle-label">🥁 Metronome</div><div class="toggle-desc">Click on every beat</div></div>
-                        <div class="toggle-switch" id="metronomeToggle" onclick="toggleMetronome()"></div>
+                        <div class="toggle-switch" id="metronomeToggle" tabindex="0" role="switch" aria-checked="false" aria-label="Metronome" onclick="toggleMetronome()"></div>
                     </div>
                     <div class="toggle-row">
                         <div><div class="toggle-label">🎼 Time Sig</div></div>
@@ -1103,25 +1103,25 @@
                 </div>
                 <div class="produce-panel" id="exportPanel">
                     <div class="export-grid">
-                        <div class="export-card new" onclick="exportMIDI()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportMIDI()">
                             <div class="export-icon">🎹</div>
                             <div class="export-title">MIDI</div>
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" onclick="exportPDFEnhanced()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportPDFEnhanced()">
                             <div class="export-icon">📄</div>
                             <div class="export-title">PDF+</div>
                             <div class="export-desc">With Diagrams</div>
                             <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card new" onclick="exportWAV()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportWAV()">
                             <div class="export-icon">🎵</div>
                             <div class="export-title">WAV</div>
                             <div class="export-desc">Audio File</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" onclick="exportMP3()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportMP3()">
                             <div class="export-icon">📀</div>
                             <div class="export-title">Audio</div>
                             <div class="export-desc">WebM Format</div>
@@ -1161,7 +1161,7 @@
             <div class="transport-center">
                 <button class="transport-btn" onclick="stopPlayback()">⏹️</button>
                 <button class="play-btn" onclick="togglePlay()" id="playBtn">▶️</button>
-                <div class="tempo-tap" id="tempoTap" onclick="handleTempoTap()">
+                <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
                     <span id="tempoValue">120</span>
                     <span class="bpm-label">BPM</span>
                 </div>
@@ -1283,48 +1283,48 @@
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">Interface</div>
-                <div class="settings-item" onclick="openSheet('uiMode')">
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('uiMode')">
                     <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
                     <span id="currentUILabel" style="color: var(--text-secondary);">Dual Mode ›</span>
                 </div>
-                <div class="settings-item" onclick="toggleTheme()">
+                <div class="settings-item" tabindex="0" role="button" onclick="toggleTheme()">
                     <div class="settings-label"><span class="settings-icon">🌓</span><span>Theme</span></div>
                     <span id="themeLabel" style="color: var(--text-secondary);">Dark ›</span>
                 </div>
-                <div class="settings-item" onclick="showShortcuts()">
+                <div class="settings-item" tabindex="0" role="button" onclick="showShortcuts()">
                     <div class="settings-label"><span class="settings-icon">⌨️</span><span>Keyboard Shortcuts</span></div>
                     <span style="color: var(--text-secondary);">?</span>
                 </div>
-                <div class="settings-item" onclick="resetOnboarding()">
+                <div class="settings-item" tabindex="0" role="button" onclick="resetOnboarding()">
                     <div class="settings-label"><span class="settings-icon">🔄</span><span>Reset Onboarding</span></div>
                 </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">Tools</div>
-                <div class="settings-item" onclick="openPresets()">
+                <div class="settings-item" tabindex="0" role="button" onclick="openPresets()">
                     <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
                     <span style="color: var(--text-secondary);">Browse ›</span>
                 </div>
-                <div class="settings-item" onclick="openTemplates()">
+                <div class="settings-item" tabindex="0" role="button" onclick="openTemplates()">
                     <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
                     <span style="color: var(--text-secondary);">Browse ›</span>
                 </div>
-                <div class="settings-item" onclick="openCommunity()">
+                <div class="settings-item" tabindex="0" role="button" onclick="openCommunity()">
                     <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
                     <span style="color: var(--text-secondary);">Discover ›</span>
                 </div>
-                <div class="settings-item" onclick="shareQRCode()">
+                <div class="settings-item" tabindex="0" role="button" onclick="shareQRCode()">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
                     <span style="color: var(--text-secondary);">Generate ›</span>
                 </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">Ear Training</div>
-                <div class="settings-item" onclick="openEarTraining('chord')">
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
                     <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
                     <span style="color: var(--text-secondary);">Play ›</span>
                 </div>
-                <div class="settings-item" onclick="openEarTraining('interval')">
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
                     <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
                     <span style="color: var(--text-secondary);">Play ›</span>
                 </div>
@@ -1344,17 +1344,17 @@
         <div class="sheet-header"><div class="sheet-title">🎨 UI Mode</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
             <div class="option-list">
-                <div class="option-item" id="uiOptDual" onclick="switchUIMode('dual')">
+                <div class="option-item" id="uiOptDual" tabindex="0" role="radio" onclick="switchUIMode('dual')">
                     <span class="option-icon">📱</span>
                     <div class="option-text"><div class="option-title">Dual Mode</div><div class="option-desc">Create & Produce toggle</div></div>
                     <span class="option-check">✓</span>
                 </div>
-                <div class="option-item" id="uiOptSheet" onclick="switchUIMode('sheet')">
+                <div class="option-item" id="uiOptSheet" tabindex="0" role="radio" onclick="switchUIMode('sheet')">
                     <span class="option-icon">📄</span>
                     <div class="option-text"><div class="option-title">Sheet Flow</div><div class="option-desc">Gesture-based panels</div></div>
                     <span class="option-check">✓</span>
                 </div>
-                <div class="option-item" id="uiOptCards" onclick="switchUIMode('cards')">
+                <div class="option-item" id="uiOptCards" tabindex="0" role="radio" onclick="switchUIMode('cards')">
                     <span class="option-icon">🃏</span>
                     <div class="option-text"><div class="option-title">Card Deck</div><div class="option-desc">Swipeable cards</div></div>
                     <span class="option-check">✓</span>
@@ -1606,6 +1606,41 @@
             if (!str) return '';
             return String(str).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
         }
+
+        // ---- Accessibility helpers ----
+        // Track focus before a modal/sheet opens so we can restore it on close. Keyed by
+        // modal id instead of stacking so overlapping modals (e.g. settings sheet → auth
+        // modal) and accidental double-opens don't corrupt the return chain.
+        const _focusMap = new Map();
+        function rememberFocusFor(modalId) {
+            if (_focusMap.has(modalId)) return; // already tracked (modal re-opened)
+            const a = document.activeElement;
+            _focusMap.set(modalId, a && a !== document.body ? a : null);
+        }
+        function restoreFocusFor(modalId) {
+            if (!_focusMap.has(modalId)) return;
+            const prev = _focusMap.get(modalId);
+            _focusMap.delete(modalId);
+            if (prev && typeof prev.focus === 'function') {
+                try { prev.focus(); } catch (e) {}
+            }
+        }
+        // Keyboard activation for custom role-annotated widgets. Without this, divs with
+        // role="button"/"switch"/"radio" are focusable via tabindex but Enter/Space does nothing.
+        // Capture phase + stopPropagation keeps the global Space-to-play handler from also firing.
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const t = e.target;
+            if (!(t instanceof HTMLElement)) return;
+            const tag = t.tagName;
+            if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+            const role = t.getAttribute('role');
+            if (role === 'button' || role === 'switch' || role === 'radio') {
+                e.preventDefault();
+                e.stopPropagation();
+                t.click();
+            }
+        }, true);
 
         // Data
         const instruments = [
@@ -2278,6 +2313,7 @@
 
         // Chord Diagram
         function showChordDiagram(chord) {
+            rememberFocusFor('chordDiagram');
             document.getElementById('diagramChordName').textContent = chord;
             document.getElementById('diagramNotes').textContent = getChordNotes(chord).map(n => n.replace(/\d/, '')).join(' - ');
             const svg = document.getElementById('chordDiagramSvg');
@@ -2304,7 +2340,7 @@
             document.getElementById('bassDgm').style.display='none';
             if (g7El) g7El.style.display='none';
         }
-        function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); }
+        function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); restoreFocusFor('chordDiagram'); }
         function switchDgm(view, btn) {
             document.querySelectorAll('.dgm-tab').forEach(t => t.classList.remove('active'));
             if (btn) btn.classList.add('active');
@@ -2537,8 +2573,8 @@
         function exportFile(format) { showToast(`📦 ${format.toUpperCase()} coming in v1.0!`); }
 
         // Songs
-        function openSaveModal() { document.getElementById('saveModal').classList.add('active'); document.getElementById('songNameInput').value = ''; document.getElementById('songNameInput').focus(); }
-        function closeSaveModal() { document.getElementById('saveModal').classList.remove('active'); }
+        function openSaveModal() { rememberFocusFor('save'); document.getElementById('saveModal').classList.add('active'); document.getElementById('songNameInput').value = ''; document.getElementById('songNameInput').focus(); }
+        function closeSaveModal() { document.getElementById('saveModal').classList.remove('active'); restoreFocusFor('save'); }
         function confirmSaveSong() {
             const name = document.getElementById('songNameInput').value.trim();
             if (!name) { showToast('⚠️ Enter a name'); return; }
@@ -2604,7 +2640,11 @@
         // Onboarding
         function selectOnboardingMode(mode) {
             state.selectedOnboardingMode = mode;
-            document.querySelectorAll('.mode-option').forEach(el => el.classList.toggle('selected', el.dataset.mode === mode));
+            document.querySelectorAll('.mode-option').forEach(el => {
+                const on = el.dataset.mode === mode;
+                el.classList.toggle('selected', on);
+                el.setAttribute('aria-checked', on ? 'true' : 'false');
+            });
         }
         function completeOnboarding() {
             state.uiMode = state.selectedOnboardingMode;
@@ -2705,11 +2745,14 @@
         }
 
         // Toggles
-        function toggleBass() { 
-            state.bassEnabled = !state.bassEnabled; 
+        function toggleBass() {
+            state.bassEnabled = !state.bassEnabled;
             const toggle = document.getElementById('bassToggle');
-            if (toggle) toggle.classList.toggle('active', state.bassEnabled); 
-            showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF'); 
+            if (toggle) {
+                toggle.classList.toggle('active', state.bassEnabled);
+                toggle.setAttribute('aria-checked', state.bassEnabled ? 'true' : 'false');
+            }
+            showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF');
         }
         function setPlayMode(mode) {
             state.playMode = mode;
@@ -2722,7 +2765,10 @@
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
             const toggle = document.getElementById('metronomeToggle');
-            if (toggle) toggle.classList.toggle('active', state.metronomeEnabled);
+            if (toggle) {
+                toggle.classList.toggle('active', state.metronomeEnabled);
+                toggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
             const headerBtn = document.getElementById('metronomeHeaderBtn');
             if (headerBtn) headerBtn.classList.toggle('active', state.metronomeEnabled);
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
@@ -3649,6 +3695,7 @@
         const INTERVAL_NAMES = ['Unison', 'Minor 2nd', 'Major 2nd', 'Minor 3rd', 'Major 3rd', 'Perfect 4th', 'Tritone', 'Perfect 5th', 'Minor 6th', 'Major 6th', 'Minor 7th', 'Major 7th', 'Octave'];
 
         function openEarTraining(mode) {
+            rememberFocusFor('earTraining');
             earTrainingMode = mode || 'chord';
             earTrainingScore = { correct: 0, streak: 0, total: 0 };
             earTrainingAnswer = null;
@@ -3659,6 +3706,7 @@
         }
         function closeEarTraining() {
             document.getElementById('earTrainingModal').classList.remove('active');
+            restoreFocusFor('earTraining');
         }
         function switchEarTrainingTab(mode) {
             earTrainingMode = mode;
@@ -3840,6 +3888,7 @@
         function openChordEditModal(index) {
             const chords = getTransposedProgression();
             if (index < 0 || index >= chords.length) return;
+            rememberFocusFor('chordEdit');
             editingChordIndex = index;
             const chord = chords[index];
             const input = document.getElementById('chordEditInput');
@@ -3851,6 +3900,7 @@
         function closeChordEditModal() {
             document.getElementById('chordEditModal').classList.remove('active');
             editingChordIndex = -1;
+            restoreFocusFor('chordEdit');
         }
         function saveChordEdit() {
             const input = document.getElementById('chordEditInput');
@@ -4004,6 +4054,7 @@
         function openPresets() {
             const list = document.getElementById('presetsList');
             if (!list) return;
+            rememberFocusFor('presets');
             list.innerHTML = CHORD_PRESETS.map((p, i) => `
                 <div class="preset-item" onclick="loadPreset(${i})">
                     <div class="preset-name">${p.name}</div>
@@ -4013,7 +4064,7 @@
             `).join('');
             document.getElementById('presetsModal').classList.add('active');
         }
-        function closePresets() { document.getElementById('presetsModal').classList.remove('active'); }
+        function closePresets() { document.getElementById('presetsModal').classList.remove('active'); restoreFocusFor('presets'); }
         function loadPreset(index) {
             const preset = CHORD_PRESETS[index];
             if (!preset) return;
@@ -4039,6 +4090,7 @@
             // Generate QR using canvas
             const container = document.getElementById('qrCanvas');
             if (!container) return;
+            rememberFocusFor('qr');
             container.innerHTML = '';
             const canvas = document.createElement('canvas');
             canvas.width = 200; canvas.height = 200;
@@ -4046,7 +4098,7 @@
             generateQR(canvas, url);
             document.getElementById('qrModal').classList.add('active');
         }
-        function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); }
+        function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); restoreFocusFor('qr'); }
         function generateQR(canvas, text) {
             // Use qrcode.js library for a real, scannable QR code
             if (typeof QRCode !== 'undefined') {
@@ -4158,6 +4210,7 @@
         };
 
         function openAuthModal() {
+            rememberFocusFor('auth');
             closeSheet();
             document.getElementById('authModal').classList.add('active');
             document.getElementById('authEmail').focus();
@@ -4165,6 +4218,7 @@
         function closeAuthModal() {
             document.getElementById('authModal').classList.remove('active');
             document.getElementById('authError').textContent = '';
+            restoreFocusFor('auth');
         }
         function switchAuthTab(tab) {
             authState.authTab = tab;
@@ -4263,7 +4317,7 @@
                     </div>`;
             } else {
                 section.innerHTML = `
-                    <div class="settings-item" onclick="openAuthModal()">
+                    <div class="settings-item" tabindex="0" role="button" onclick="openAuthModal()">
                         <div class="settings-label"><span class="settings-icon">👤</span><span>Sign In / Sign Up</span></div>
                         <span style="color: var(--accent);">Sync songs ›</span>
                     </div>`;
@@ -4411,12 +4465,14 @@
         ];
 
         function openCommunity() {
+            rememberFocusFor('community');
             closeSheet();
             document.getElementById('communityModal').classList.add('active');
             loadCommunitySongs();
         }
         function closeCommunity() {
             document.getElementById('communityModal').classList.remove('active');
+            restoreFocusFor('community');
         }
         function filterCommunity(genre) {
             communityFilter = genre;
@@ -4531,6 +4587,7 @@
                 showToast('Sign in to publish songs');
                 return;
             }
+            rememberFocusFor('publish');
             document.getElementById('publishModal').classList.add('active');
             const titleInput = document.getElementById('publishTitle');
             if (titleInput) {
@@ -4540,6 +4597,7 @@
         }
         function closePublishModal() {
             document.getElementById('publishModal').classList.remove('active');
+            restoreFocusFor('publish');
         }
         async function confirmPublish() {
             const title = document.getElementById('publishTitle').value.trim();
@@ -4799,6 +4857,7 @@
             closeSheet();
             const list = document.getElementById('templatesList');
             if (!list) return;
+            rememberFocusFor('templates');
             list.innerHTML = SONG_TEMPLATES.map(cat => `
                 <div class="template-category">
                     <div class="template-category-title">${cat.icon} ${cat.category}</div>
@@ -4821,6 +4880,7 @@
         }
         function closeTemplates() {
             document.getElementById('templatesModal').classList.remove('active');
+            restoreFocusFor('templates');
         }
         function loadTemplate(categoryName, templateIndex) {
             const category = SONG_TEMPLATES.find(c => c.category === categoryName);
@@ -4906,8 +4966,13 @@
 
         // Bottom Sheets
         function openSheet(type) {
-            closeSheet();
+            // closeSheet here would pop the wrong focus if we already remembered it;
+            // clear active classes directly without touching the focus map, then remember.
             const overlay = document.getElementById('sheetOverlay');
+            const wasOpen = overlay && overlay.classList.contains('active');
+            if (overlay) overlay.classList.remove('active');
+            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            if (!wasOpen) rememberFocusFor('sheet');
             if (overlay) overlay.classList.add('active');
             const sheet = document.getElementById(`${type}Sheet`);
             if (sheet) sheet.classList.add('active');
@@ -4916,10 +4981,11 @@
             if (type === 'genre') renderGenreOptions();
             if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
         }
-        function closeSheet() { 
+        function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
-            if (overlay) overlay.classList.remove('active'); 
-            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active')); 
+            if (overlay) overlay.classList.remove('active');
+            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            restoreFocusFor('sheet');
         }
         function renderInstrumentOptions() {
             const list = document.getElementById('instrumentList'); if (!list) return;
@@ -4957,8 +5023,8 @@
         }
 
         // Modals
-        function showShortcuts() { closeSheet(); document.getElementById('shortcutsModal').classList.add('active'); }
-        function closeShortcuts() { document.getElementById('shortcutsModal').classList.remove('active'); }
+        function showShortcuts() { rememberFocusFor('shortcuts'); closeSheet(); document.getElementById('shortcutsModal').classList.add('active'); }
+        function closeShortcuts() { document.getElementById('shortcutsModal').classList.remove('active'); restoreFocusFor('shortcuts'); }
 
         // Toast
         let _toastTimer = null;
@@ -4989,12 +5055,13 @@
             try { localStorage.setItem('chordflow-history', JSON.stringify(state.progressionHistory)); } catch(e) {}
         }
         function openHistory() {
+            rememberFocusFor('history');
             closeSheet();
             // Default to history tab and render it
             switchHistoryTab('history');
             document.getElementById('historyModal').classList.add('active');
         }
-        function closeHistory() { document.getElementById('historyModal').classList.remove('active'); }
+        function closeHistory() { document.getElementById('historyModal').classList.remove('active'); restoreFocusFor('history'); }
         function clearHistory() {
             state.progressionHistory = [];
             try { localStorage.removeItem('chordflow-history'); } catch(e) {}
@@ -5004,12 +5071,13 @@
 
         // ============ FEATURE: CIRCLE OF FIFTHS ============
         function openCircleOfFifths() {
+            rememberFocusFor('cof');
             closeSheet();
             const container = document.getElementById('cofSvgContainer');
             if (container) container.innerHTML = generateCOFSvg();
             document.getElementById('cofModal').classList.add('active');
         }
-        function closeCircleOfFifths() { document.getElementById('cofModal').classList.remove('active'); }
+        function closeCircleOfFifths() { document.getElementById('cofModal').classList.remove('active'); restoreFocusFor('cof'); }
         function generateCOFSvg() {
             const majorOrder = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'];
             const minorOrder = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm'];
