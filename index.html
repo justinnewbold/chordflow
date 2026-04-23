@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1969,6 +1972,19 @@
             country: [['G', 'C', 'D', 'G'], ['D', 'G', 'A', 'D'], ['C', 'G', 'D', 'G'], ['A', 'D', 'E', 'A']]
         };
 
+        // Safely parse a JSON array from localStorage; reset the key if corrupted so we don't crash on every load.
+        function parseStoredArray(key) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                try { localStorage.removeItem(key); } catch (_) {}
+                return [];
+            }
+        }
+
         // State
         const state = {
             uiMode: localStorage.getItem('chordflow-ui') || 'dual',
@@ -1991,8 +2007,8 @@
             drumsEnabled: false, arrangementMode: false, arrangementSectionIndex: 0,
             lastDeletedChord: null, lastDeletedIndex: -1, lastDeletedSection: -1,
             mood: '',
-            progressionHistory: JSON.parse(localStorage.getItem('chordflow-history') || '[]'),
-            favorites: JSON.parse(localStorage.getItem('chordflow-favorites') || '[]'),
+            progressionHistory: parseStoredArray('chordflow-history'),
+            favorites: parseStoredArray('chordflow-favorites'),
             diatonicView: 'diatonic',
             activeFxPreset: 'Default'
         };
@@ -2709,7 +2725,7 @@
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
         }
         function getBeatsPerMeasure() {
-            return parseInt(state.timeSignature.split('/')[0]) || 4;
+            return parseInt((state.timeSignature || '4/4').split('/')[0], 10) || 4;
         }
         function updateBeatDotContainers() {
             const beats = getBeatsPerMeasure();
@@ -4453,15 +4469,16 @@
             }).join('');
         }
         function loadCommunitySong(song) {
-            let chords, songTS = '4/4';
+            let chords = ['C', 'G', 'Am', 'F'], songTS = '4/4';
             try {
-                if (song.chords) { chords = song.chords; }
-                else if (song.song_data) {
-                    const parsed = JSON.parse(song.song_data);
-                    chords = parsed.sections?.[0]?.progression || ['C', 'G', 'Am', 'F'];
-                    if (parsed.timeSignature) songTS = parsed.timeSignature;
-                } else { chords = ['C', 'G', 'Am', 'F']; }
-            } catch(e) { chords = ['C', 'G', 'Am', 'F']; }
+                // song_data may carry timeSignature even when song.chords is also set,
+                // so parse it whenever present and only fall back for the chords list.
+                let parsed = null;
+                if (song.song_data) parsed = JSON.parse(song.song_data);
+                if (song.chords) chords = song.chords;
+                else if (parsed?.sections?.[0]?.progression) chords = parsed.sections[0].progression;
+                if (parsed?.timeSignature) songTS = parsed.timeSignature;
+            } catch(e) { /* keep defaults */ }
             ensurePlaybackStopped();
             saveStateForUndo();
             const newKey = song.key_signature || state.key;
@@ -5364,6 +5381,12 @@
             console.log(`🎵 ChordFlow v${VERSION} - Chord Subs, Favorites, FX Presets, Sec.Dominants, History, COF, Mood, Diatonic, Auth, Cloud, Community, Templates, Drums, MIDI, PDF, WAV`);
         }
         init();
+        // Register service worker for PWA / offline support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW registration failed:', err));
+            });
+        }
     </script>
     <div id="recordingOverlay" class="recording-overlay">
         <div class="recording-dot"></div>
