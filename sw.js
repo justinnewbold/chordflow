@@ -1,5 +1,10 @@
-// ChordFlow Service Worker v12.0 - Enhanced Offline Support
-const CACHE_NAME = 'chordflow-v120';
+// ChordFlow Service Worker v12.1 - Enhanced Offline Support
+const CACHE_NAME = 'chordflow-v121';
+
+// Only cache successful, non-opaque responses so a 404/500 doesn't poison the cache.
+function isCacheable(response) {
+  return response && response.ok && response.type !== 'opaque' && response.type !== 'opaqueredirect';
+}
 
 // Cache app shell and critical assets
 const ASSETS_TO_CACHE = [
@@ -13,7 +18,7 @@ const ASSETS_TO_CACHE = [
 
 // Install - pre-cache app shell
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v12.0...');
+  console.log('[SW] Installing v12.1...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS_TO_CACHE))
@@ -23,7 +28,7 @@ self.addEventListener('install', (event) => {
 
 // Activate - delete ALL old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v12.0, clearing old caches...');
+  console.log('[SW] Activating v12.1, clearing old caches...');
   event.waitUntil(
     caches.keys()
       .then((names) => Promise.all(
@@ -57,9 +62,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // Cache the latest HTML
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          if (isCacheable(response)) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         })
         .catch(() => caches.match(event.request))
@@ -76,8 +82,10 @@ self.addEventListener('fetch', (event) => {
         .then((cached) => {
           if (cached) return cached;
           return fetch(event.request).then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            if (isCacheable(response)) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
             return response;
           });
         })
@@ -91,8 +99,10 @@ self.addEventListener('fetch', (event) => {
       .then((cached) => {
         const fetchPromise = fetch(event.request)
           .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            if (isCacheable(response)) {
+              const clone = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            }
             return response;
           })
           .catch(() => {
