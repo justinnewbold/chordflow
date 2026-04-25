@@ -5525,11 +5525,25 @@
             }, { passive: true });
         }
 
+        // Cloud share links from /api/songs?action=share land here as ?song=<uuid>.
+        // Without an explicit handler the parameter was silently ignored — the
+        // user landed on the home page with no indication their link did anything.
+        function loadSharedSongFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('song');
+            if (!id) return false;
+            // Strip the param so a refresh doesn't keep re-loading it.
+            window.history.replaceState({}, '', window.location.pathname);
+            loadCloudSong(id);
+            return true;
+        }
+
         // Init
         function init() {
             // Load shared progression from URL
             const loaded = loadSharedProgression();
             if (loaded) showToast('🔗 Loaded shared progression!');
+            else if (loadSharedSongFromUrl()) { /* loadCloudSong shows its own toast */ }
             // Apply theme
             const themeLabel = document.getElementById('themeLabel');
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
