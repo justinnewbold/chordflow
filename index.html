@@ -2657,8 +2657,8 @@
         }
         function completeOnboarding() {
             state.uiMode = state.selectedOnboardingMode;
-            localStorage.setItem('chordflow-ui', state.uiMode);
-            localStorage.setItem('chordflow-onboarding', 'complete');
+            safeSetItem('chordflow-ui', state.uiMode);
+            safeSetItem('chordflow-onboarding', 'complete');
             state.onboardingComplete = true;
             document.getElementById('onboarding').classList.add('hidden');
             setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
@@ -2666,9 +2666,9 @@
         function skipOnboarding() {
             if (state.selectedOnboardingMode) {
                 state.uiMode = state.selectedOnboardingMode;
-                localStorage.setItem('chordflow-ui', state.uiMode);
+                safeSetItem('chordflow-ui', state.uiMode);
             }
-            localStorage.setItem('chordflow-onboarding', 'complete');
+            safeSetItem('chordflow-onboarding', 'complete');
             state.onboardingComplete = true;
             document.getElementById('onboarding').classList.add('hidden');
             setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
@@ -2701,7 +2701,7 @@
         }
         function switchUIMode(mode) {
             state.uiMode = mode;
-            localStorage.setItem('chordflow-ui', mode);
+            safeSetItem('chordflow-ui', mode);
             activateUI(); closeSheet();
             showToast({ dual: '📱 Dual Mode', sheet: '📄 Sheet Flow', cards: '🃏 Card Deck' }[mode]);
         }
@@ -3533,7 +3533,7 @@
         function toggleTheme() {
             state.theme = state.theme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', state.theme);
-            localStorage.setItem('chordflow-theme', state.theme);
+            safeSetItem('chordflow-theme', state.theme);
             const label = document.getElementById('themeLabel');
             if (label) label.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
             showToast(state.theme === 'dark' ? '🌙 Dark mode' : '☀️ Light mode');
@@ -4212,11 +4212,10 @@
 
         // ============ v0.73: AUTH & CLOUD SYNC ============
         function safeJsonParse(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { localStorage.removeItem(key); return null; } }
-        // localStorage.setItem can throw (quota exceeded, private mode, disabled). The
-        // auth flow used to call setItem directly inside its API try/catch, so a
-        // storage failure was misread as a network failure and triggered the
-        // offline-auth fallback — which called setItem again and threw uncaught,
-        // leaving the submit button stuck.
+        // localStorage.setItem can throw (quota exceeded, Safari private mode,
+        // storage disabled). Use this helper anywhere a write would otherwise
+        // bubble out and break the surrounding flow — it warns and returns
+        // false so callers can continue without persisting.
         function safeSetItem(key, value) {
             try { localStorage.setItem(key, value); return true; }
             catch (e) { console.warn('localStorage.setItem failed for', key, e); return false; }
