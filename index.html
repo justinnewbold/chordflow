@@ -2156,7 +2156,10 @@
             if (suffix.includes('7')) return [n(0), n(4), n(7), n(10)];
             if (suffix.includes('sus4')) return [n(0), n(5), n(7)];
             if (suffix.includes('sus2')) return [n(0), n(2), n(7)];
-            if (suffix.startsWith('m')) return [n(0), n(3), n(7)];
+            // Tighten the minor-triad fallback: 'maj', 'maj9', 'maj11', 'maj13'
+            // also start with 'm' but are major-quality. Without the negative
+            // guard, a 'Cmaj' or 'Cmaj9' would play as a C minor triad.
+            if (suffix.startsWith('m') && !suffix.startsWith('maj')) return [n(0), n(3), n(7)];
             return [n(0), n(4), n(7)]; // major triad
         }
         function getChordNotes(chord) {
