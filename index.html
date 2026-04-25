@@ -4316,6 +4316,11 @@
             authState.session = null;
             localStorage.removeItem('chordflow-user');
             localStorage.removeItem('chordflow-session');
+            // Clear the previously-rendered cloud song list — leaving it in place
+            // would let the next person on a shared device see the prior user's
+            // titles (and click load, which surfaces the song body via /api/songs).
+            const cloudList = document.getElementById('cloudSongsList');
+            if (cloudList) cloudList.innerHTML = '';
             renderAccountSection();
             renderCloudSongsPrompt();
             showToast('👋 Signed out');
