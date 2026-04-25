@@ -4204,6 +4204,15 @@
 
         // ============ v0.73: AUTH & CLOUD SYNC ============
         function safeJsonParse(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { localStorage.removeItem(key); return null; } }
+        // localStorage.setItem can throw (quota exceeded, private mode, disabled). The
+        // auth flow used to call setItem directly inside its API try/catch, so a
+        // storage failure was misread as a network failure and triggered the
+        // offline-auth fallback — which called setItem again and threw uncaught,
+        // leaving the submit button stuck.
+        function safeSetItem(key, value) {
+            try { localStorage.setItem(key, value); return true; }
+            catch (e) { console.warn('localStorage.setItem failed for', key, e); return false; }
+        }
         const authState = {
             user: safeJsonParse('chordflow-user'),
             session: safeJsonParse('chordflow-session'),
@@ -4267,8 +4276,8 @@
                 // Success - save user and session
                 authState.user = data.user;
                 authState.session = data.session;
-                localStorage.setItem('chordflow-user', JSON.stringify(data.user));
-                localStorage.setItem('chordflow-session', JSON.stringify(data.session));
+                safeSetItem('chordflow-user', JSON.stringify(data.user));
+                safeSetItem('chordflow-session', JSON.stringify(data.session));
                 closeAuthModal();
                 renderAccountSection();
                 renderCloudSongsPrompt();
@@ -4286,8 +4295,8 @@
             const localUser = { id: 'local_' + btoa(email).slice(0, 12), email: email };
             authState.user = localUser;
             authState.session = { access_token: 'local_token', offline: true };
-            localStorage.setItem('chordflow-user', JSON.stringify(localUser));
-            localStorage.setItem('chordflow-session', JSON.stringify(authState.session));
+            safeSetItem('chordflow-user', JSON.stringify(localUser));
+            safeSetItem('chordflow-session', JSON.stringify(authState.session));
             closeAuthModal();
             renderAccountSection();
             renderCloudSongsPrompt();
