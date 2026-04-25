@@ -5497,8 +5497,16 @@
 
         // Event Listeners
         document.addEventListener('keydown', e => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
-            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+            const tag = e.target.tagName;
+            // Skip global shortcuts when typing into a real form control. SELECT was
+            // missing previously — typing into it would fire the bare-letter
+            // shortcuts (G/A) instead of doing inline-search.
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+            // Native buttons/links handle their own Space/Enter activation. Hijacking
+            // Space here means a focused button can never be activated by keyboard —
+            // pressing Space toggles playback instead of clicking the button.
+            const isInteractiveEl = tag === 'BUTTON' || tag === 'A';
+            if (e.code === 'Space' && !isInteractiveEl) { e.preventDefault(); togglePlay(); }
             if (e.code === 'KeyG' && !e.ctrlKey && !e.metaKey) generateProgression();
             if (e.code === 'KeyA' && !e.ctrlKey && !e.metaKey) aiGenerate('smart');
             if (e.code === 'KeyM' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportMIDI(); }
