@@ -4209,6 +4209,16 @@
             authTab: 'login'
         };
 
+        // Build the headers needed for an authenticated cloud request. Without this the
+        // server falls through to its unauthenticated branches and silently saves to
+        // localStorage instead of Supabase.
+        function authHeaders(extra) {
+            const base = extra ? { ...extra } : {};
+            const token = authState.session && !authState.session.offline ? authState.session.access_token : null;
+            if (token) base.Authorization = `Bearer ${token}`;
+            return base;
+        }
+
         function openAuthModal() {
             rememberFocusFor('auth');
             closeSheet();
@@ -4289,7 +4299,7 @@
         async function logoutUser() {
             try {
                 if (authState.session && !authState.session.offline) {
-                    await fetch('/api/auth?action=logout', { method: 'POST' });
+                    await fetch('/api/auth?action=logout', { method: 'POST', headers: authHeaders() });
                 }
             } catch (e) {}
             authState.user = null;
@@ -4341,7 +4351,7 @@
             const cloudList = document.getElementById('cloudSongsList');
             if (!cloudList) return;
             try {
-                const res = await fetch(`/api/songs?action=load&userId=${encodeURIComponent(authState.user.id)}`);
+                const res = await fetch(`/api/songs?action=load`, { headers: authHeaders() });
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
@@ -4367,8 +4377,7 @@
         }
         async function loadCloudSong(id) {
             try {
-                const userParam = authState.user ? `&userId=${encodeURIComponent(authState.user.id)}` : '';
-                const res = await fetch(`/api/songs?action=get&id=${encodeURIComponent(id)}${userParam}`);
+                const res = await fetch(`/api/songs?action=get&id=${encodeURIComponent(id)}`, { headers: authHeaders() });
                 const data = await res.json();
                 if (data.song) {
                     ensurePlaybackStopped();
@@ -4407,8 +4416,8 @@
             try {
                 await fetch('/api/songs?action=delete', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, userId: authState.user.id })
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify({ id })
                 });
                 loadCloudSongs();
                 showToast('🗑️ Cloud song deleted');
@@ -4421,15 +4430,14 @@
             try {
                 const res = await fetch('/api/songs?action=save', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({
                         title: name,
                         song: { sections: state.sections, timeSignature: state.timeSignature },
                         key: state.key,
                         scale: state.key.includes('m') ? 'minor' : 'major',
                         genre: state.genre,
-                        tempo: state.baseTempo,
-                        userId: authState.user.id
+                        tempo: state.baseTempo
                     })
                 });
                 const data = await res.json();
@@ -4614,15 +4622,14 @@
             try {
                 const res = await fetch('/api/songs?action=save', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({
                         title,
                         song: { sections: transposedSections, timeSignature: state.timeSignature },
                         key: state.key,
                         scale: state.key.includes('m') ? 'minor' : 'major',
                         genre: state.genre,
-                        tempo: state.baseTempo,
-                        userId: authState.user.id
+                        tempo: state.baseTempo
                     })
                 });
                 const data = await res.json();
@@ -4630,8 +4637,8 @@
                     // Make it public
                     await fetch('/api/songs?action=share', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: data.id, userId: authState.user.id, isPublic: true })
+                        headers: authHeaders({ 'Content-Type': 'application/json' }),
+                        body: JSON.stringify({ id: data.id, isPublic: true })
                     });
                     closePublishModal();
                     showToast('🌍 Published to Community!');
