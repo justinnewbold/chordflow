@@ -2261,7 +2261,15 @@
             showToast(`🎲 Generated ${state.genre} progression`);
         }
         function getChordColorClass(chord) {
+            // Order matters: check the most-specific suffixes first.
+            //   - dim/diminished is its own color
+            //   - maj7 / m7 carry the parent major/minor quality (an Am7 still
+            //     "feels" minor; a Cmaj7 still "feels" major). Only true
+            //     dominant-7 chords (e.g. G7) get the tension/seventh color,
+            //     since musically those are the chords that resolve.
             if (chord.includes('dim')) return 'diminished';
+            if (chord.includes('maj7')) return 'major';
+            if (chord.includes('m7')) return 'minor';
             if (chord.includes('7')) return 'seventh';
             if (chord.includes('m') && !chord.includes('maj')) return 'minor';
             return 'major';
