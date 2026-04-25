@@ -27,10 +27,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt, action } = req.body;
+  const { prompt, action } = req.body || {};
 
-  if (!prompt) {
+  // Cap prompt size and validate types so a caller can't blow up the request
+  // (or burn Gemini quota with a multi-MB blob). Server-built prompts are
+  // short — the legitimate client never exceeds a few hundred characters.
+  const MAX_PROMPT_LEN = 4000;
+  if (typeof prompt !== 'string' || prompt.length === 0) {
     return res.status(400).json({ error: 'Prompt is required' });
+  }
+  if (prompt.length > MAX_PROMPT_LEN) {
+    return res.status(400).json({ error: `Prompt exceeds ${MAX_PROMPT_LEN} characters` });
+  }
+  const ALLOWED_ACTIONS = new Set(['continue', 'variation']);
+  if (action != null && !ALLOWED_ACTIONS.has(action)) {
+    return res.status(400).json({ error: 'Invalid action' });
   }
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
