@@ -45,24 +45,34 @@ export default async function handler(req, res) {
     if (!prompt) return res.status(400).json({ error: 'Invalid action' });
 
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.8, maxOutputTokens: 300 }
-                })
-            }
-        );
+        // Bound the upstream call so a slow Gemini doesn't hold a serverless slot
+        // for the full Vercel function timeout while the user stares at a spinner.
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        let response;
+        try {
+            response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 300 }
+                    }),
+                    signal: controller.signal
+                }
+            );
+        } finally {
+            clearTimeout(timer);
+        }
 
         if (!response.ok) {
             return res.status(502).json({ error: 'AI service error' });
         }
         const data = await response.json();
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        
+
         // Try parsing as JSON for structured responses
         if (action !== 'analyze') {
             try {
@@ -72,9 +82,12 @@ export default async function handler(req, res) {
                 // Return raw text if not JSON
             }
         }
-        
+
         return res.status(200).json({ [action]: text });
     } catch (error) {
+        if (error.name === 'AbortError') {
+            return res.status(504).json({ error: 'AI service timeout' });
+        }
         return res.status(500).json({ error: error.message });
     }
 }
