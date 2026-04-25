@@ -4508,12 +4508,19 @@
             }
             renderCommunitySongs();
         }
+        // The filtered slice currently displayed in the grid. We index into this
+        // from the click handlers instead of inlining each song into the onclick
+        // attribute — that pattern was fragile (JSON.stringify doesn't escape
+        // U+2028/U+2029 line separators, breaking the inline JS literal) and
+        // duplicated up to ~20*songSize bytes of song JSON into the DOM.
+        let renderedCommunitySongs = [];
         function renderCommunitySongs() {
             const grid = document.getElementById('communityGrid');
             if (!grid) return;
             const filtered = communityFilter === 'all'
                 ? communitySongs
                 : communitySongs.filter(s => s.genre === communityFilter);
+            renderedCommunitySongs = filtered;
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
@@ -4524,14 +4531,14 @@
                     </div>`;
                 return;
             }
-            grid.innerHTML = filtered.map(song => {
+            grid.innerHTML = filtered.map((song, idx) => {
                 let chords;
                 try { chords = song.chords || (song.song_data ? JSON.parse(song.song_data).sections?.[0]?.progression : null) || ['C', 'G', 'Am', 'F']; }
                 catch(e) { chords = ['C', 'G', 'Am', 'F']; }
                 const genreObj = genres.find(g => g.id === song.genre);
                 const genreLabel = genreObj ? `${genreObj.icon} ${genreObj.name}` : song.genre;
                 return `
-                    <div class="community-song-card" onclick="previewCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">
+                    <div class="community-song-card" data-idx="${idx}" onclick="previewCommunityByIdx(this.dataset.idx)">
                         <div class="community-song-header">
                             <div class="community-song-title">${escapeHtml(song.title)}</div>
                             <span class="community-song-genre">${escapeHtml(genreLabel)}</span>
@@ -4546,12 +4553,19 @@
                             ${chords.map(c => `<span class="song-chord-pill">${escapeHtml(c)}</span>`).join('')}
                         </div>
                         <div class="community-song-actions">
-                            <button class="community-action-btn primary" onclick="event.stopPropagation(); loadCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">📥 Load</button>
-                            <button class="community-action-btn" onclick="event.stopPropagation(); playCommunitySong(${JSON.stringify(song).replace(/"/g, '&quot;')})">▶️ Preview</button>
+                            <button class="community-action-btn primary" data-idx="${idx}" onclick="event.stopPropagation(); loadCommunityByIdx(this.dataset.idx)">📥 Load</button>
+                            <button class="community-action-btn" data-idx="${idx}" onclick="event.stopPropagation(); playCommunityByIdx(this.dataset.idx)">▶️ Preview</button>
                         </div>
                     </div>`;
             }).join('');
         }
+        function communitySongAtIdx(idx) {
+            const i = parseInt(idx, 10);
+            return Number.isInteger(i) ? renderedCommunitySongs[i] : null;
+        }
+        function loadCommunityByIdx(idx) { const s = communitySongAtIdx(idx); if (s) loadCommunitySong(s); }
+        function playCommunityByIdx(idx) { const s = communitySongAtIdx(idx); if (s) playCommunitySong(s); }
+        function previewCommunityByIdx(idx) { const s = communitySongAtIdx(idx); if (s) previewCommunitySong(s); }
         function loadCommunitySong(song) {
             let chords = ['C', 'G', 'Am', 'F'], songTS = '4/4';
             try {
