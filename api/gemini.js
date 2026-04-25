@@ -48,6 +48,10 @@ export default async function handler(req, res) {
 
   // Try Gemini API first
   if (GEMINI_API_KEY) {
+    // Bound the upstream so a slow Gemini doesn't pin a serverless slot for the
+    // full Vercel timeout. On abort we fall through to the smart-fallback below.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
     try {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -60,7 +64,8 @@ export default async function handler(req, res) {
               temperature: 0.7,
               maxOutputTokens: 200
             }
-          })
+          }),
+          signal: controller.signal
         }
       );
 
@@ -73,6 +78,8 @@ export default async function handler(req, res) {
       }
     } catch (err) {
       console.log('Gemini API error:', err.message);
+    } finally {
+      clearTimeout(timer);
     }
   }
 
