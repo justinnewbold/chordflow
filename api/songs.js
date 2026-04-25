@@ -46,9 +46,44 @@ async function getAuthUser(req, supabase) {
     return error ? null : user;
 }
 
+// Caps for save payloads. Without these a single POST could push an
+// arbitrarily large blob into Supabase and burn through storage quota.
+const MAX_TITLE_LEN = 200;
+const MAX_SHORT_LEN = 32;
+const MAX_SONG_BYTES = 64 * 1024;
+const MIN_TEMPO = 20;
+const MAX_TEMPO = 400;
+
+function validateSavePayload(body) {
+    const { title, song, key, scale, genre, tempo } = body || {};
+    if (title != null && (typeof title !== 'string' || title.length > MAX_TITLE_LEN)) {
+        return `title must be a string of at most ${MAX_TITLE_LEN} characters`;
+    }
+    if (song == null || typeof song !== 'object') return 'song must be an object';
+    let serialized;
+    try { serialized = JSON.stringify(song); } catch { return 'song is not serializable'; }
+    if (serialized.length > MAX_SONG_BYTES) return `song exceeds ${MAX_SONG_BYTES} bytes`;
+    for (const [name, value] of [['key', key], ['scale', scale], ['genre', genre]]) {
+        if (value != null && (typeof value !== 'string' || value.length > MAX_SHORT_LEN)) {
+            return `${name} must be a string of at most ${MAX_SHORT_LEN} characters`;
+        }
+    }
+    let parsedTempo = null;
+    if (tempo != null) {
+        parsedTempo = Number(tempo);
+        if (!Number.isFinite(parsedTempo) || parsedTempo < MIN_TEMPO || parsedTempo > MAX_TEMPO) {
+            return `tempo must be a number between ${MIN_TEMPO} and ${MAX_TEMPO}`;
+        }
+    }
+    return { serialized, tempo: parsedTempo };
+}
+
 // Save a song to user's library
 async function saveSong(req, res, supabase) {
-    const { title, song, key, scale, genre, tempo } = req.body;
+    const validation = validateSavePayload(req.body);
+    if (typeof validation === 'string') return res.status(400).json({ error: validation });
+    const { title, key, scale, genre } = req.body;
+    const { serialized, tempo } = validation;
 
     const user = await getAuthUser(req, supabase);
     if (!user) {
@@ -66,7 +101,7 @@ async function saveSong(req, res, supabase) {
         .insert({
             user_id: user.id,
             title: title || 'Untitled Song',
-            song_data: JSON.stringify(song),
+            song_data: serialized,
             key_signature: key,
             scale: scale,
             genre: genre,
