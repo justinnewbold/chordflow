@@ -1,8 +1,23 @@
-export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+// Restrict cross-origin browser callers — `*` let other sites burn our Gemini quota.
+const PUBLIC_HOST = process.env.PUBLIC_APP_HOST || 'chordflow-newbold-cloud.vercel.app';
+const ALLOWED_ORIGIN_PATTERNS = [
+  new RegExp('^https://' + PUBLIC_HOST.replace(/[.+?^${}()|[\]\\]/g, '\\$&') + '$'),
+  /^https:\/\/chordflow[\w-]*\.vercel\.app$/,
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/127\.0\.0\.1(:\d+)?$/
+];
+function applyCors(req, res, methods) {
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGIN_PATTERNS.some(rx => rx.test(origin))) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', methods);
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+export default async function handler(req, res) {
+  applyCors(req, res, 'POST, OPTIONS');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();

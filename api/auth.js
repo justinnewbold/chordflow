@@ -4,10 +4,27 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+// Restrict cross-origin browser callers — the prior wildcard exposed this auth
+// endpoint to credential-stuffing from any third-party site.
+const PUBLIC_HOST = process.env.PUBLIC_APP_HOST || 'chordflow-newbold-cloud.vercel.app';
+const ALLOWED_ORIGIN_PATTERNS = [
+    new RegExp('^https://' + PUBLIC_HOST.replace(/[.+?^${}()|[\]\\]/g, '\\$&') + '$'),
+    /^https:\/\/chordflow[\w-]*\.vercel\.app$/,
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/127\.0\.0\.1(:\d+)?$/
+];
+function applyCors(req, res, methods) {
+    const origin = req.headers.origin || '';
+    if (ALLOWED_ORIGIN_PATTERNS.some(rx => rx.test(origin))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
+    }
+    res.setHeader('Access-Control-Allow-Methods', methods);
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+export default async function handler(req, res) {
+    applyCors(req, res, 'GET, POST, OPTIONS');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
