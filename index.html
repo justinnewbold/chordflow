@@ -2116,6 +2116,13 @@
             if (synth) synth.volume.value = Tone.gainToDb((state.chordVolume / 100) * master);
             if (bassSynth) bassSynth.volume.value = Tone.gainToDb((state.bassVolume / 100) * master * 0.7);
             if (metronomeClick) metronomeClick.volume.value = Tone.gainToDb(0.3 * master);
+            // Drums were initialized at fixed dB once at startup and never
+            // re-touched, so the master fader had no effect on them — muting
+            // the master still played drums at full volume. Apply the master
+            // gain to the kit, preserving the relative kick/snare/hihat mix.
+            if (kickDrum) kickDrum.volume.value = Tone.gainToDb(0.5 * master);
+            if (snareDrum) snareDrum.volume.value = Tone.gainToDb(0.32 * master);
+            if (hihatDrum) hihatDrum.volume.value = Tone.gainToDb(0.16 * master);
         }
         function updateFader(type, value) {
             value = parseInt(value);
@@ -2647,14 +2654,27 @@
         }
         function loadSong(index) {
             const songs = safeJsonParse('chordflow-songs') || [];
-            if (songs[index]) {
-                ensurePlaybackStopped();
-                saveStateForUndo();
-                const { data } = songs[index];
-                const loadedSections = data.sections?.length > 0 ? data.sections : state.sections;
-                Object.assign(state, { sections: loadedSections, key: data.key || state.key, genre: data.genre || state.genre, baseTempo: data.tempo || state.baseTempo, tempo: Math.round((data.tempo || state.baseTempo) * state.speedMultiplier), timeSignature: data.timeSignature || '4/4', currentSection: 0, currentChordIndex: 0, arrangementSectionIndex: 0 });
-                closeSheet(); updateBeatDotContainers(); renderAll(); showToast(`📂 Loaded "${songs[index].name}"`);
-            }
+            const entry = songs[index];
+            if (!entry) return;
+            // Use optional chaining throughout: a malformed/legacy entry (e.g. a
+            // partial save from a previous version) without `data` would throw
+            // TypeError reading `.sections` and abort the load mid-flight.
+            const data = entry.data || {};
+            ensurePlaybackStopped();
+            saveStateForUndo();
+            const loadedSections = data.sections?.length > 0 ? data.sections : state.sections;
+            const tempo = data.tempo || state.baseTempo;
+            Object.assign(state, {
+                sections: loadedSections,
+                key: data.key || state.key,
+                genre: data.genre || state.genre,
+                baseTempo: tempo,
+                tempo: Math.round(tempo * state.speedMultiplier),
+                timeSignature: data.timeSignature || '4/4',
+                currentSection: 0, currentChordIndex: 0, arrangementSectionIndex: 0
+            });
+            closeSheet(); updateBeatDotContainers(); renderAll();
+            showToast(`📂 Loaded "${entry.name || 'song'}"`);
         }
         function deleteSong(index) {
             const songs = safeJsonParse('chordflow-songs') || [];
@@ -3511,9 +3531,13 @@
             if (degreeIdx !== undefined) {
                 const degrees = isMinorKey ? SCALE_DEGREES_MINOR : SCALE_DEGREES_MAJOR;
                 let degree = degrees[degreeIdx];
-                // Adjust for chord quality
+                // Adjust for chord quality. Distinguish maj7 from dominant 7 so
+                // a Cmaj7 in C-major shows as "Imaj7" (or "Imaj7" / "IM7"
+                // notation), not the misleading "I7" which means dominant.
+                const isMaj7 = chord.includes('maj7');
+                const isMinor7 = !isMaj7 && chord.includes('m7');
+                const isDom7 = !isMaj7 && !isMinor7 && chord.includes('7');
                 const isMinorChord = chord.includes('m') && !chord.includes('maj');
-                const is7th = chord.includes('7');
                 const isDim = chord.includes('dim');
                 if (isMinorChord) {
                     degree = degree.toLowerCase();
@@ -3521,7 +3545,8 @@
                     degree = degree.toUpperCase();
                 }
                 if (isDim) degree = degree.toLowerCase() + '°';
-                if (is7th) degree += '7';
+                if (isMaj7) degree += 'maj7';
+                else if (isMinor7 || isDom7) degree += '7';
                 return degree;
             }
             return chromMap[interval] || '';
