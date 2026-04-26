@@ -2020,11 +2020,17 @@
                 return [];
             }
         }
+        // localStorage.getItem can throw when storage is disabled (e.g. some
+        // privacy modes, security errors). Direct calls in the top-level state
+        // declaration would crash the entire script before init() ever runs.
+        function safeGetItem(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
 
         // State
         const state = {
-            uiMode: localStorage.getItem('chordflow-ui') || 'dual',
-            onboardingComplete: localStorage.getItem('chordflow-onboarding') === 'complete',
+            uiMode: safeGetItem('chordflow-ui') || 'dual',
+            onboardingComplete: safeGetItem('chordflow-onboarding') === 'complete',
             selectedOnboardingMode: 'dual',
             mode: 'create', produceTab: 'mixer',
             key: 'C', genre: 'pop', instrument: 'piano',
@@ -2037,7 +2043,7 @@
             undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
             playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
-            theme: localStorage.getItem('chordflow-theme') || 'dark',
+            theme: safeGetItem('chordflow-theme') || 'dark',
             abLoopStart: -1, abLoopEnd: -1,
             autoSpeedUp: false, autoSpeedIncrement: 5,
             drumsEnabled: false, arrangementMode: false, arrangementSectionIndex: 0,
@@ -2286,13 +2292,32 @@
             if (chord.includes('7')) return chord.replace('7', '') + ' Dominant 7';
             if (chord.includes('sus4')) return chord.replace('sus4', '') + ' Sus4';
             if (chord.includes('sus2')) return chord.replace('sus2', '') + ' Sus2';
+            // 'maj' (and maj9/maj11/maj13) all start with 'm' and would otherwise
+            // be misclassified as minor below — and worse, the .replace('m','')
+            // would strip the 'm' from 'maj' producing labels like "Caj minor".
+            if (chord.includes('maj')) return chord.replace('maj', '') + ' Major';
             if (chord.includes('m')) return chord.replace('m', '') + ' minor';
             return chord + ' major';
         }
 
         // Undo/Redo
+        // Single source of truth for what fields are part of the undo snapshot.
+        // Adding a field here automatically covers saveStateForUndo, undo, and
+        // redo — previously the same JSON.stringify expression was duplicated in
+        // all three, so adding a field meant updating three places or watching
+        // undo silently desync.
+        function snapshotState() {
+            return JSON.stringify({
+                sections: state.sections,
+                currentSection: state.currentSection,
+                key: state.key,
+                genre: state.genre,
+                baseTempo: state.baseTempo,
+                timeSignature: state.timeSignature
+            });
+        }
         function saveStateForUndo() {
-            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
+            state.undoStack.push(snapshotState());
             if (state.undoStack.length > 30) state.undoStack.shift();
             state.redoStack = [];
             updateUndoButtons();
@@ -2300,7 +2325,7 @@
         function undo() {
             if (state.undoStack.length === 0) return;
             ensurePlaybackStopped();
-            state.redoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
+            state.redoStack.push(snapshotState());
             const prev = JSON.parse(state.undoStack.pop());
             Object.assign(state, prev);
             state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
@@ -2310,7 +2335,7 @@
         function redo() {
             if (state.redoStack.length === 0) return;
             ensurePlaybackStopped();
-            state.undoStack.push(JSON.stringify({ sections: state.sections, currentSection: state.currentSection, key: state.key, genre: state.genre, baseTempo: state.baseTempo, timeSignature: state.timeSignature }));
+            state.undoStack.push(snapshotState());
             const next = JSON.parse(state.redoStack.pop());
             Object.assign(state, next);
             state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
