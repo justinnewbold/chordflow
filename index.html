@@ -5202,7 +5202,11 @@
                 chords: chords.join(' - '),
                 key: state.key,
                 genre: state.genre,
-                tempo: state.tempo,
+                // Use baseTempo, not state.tempo: state.tempo includes the
+                // practice-speed multiplier, so a user practicing at 50% would
+                // otherwise have history entries stored at half the song's
+                // true tempo and restore them at the wrong speed later.
+                tempo: state.baseTempo,
                 timestamp: Date.now()
             };
             // Avoid duplicate of last entry
@@ -5480,25 +5484,41 @@
             const key = entry.chords + '|' + entry.key;
             return state.favorites.some(f => f.chords + '|' + f.key === key);
         }
+        // Look up tables for the click handlers below: index into these instead
+        // of inlining each entire entry as JSON in the onclick attribute. Same
+        // pattern used for the community grid in PR #19 — JSON.stringify doesn't
+        // escape U+2028/U+2029, so the inline form would break on any entry
+        // whose data contained those (rare but valid) line-separator chars.
+        let renderedHistoryEntries = [];
+        let renderedFavoriteEntries = [];
         function buildEntryHTML(entry, index, isFromFav) {
             const genreIcon = genres.find(g => g.id === entry.genre)?.icon || '🎵';
             const d = new Date(entry.timestamp);
             const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const starred = isFavorited(entry);
+            const tempo = parseInt(entry.tempo) || 120;
             return `<div class="history-item">
                 <div class="history-item-header">
-                    <span class="history-item-meta">${genreIcon} ${entry.genre} · ${entry.key} · ${entry.tempo} BPM</span>
+                    <span class="history-item-meta">${genreIcon} ${escapeHtml(entry.genre)} · ${escapeHtml(entry.key)} · ${tempo} BPM</span>
                     <div class="history-item-actions">
-                        <span class="history-item-meta">${timeStr}</span>
+                        <span class="history-item-meta">${escapeHtml(timeStr)}</span>
                         <button class="history-item-star ${starred ? 'starred' : ''}" onclick="event.stopPropagation(); toggleFavorite(${index}, ${isFromFav})" title="${starred ? 'Remove from favorites' : 'Add to favorites'}">${starred ? '⭐' : '☆'}</button>
                     </div>
                 </div>
-                <div class="history-item-chords" onclick="restoreFromHistoryEntry(${JSON.stringify(entry).replace(/"/g, '&quot;')})">${escapeHtml(entry.chords)}</div>
+                <div class="history-item-chords" data-idx="${index}" data-fav="${isFromFav ? '1' : '0'}" onclick="restoreEntryByIdx(this.dataset.idx, this.dataset.fav)">${escapeHtml(entry.chords)}</div>
             </div>`;
+        }
+        function restoreEntryByIdx(idxStr, favStr) {
+            const i = parseInt(idxStr, 10);
+            if (!Number.isInteger(i)) return;
+            const list = favStr === '1' ? renderedFavoriteEntries : renderedHistoryEntries;
+            const entry = list[i];
+            if (entry) restoreFromHistoryEntry(entry);
         }
         function renderHistoryList() {
             const list = document.getElementById('historyList');
             if (!list) return;
+            renderedHistoryEntries = state.progressionHistory;
             if (state.progressionHistory.length === 0) {
                 list.innerHTML = '<div class="history-empty">No history yet.<br>Generate some progressions first!</div>';
             } else {
@@ -5508,6 +5528,7 @@
         function renderFavoritesList() {
             const list = document.getElementById('favoritesList');
             if (!list) return;
+            renderedFavoriteEntries = state.favorites;
             if (state.favorites.length === 0) {
                 list.innerHTML = '<div class="history-empty">No favorites yet.<br>Star progressions from History!</div>';
             } else {
@@ -5547,7 +5568,9 @@
             state.key = entry.key;
             state.genre = entry.genre;
             state.baseTempo = entry.tempo;
-            state.tempo = entry.tempo;
+            // Apply the user's current practice-speed setting; otherwise restoring
+            // a 120 BPM entry while practicing at 50% would jump back to 120.
+            state.tempo = Math.round(entry.tempo * state.speedMultiplier);
             state.currentChordIndex = 0;
             updateTempoDisplay();
             closeHistory();
