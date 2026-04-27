@@ -4009,6 +4009,22 @@
             const deletedSection = state.currentSection;
             prog.splice(editingChordIndex, 1);
             if (state.currentChordIndex >= prog.length) state.currentChordIndex = prog.length - 1;
+            // Keep the AB-loop bounds pointing at the same musical chords. Without
+            // this, deleting a chord earlier than the loop shifts the user's
+            // selection onto neighbouring chords (or out of bounds entirely).
+            // If the deleted chord was a loop endpoint, the loop is no longer
+            // meaningful — clear it so the user can re-set it explicitly.
+            if (state.abLoopStart >= 0 || state.abLoopEnd >= 0) {
+                if (deletedIdx === state.abLoopStart || deletedIdx === state.abLoopEnd) {
+                    state.abLoopStart = -1;
+                    state.abLoopEnd = -1;
+                    document.getElementById('abStartBtn')?.classList.remove('active');
+                    document.getElementById('abEndBtn')?.classList.remove('active');
+                } else {
+                    if (deletedIdx < state.abLoopStart) state.abLoopStart--;
+                    if (deletedIdx < state.abLoopEnd) state.abLoopEnd--;
+                }
+            }
             // Store for undo toast
             state.lastDeletedChord = deleted;
             state.lastDeletedIndex = deletedIdx;
@@ -4505,11 +4521,18 @@
         async function deleteCloudSong(id) {
             if (!authState.user) return;
             try {
-                await fetch('/api/songs?action=delete', {
+                const res = await fetch('/api/songs?action=delete', {
                     method: 'POST',
                     headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({ id })
                 });
+                // fetch only rejects on network errors. A 401 (expired session)
+                // or 500 still resolves — we used to show "deleted" anyway and
+                // the song would silently reappear on the next list refresh.
+                if (!res.ok) {
+                    showToast('⚠️ Delete failed');
+                    return;
+                }
                 loadCloudSongs();
                 showToast('🗑️ Cloud song deleted');
             } catch (e) {
@@ -4724,6 +4747,9 @@
                 ...s,
                 progression: s.progression.map(c => transposeChord(c, pubSemitones))
             }));
+            // Track whether the cloud save succeeded so a later network failure
+            // on the share request doesn't double-save into the local community.
+            let cloudSavedId = null;
             try {
                 const res = await fetch('/api/songs?action=save', {
                     method: 'POST',
@@ -4738,18 +4764,26 @@
                     })
                 });
                 const data = await res.json();
-                if (data.id && !data.local) {
-                    // Make it public
-                    await fetch('/api/songs?action=share', {
+                if (data.id && !data.local) cloudSavedId = data.id;
+            } catch (e) { /* fall through to local fallback */ }
+
+            if (cloudSavedId) {
+                // Verify the share call succeeded before claiming "Published" —
+                // otherwise the song is saved but is_public stays false and it
+                // never shows up in the community list.
+                let shareOk = false;
+                try {
+                    const shareRes = await fetch('/api/songs?action=share', {
                         method: 'POST',
                         headers: authHeaders({ 'Content-Type': 'application/json' }),
-                        body: JSON.stringify({ id: data.id, isPublic: true })
+                        body: JSON.stringify({ id: cloudSavedId, isPublic: true })
                     });
-                    closePublishModal();
-                    showToast('🌍 Published to Community!');
-                    return;
-                }
-            } catch (e) {}
+                    shareOk = shareRes.ok;
+                } catch (e) { /* shareOk stays false */ }
+                closePublishModal();
+                showToast(shareOk ? '🌍 Published to Community!' : '⚠️ Saved but not published — try again');
+                return;
+            }
             // Fallback: save locally and add to demo community
             const localSong = {
                 id: 'local_' + Date.now(),
