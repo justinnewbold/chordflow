@@ -2272,6 +2272,7 @@
             const progs = progressions[state.genre] || progressions.pop;
             section.progression = [...progs[Math.floor(Math.random() * progs.length)]];
             state.currentChordIndex = 0;
+            resetABLoopState();
             renderAll();
             saveToHistory();
             showToast(`🎲 Generated ${state.genre} progression`);
@@ -2516,6 +2517,7 @@
                     const semitones = ALL_NOTES.indexOf(keyRoot);
                     state.sections[state.currentSection].progression = chords.map(c => transposeChord(c, -semitones));
                     state.currentChordIndex = 0;
+                    resetABLoopState();
                     renderAll();
                     saveToHistory();
                     showToast(`✨ AI generated ${chords.length} chords!`);
@@ -2524,6 +2526,7 @@
                     const progs = progressions[state.genre] || progressions.pop;
                     state.sections[state.currentSection].progression = [...progs[Math.floor(Math.random() * progs.length)]];
                     state.currentChordIndex = 0;
+                    resetABLoopState();
                     renderAll();
                     showToast('🎲 Used smart fallback');
                 }
@@ -2678,10 +2681,15 @@
         }
         function deleteSong(index) {
             const songs = safeJsonParse('chordflow-songs') || [];
-            const name = songs[index]?.name;
+            const entry = songs[index];
+            // Bail early on out-of-bounds: previously, a stale onclick (e.g.
+            // after another delete had already shifted indices) would splice a
+            // no-op and toast `Deleted "undefined"`.
+            if (!entry) return;
+            const name = entry.name;
             songs.splice(index, 1);
             try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); } catch(e) {}
-            renderSavedSongs(); showToast(`🗑️ Deleted "${name}"`);
+            renderSavedSongs(); showToast(`🗑️ Deleted "${name || 'song'}"`);
         }
         function loadSongFile(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -3027,6 +3035,12 @@
             const [moved] = prog.splice(sourceIndex, 1);
             prog.splice(targetIndex, 0, moved);
             state.currentChordIndex = 0;
+            // Reorder shifts every chord at-or-after the lower of source/target
+            // by ±1, so any AB-loop bound that pointed at the old positions now
+            // points at a different chord. Adjusting the bounds correctly is
+            // tricky (depends on whether each endpoint is inside the moved
+            // range), so just clear the loop — the user can re-set it cheaply.
+            resetABLoopState();
             renderAll();
             showToast('🔀 Chords reordered');
         }
@@ -3481,6 +3495,7 @@
             const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections[state.currentSection].progression = valid.map(c => transposeChord(c, -semitones));
             state.currentChordIndex = 0;
+            resetABLoopState();
             input.value = '';
             renderAll();
             showToast(`🎵 Set ${valid.length} chords: ${valid.join(' ')}`);
@@ -3634,6 +3649,18 @@
             updateABLabel();
             renderChords();
             showToast('✕ A-B loop cleared');
+        }
+        // Silent variant for callers that wholesale-replace or reorder the
+        // progression. The user's loop bounds (e.g. "loop chords 2–3") would
+        // otherwise wrap entirely different chords or point past the new
+        // length. No toast: the user didn't ask to clear it.
+        function resetABLoopState() {
+            if (state.abLoopStart < 0 && state.abLoopEnd < 0) return;
+            state.abLoopStart = -1;
+            state.abLoopEnd = -1;
+            document.getElementById('abStartBtn')?.classList.remove('active');
+            document.getElementById('abEndBtn')?.classList.remove('active');
+            updateABLabel();
         }
         function updateABLabel() {
             const label = document.getElementById('abLabel');
@@ -4459,6 +4486,23 @@
             if (!cloudList) return;
             try {
                 const res = await fetch(`/api/songs?action=load`, { headers: authHeaders() });
+                // 401 => the Supabase JWT has expired. Without this branch the
+                // user looked signed in but every cloud action silently failed
+                // and the songs list just stayed empty. Drop the stale session
+                // so the UI re-renders the "Sign in" prompt, prompting them
+                // explicitly instead of leaving cloud features mysteriously
+                // broken.
+                if (res.status === 401) {
+                    authState.user = null;
+                    authState.session = null;
+                    localStorage.removeItem('chordflow-user');
+                    localStorage.removeItem('chordflow-session');
+                    cloudList.innerHTML = '';
+                    renderAccountSection();
+                    renderCloudSongsPrompt();
+                    showToast('🔒 Session expired — please sign in again');
+                    return;
+                }
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
@@ -5210,6 +5254,7 @@
                 section.progression = [...progs[Math.floor(Math.random() * progs.length)]];
             }
             state.currentChordIndex = 0;
+            resetABLoopState();
             renderAll(); closeSheet();
         }
 
@@ -5606,6 +5651,7 @@
             // a 120 BPM entry while practicing at 50% would jump back to 120.
             state.tempo = Math.round(entry.tempo * state.speedMultiplier);
             state.currentChordIndex = 0;
+            resetABLoopState();
             updateTempoDisplay();
             closeHistory();
             renderAll();
