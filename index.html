@@ -361,7 +361,7 @@
 
         .chord-diagram-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .chord-diagram-modal.active { opacity: 1; pointer-events: auto; }
-        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; }
+        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; max-width: 96vw; max-height: 92vh; overflow: auto; }
         .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); }
         .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
         .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
@@ -1375,16 +1375,18 @@
         <div class="diagram-card" onclick="event.stopPropagation()">
             <div class="diagram-chord-name" id="diagramChordName">C</div>
             <div class="diagram-notes" id="diagramNotes">C - E - G</div>
-            <div style="display:flex;gap:4px;justify-content:center;margin-bottom:12px;">
+            <div style="display:flex;gap:4px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;">
                 <button class="dgm-tab active" onclick="switchDgm('guitar',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Guitar</button>
                 <button class="dgm-tab" onclick="switchDgm('guitar7',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 7-String</button>
                 <button class="dgm-tab" onclick="switchDgm('piano',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎹 Piano</button>
                 <button class="dgm-tab" onclick="switchDgm('bass',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Bass</button>
+                <button class="dgm-tab" onclick="switchDgm('fretboard',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Fretboard</button>
             </div>
             <div id="guitarDgm"><svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg></div>
             <div id="guitar7Dgm" style="display:none;"></div>
             <div id="pianoDgm" style="display:none;"></div>
             <div id="bassDgm" style="display:none;"></div>
+            <div id="fretboardDgm" style="display:none;"></div>
             <button class="diagram-close" onclick="closeChordDiagram()">Close</button>
         </div>
     </div>
@@ -2379,11 +2381,14 @@
             document.getElementById('bassDgm').innerHTML = mkBass(chord);
             const g7El = document.getElementById('guitar7Dgm');
             if (g7El) g7El.innerHTML = mk7String(chord);
+            const fbEl = document.getElementById('fretboardDgm');
+            if (fbEl) fbEl.innerHTML = mkFretboard(chord);
             document.querySelectorAll('.dgm-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
             document.getElementById('guitarDgm').style.display='block';
             document.getElementById('pianoDgm').style.display='none';
             document.getElementById('bassDgm').style.display='none';
             if (g7El) g7El.style.display='none';
+            if (fbEl) fbEl.style.display='none';
         }
         function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); restoreFocusFor('chordDiagram'); }
         function switchDgm(view, btn) {
@@ -2393,6 +2398,7 @@
             const pEl = document.getElementById('pianoDgm'); if (pEl) pEl.style.display = view === 'piano' ? 'block' : 'none';
             const bEl = document.getElementById('bassDgm'); if (bEl) bEl.style.display = view === 'bass' ? 'block' : 'none';
             const g7El = document.getElementById('guitar7Dgm'); if (g7El) g7El.style.display = view === 'guitar7' ? 'block' : 'none';
+            const fbEl = document.getElementById('fretboardDgm'); if (fbEl) fbEl.style.display = view === 'fretboard' ? 'block' : 'none';
         }
         function mkPiano(chord) {
             const notes = getChordNotes(chord).map(n => n.replace(/\d/, ''));
@@ -2409,6 +2415,58 @@
             const f = fm[root] ?? 0;
             const onE = f <= 4;
             return `<div class="bass-tab">G|--------<br>D|--------<br>A|${onE?'--------':'--'+(f-5)+'--'}<br>E|${onE?'--'+f+'--':'--------'}</div>`;
+        }
+        // Full-neck guitar fretboard: highlights every chord tone across the whole neck
+        function mkFretboard(chord) {
+            const FB_NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+            const enh = { 'Db':'C#','Eb':'D#','Fb':'E','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B','E#':'F','B#':'C' };
+            const norm = n => enh[n] || n;
+            const tones = getChordNotes(chord).map(n => norm(n.replace(/\d/, '')));
+            const root = tones[0];
+            const toneSet = new Set(tones);
+            // Display order top->bottom: high e, B, G, D, A, low E
+            const openStrings = ['E','B','G','D','A','E'];
+            const nFrets = 12, padL = 30, padR = 12, padT = 22, padB = 8;
+            const fretW = 36, strGap = 26;
+            const w = padL + nFrets * fretW + padR;
+            const h = padT + 5 * strGap + padB;
+            let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;height:auto;">`;
+            // fretboard background
+            svg += `<rect x="${padL}" y="${padT}" width="${nFrets*fretW}" height="${5*strGap}" fill="rgba(255,255,255,0.03)" rx="3"/>`;
+            // inlay position dots
+            [3,5,7,9].forEach(f => { svg += `<circle cx="${padL+(f-0.5)*fretW}" cy="${padT+2.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`; });
+            // double dot at 12
+            svg += `<circle cx="${padL+11.5*fretW}" cy="${padT+1.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
+            svg += `<circle cx="${padL+11.5*fretW}" cy="${padT+3.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
+            // fret lines (nut thicker)
+            for (let f = 0; f <= nFrets; f++) {
+                const x = padL + f * fretW;
+                svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+5*strGap}" stroke="var(--text-secondary)" stroke-width="${f===0?3:1}"/>`;
+            }
+            // fret numbers
+            for (let f = 1; f <= nFrets; f++) {
+                svg += `<text x="${padL+(f-0.5)*fretW}" y="${padT-7}" text-anchor="middle" font-size="9" fill="var(--text-tertiary)">${f}</text>`;
+            }
+            // strings + note markers
+            openStrings.forEach((open, i) => {
+                const y = padT + i * strGap;
+                svg += `<line x1="${padL}" y1="${y}" x2="${padL+nFrets*fretW}" y2="${y}" stroke="var(--text-tertiary)" stroke-width="1"/>`;
+                const openIdx = FB_NOTES.indexOf(open);
+                for (let f = 0; f <= nFrets; f++) {
+                    const note = FB_NOTES[(openIdx + f) % 12];
+                    if (!toneSet.has(note)) continue;
+                    const isRoot = note === root;
+                    const cx = f === 0 ? padL - 15 : padL + (f - 0.5) * fretW;
+                    svg += `<circle cx="${cx}" cy="${y}" r="9" fill="${isRoot ? 'var(--accent)' : 'var(--bg-tertiary)'}" stroke="var(--accent)" stroke-width="1.5"/>`;
+                    svg += `<text x="${cx}" y="${y+3}" text-anchor="middle" font-size="8" font-weight="700" fill="${isRoot ? '#fff' : 'var(--text-primary)'}">${note}</text>`;
+                }
+            });
+            svg += `</svg>`;
+            svg += `<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;font-size:11px;color:var(--text-secondary);">`
+                + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:4px;"></span>Root</span>`
+                + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-tertiary);border:1.5px solid var(--accent);vertical-align:middle;margin-right:4px;"></span>Chord tone</span>`
+                + `</div>`;
+            return svg;
         }
 
         // Tempo & Speed
