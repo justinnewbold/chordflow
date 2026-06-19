@@ -513,6 +513,10 @@
         .et-score-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
         .et-play-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); border: none; font-size: 32px; color: white; cursor: pointer; margin: 0 auto var(--spacing-lg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); transition: all var(--transition-fast); }
         .et-play-btn:active { transform: scale(0.9); }
+        .et-visual { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-sm); margin: 0 auto var(--spacing-md); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .et-visual-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .et-hear-btn { margin: 0 auto var(--spacing-lg); padding: 10px 22px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: 2px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); }
+        .et-hear-btn:active { transform: scale(0.95); }
         .et-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
         .et-option { padding: 16px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); font-size: 18px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); }
         .et-option:active { transform: scale(0.95); }
@@ -1329,6 +1333,10 @@
                     <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
                     <span style="color: var(--text-secondary);">Play ›</span>
                 </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
+                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
+                    <span style="color: var(--text-secondary);">Play ›</span>
+                </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">About</div>
@@ -1466,6 +1474,7 @@
             <div class="et-tabs">
                 <button class="et-tab active" onclick="switchEarTrainingTab('chord')" id="etTabChord">🎵 Chords</button>
                 <button class="et-tab" onclick="switchEarTrainingTab('interval')" id="etTabInterval">🎶 Intervals</button>
+                <button class="et-tab" onclick="switchEarTrainingTab('visual')" id="etTabVisual">👁️ Visual</button>
             </div>
             <div class="et-title" id="etTitle">Guess the Chord</div>
             <div class="et-subtitle" id="etSubtitle">Listen to the chord and pick the correct answer</div>
@@ -1474,6 +1483,7 @@
                 <div class="et-score-item"><div class="et-score-num" id="etStreak">0</div><div class="et-score-label">Streak</div></div>
                 <div class="et-score-item"><div class="et-score-num" id="etTotal">0</div><div class="et-score-label">Total</div></div>
             </div>
+            <div class="et-visual" id="etVisual" style="display:none;"></div>
             <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
             <div class="et-feedback" id="etFeedback"></div>
             <div class="et-options" id="etOptions"></div>
@@ -4012,6 +4022,11 @@
         let earTrainingAnswer = null;
         let earTrainingScore = { correct: 0, streak: 0, total: 0 };
         const INTERVAL_NAMES = ['Unison', 'Minor 2nd', 'Major 2nd', 'Minor 3rd', 'Major 3rd', 'Perfect 4th', 'Tritone', 'Perfect 5th', 'Minor 6th', 'Major 6th', 'Minor 7th', 'Major 7th', 'Octave'];
+        // Chords used by the visual "Name That Chord" quiz — all render as clear,
+        // recognizable guitar shapes via mkGuitar().
+        const VISUAL_QUIZ_POOL = ['C', 'D', 'E', 'F', 'G', 'A', 'Am', 'Dm', 'Em', 'Fm', 'Gm', 'Bm',
+            'Cmaj7', 'Dmaj7', 'Gmaj7', 'Emaj7', 'Am7', 'Dm7', 'Em7',
+            'A7', 'D7', 'E7', 'G7', 'B7', 'C7', 'Asus4', 'Dsus4', 'Esus4', 'Asus2', 'Dsus2'];
 
         function openEarTraining(mode) {
             rememberFocusFor('earTraining');
@@ -4032,8 +4047,18 @@
             earTrainingScore = { correct: 0, streak: 0, total: 0 };
             document.getElementById('etTabChord').classList.toggle('active', mode === 'chord');
             document.getElementById('etTabInterval').classList.toggle('active', mode === 'interval');
-            document.getElementById('etTitle').textContent = mode === 'chord' ? 'Guess the Chord' : 'Name the Interval';
-            document.getElementById('etSubtitle').textContent = mode === 'chord' ? 'Listen and pick the correct chord' : 'Listen and name the interval between the two notes';
+            document.getElementById('etTabVisual').classList.toggle('active', mode === 'visual');
+            const titles = { chord: 'Guess the Chord', interval: 'Name the Interval', visual: 'Name That Chord' };
+            const subs = {
+                chord: 'Listen and pick the correct chord',
+                interval: 'Listen and name the interval between the two notes',
+                visual: 'Look at the guitar chord shape and pick its name'
+            };
+            document.getElementById('etTitle').textContent = titles[mode] || titles.chord;
+            document.getElementById('etSubtitle').textContent = subs[mode] || subs.chord;
+            const isVisual = mode === 'visual';
+            document.getElementById('etPlayBtn').style.display = isVisual ? 'none' : 'flex';
+            document.getElementById('etVisual').style.display = isVisual ? 'flex' : 'none';
             updateEarTrainingScore();
             generateEarTrainingRound();
         }
@@ -4045,6 +4070,13 @@
                 // Generate 3 wrong answers
                 const wrong = chordPool.filter(c => c !== earTrainingAnswer).sort(() => Math.random() - 0.5).slice(0, 3);
                 const options = [earTrainingAnswer, ...wrong].sort(() => Math.random() - 0.5);
+                renderEarTrainingOptions(options);
+            } else if (earTrainingMode === 'visual') {
+                earTrainingAnswer = VISUAL_QUIZ_POOL[Math.floor(Math.random() * VISUAL_QUIZ_POOL.length)];
+                const wrong = VISUAL_QUIZ_POOL.filter(c => c !== earTrainingAnswer).sort(() => Math.random() - 0.5).slice(0, 3);
+                const options = [earTrainingAnswer, ...wrong].sort(() => Math.random() - 0.5);
+                const vis = document.getElementById('etVisual');
+                vis.innerHTML = `<div class="et-visual-label">🎸 What chord is this?</div>${mkGuitar(earTrainingAnswer)}<button class="et-hear-btn" onclick="playEarTrainingChord()">🔊 Hear it</button>`;
                 renderEarTrainingOptions(options);
             } else {
                 const interval = Math.floor(Math.random() * 12) + 1; // 1-12 semitones
@@ -4068,7 +4100,7 @@
         }
         async function playEarTrainingChord() {
             await initAudio();
-            if (earTrainingMode === 'chord') {
+            if (earTrainingMode !== 'interval') {
                 playChord(earTrainingAnswer, '2n');
             } else {
                 // Play two notes sequentially
@@ -4080,11 +4112,11 @@
         }
         function checkEarTrainingAnswer(btn, answer) {
             earTrainingScore.total++;
-            const correct = earTrainingMode === 'chord' ? answer === earTrainingAnswer : answer === earTrainingAnswer.name;
+            const correct = earTrainingMode === 'interval' ? answer === earTrainingAnswer.name : answer === earTrainingAnswer;
             // Disable all buttons
             document.querySelectorAll('.et-option').forEach(b => {
                 b.classList.add('disabled');
-                const isCorrectBtn = earTrainingMode === 'chord' ? b.textContent === earTrainingAnswer : b.textContent === earTrainingAnswer.name;
+                const isCorrectBtn = earTrainingMode === 'interval' ? b.textContent === earTrainingAnswer.name : b.textContent === earTrainingAnswer;
                 if (isCorrectBtn) b.classList.add('correct');
             });
             if (correct) {
@@ -4095,7 +4127,7 @@
             } else {
                 earTrainingScore.streak = 0;
                 btn.classList.add('wrong');
-                const rightAnswer = earTrainingMode === 'chord' ? earTrainingAnswer : earTrainingAnswer.name;
+                const rightAnswer = earTrainingMode === 'interval' ? earTrainingAnswer.name : earTrainingAnswer;
                 document.getElementById('etFeedback').textContent = `❌ It was ${rightAnswer}`;
             }
             updateEarTrainingScore();
