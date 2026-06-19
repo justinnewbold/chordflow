@@ -1187,6 +1187,7 @@
             <div class="sf-header-actions">
                 <button class="sf-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="sf-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="sf-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="sf-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
@@ -1240,6 +1241,7 @@
             <div class="cd-header-actions">
                 <button class="cd-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="cd-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="cd-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="cd-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="cd-header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
@@ -1379,6 +1381,81 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body" id="songsSheetBody"></div>
+    </div>
+
+    <!-- Tools sheet: Learn & Practice, reachable from every UI mode -->
+    <div class="bottom-sheet" id="toolsSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🧰 Tools</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Learn &amp; Practice</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('learn')">
+                    <div class="settings-label"><span class="settings-icon">📚</span><span>Learn Songs</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('practice')">
+                    <div class="settings-label"><span class="settings-icon">🎯</span><span>Practice Speed</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Train Your Ear &amp; Eye</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
+                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
+                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
+                    <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learn Songs sheet (global; loads a public-domain song into the current progression) -->
+    <div class="bottom-sheet" id="learnSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="song-filters">
+                <button class="filter-chip active" onclick="filterLearnSheet('all', this)">All</button>
+                <button class="filter-chip" onclick="filterLearnSheet('beginner', this)">🟢 Beginner</button>
+                <button class="filter-chip" onclick="filterLearnSheet('intermediate', this)">🟠 Intermediate</button>
+            </div>
+            <div class="songs-list" id="learnSheetList"></div>
+        </div>
+    </div>
+
+    <!-- Practice sheet (global; speed & count-in controls) -->
+    <div class="bottom-sheet" id="practiceSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎯 Practice</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Playback Speed</div>
+                <div class="practice-controls" style="margin-bottom:0;">
+                    <button class="speed-btn" onclick="setSpeed(0.5); syncPracticeSheet()" id="pSpeed50">50%</button>
+                    <button class="speed-btn" onclick="setSpeed(0.75); syncPracticeSheet()" id="pSpeed75">75%</button>
+                    <button class="speed-btn active" onclick="setSpeed(1); syncPracticeSheet()" id="pSpeed100">100%</button>
+                    <button class="count-in-btn" onclick="toggleCountIn(); syncPracticeSheet()" id="pCountInBtn">📢 Count</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Auto Speed-Up</div>
+                <div class="auto-speed-row">
+                    <span class="auto-speed-label" id="pAutoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
+                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp(); syncPracticeSheet()" id="pAutoSpeedBtn">OFF</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3); syncPracticeSheet()" id="paspd3">+3</button>
+                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5); syncPracticeSheet()" id="paspd5">+5</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10); syncPracticeSheet()" id="paspd10">+10</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Chord Diagram Modal -->
@@ -3669,30 +3746,90 @@
             }
         }
 
-        function loadLearnSongToEditor() {
-            if (!currentLearnSong) return;
+        // Apply a learn song to the shared progression state. Used by both the
+        // dual-mode song player and the global Learn sheet so the logic stays in one place.
+        function applyLearnSong(song) {
             ensurePlaybackStopped();
             saveStateForUndo();
             // Reverse-transpose learn song chords to store in relative form
-            const learnKey = currentLearnSong.key;
-            const keyRoot = normalizeNote(learnKey.replace('m', ''));
+            const keyRoot = normalizeNote(song.key.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections = [{
-                name: currentLearnSong.title.substring(0, 20),
+                name: song.title.substring(0, 20),
                 icon: '📚',
-                progression: semitones > 0 ? currentLearnSong.chords.map(c => transposeChord(c, -semitones)) : [...currentLearnSong.chords]
+                progression: semitones > 0 ? song.chords.map(c => transposeChord(c, -semitones)) : [...song.chords]
             }];
-            state.key = learnKey;
-            state.baseTempo = currentLearnSong.tempo;
-            state.tempo = Math.round(currentLearnSong.tempo * state.speedMultiplier);
-            state.timeSignature = currentLearnSong.timeSignature;
+            state.key = song.key;
+            state.baseTempo = song.tempo;
+            state.tempo = Math.round(song.tempo * state.speedMultiplier);
+            state.timeSignature = song.timeSignature;
             state.currentSection = 0;
             state.currentChordIndex = 0;
+        }
+        function loadLearnSongToEditor() {
+            if (!currentLearnSong) return;
+            applyLearnSong(currentLearnSong);
             closeSongPlayer();
             setMode('create');
             setProduceTab('mixer');
             updateBeatDotContainers(); renderAll();
             showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
+        }
+        // ===== Global Learn sheet (works in any UI mode) =====
+        let learnSheetFilter = 'all';
+        function renderLearnSheet() {
+            const list = document.getElementById('learnSheetList');
+            if (!list) return;
+            const filtered = learnSheetFilter === 'all'
+                ? publicDomainSongs
+                : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSheetFilter);
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                return;
+            }
+            list.innerHTML = filtered.map(song => {
+                const uniqueChords = [...new Set(song.chords)];
+                return `<div class="song-card" role="button" tabindex="0" onclick="loadLearnSongFromSheet('${song.id}')">
+                    <div class="song-header">
+                        <div class="song-title">${escapeHtml(song.title)}</div>
+                        <span class="song-difficulty ${song.difficulty.toLowerCase()}">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta">Key of ${song.key} | ${song.timeSignature} | ${song.tempo} BPM | ${song.year}</div>
+                    <div class="song-chords">${uniqueChords.map(c => `<span class="song-chord-pill">${escapeHtml(c)}</span>`).join('')}</div>
+                </div>`;
+            }).join('');
+        }
+        function filterLearnSheet(filter, btn) {
+            learnSheetFilter = filter;
+            document.querySelectorAll('#learnSheet .filter-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderLearnSheet();
+        }
+        function loadLearnSongFromSheet(id) {
+            const song = publicDomainSongs.find(s => s.id === id);
+            if (!song) return;
+            applyLearnSong(song);
+            closeSheet();
+            updateBeatDotContainers(); updateTempoDisplay(); renderAll();
+            showToast(`📚 Loaded "${song.title}"`);
+        }
+        // ===== Global Practice sheet state sync =====
+        function syncPracticeSheet() {
+            const sm = state.speedMultiplier;
+            [['pSpeed50', 0.5], ['pSpeed75', 0.75], ['pSpeed100', 1]].forEach(([id, v]) => {
+                const b = document.getElementById(id);
+                if (b) b.classList.toggle('active', Math.abs(sm - v) < 0.001);
+            });
+            const ci = document.getElementById('pCountInBtn');
+            if (ci) ci.classList.toggle('active', !!state.countInEnabled);
+            const asb = document.getElementById('pAutoSpeedBtn');
+            if (asb) { asb.textContent = state.autoSpeedUp ? 'ON' : 'OFF'; asb.classList.toggle('active', !!state.autoSpeedUp); }
+            const lbl = document.getElementById('pAutoSpeedLabel');
+            if (lbl) lbl.textContent = state.autoSpeedUp ? `🏃 Auto Speed-Up: +${state.autoSpeedIncrement} BPM/loop` : '🏃 Auto Speed-Up: OFF';
+            [['paspd3', 3], ['paspd5', 5], ['paspd10', 10]].forEach(([id, v]) => {
+                const b = document.getElementById(id);
+                if (b) b.classList.toggle('active', state.autoSpeedIncrement === v);
+            });
         }
 
         // ============ CUSTOM CHORD INPUT ============
@@ -5468,6 +5605,8 @@
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
             if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
+            if (type === 'learn') renderLearnSheet();
+            if (type === 'practice') syncPracticeSheet();
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
