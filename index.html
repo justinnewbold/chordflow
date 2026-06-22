@@ -1615,6 +1615,7 @@
                 <div class="et-score-item"><div class="et-score-num" id="etCorrect">0</div><div class="et-score-label">Correct</div></div>
                 <div class="et-score-item"><div class="et-score-num" id="etStreak">0</div><div class="et-score-label">Streak</div></div>
                 <div class="et-score-item"><div class="et-score-num" id="etTotal">0</div><div class="et-score-label">Total</div></div>
+                <div class="et-score-item"><div class="et-score-num" id="etBest">0</div><div class="et-score-label">Best 🔥</div></div>
             </div>
             <div class="et-visual" id="etVisual" style="display:none;"></div>
             <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
@@ -4466,7 +4467,14 @@
                 earTrainingScore.correct++;
                 earTrainingScore.streak++;
                 btn.classList.add('correct');
-                document.getElementById('etFeedback').textContent = '✅ Correct!';
+                const best = getQuizBest();
+                if (earTrainingScore.streak > (best[earTrainingMode] || 0)) {
+                    best[earTrainingMode] = earTrainingScore.streak;
+                    safeSetItem('chordflow-quiz-best', JSON.stringify(best));
+                    document.getElementById('etFeedback').textContent = `🔥 New best streak: ${earTrainingScore.streak}!`;
+                } else {
+                    document.getElementById('etFeedback').textContent = '✅ Correct!';
+                }
             } else {
                 earTrainingScore.streak = 0;
                 btn.classList.add('wrong');
@@ -4477,10 +4485,14 @@
             // Auto-advance after 1.5s
             setTimeout(() => generateEarTrainingRound(), 1500);
         }
+        // Best streak per quiz mode, persisted across sessions.
+        function getQuizBest() { return safeJsonParse('chordflow-quiz-best') || { chord: 0, interval: 0, visual: 0 }; }
         function updateEarTrainingScore() {
             document.getElementById('etCorrect').textContent = earTrainingScore.correct;
             document.getElementById('etStreak').textContent = earTrainingScore.streak;
             document.getElementById('etTotal').textContent = earTrainingScore.total;
+            const bestEl = document.getElementById('etBest');
+            if (bestEl) bestEl.textContent = getQuizBest()[earTrainingMode] || 0;
         }
 
         // ============ AI TRANSFORM (Jazzy / Simplify) ============
