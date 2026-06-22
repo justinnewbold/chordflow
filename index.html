@@ -362,8 +362,11 @@
         .chord-diagram-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .chord-diagram-modal.active { opacity: 1; pointer-events: auto; }
         .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; max-width: 96vw; max-height: 92vh; overflow: auto; }
-        .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); }
-        .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+        .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); cursor: pointer; user-select: none; transition: transform var(--transition-fast); }
+        .diagram-chord-name:active { transform: scale(0.94); }
+        .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
+        .diagram-hear { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--bg-tertiary); border-radius: var(--radius-full); padding: 5px 14px; margin-bottom: var(--spacing-lg); cursor: pointer; user-select: none; transition: transform var(--transition-fast); }
+        .diagram-hear:active { transform: scale(0.94); }
         .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
 
         /* Shortcuts Modal */
@@ -513,6 +516,10 @@
         .et-score-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
         .et-play-btn { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); border: none; font-size: 32px; color: white; cursor: pointer; margin: 0 auto var(--spacing-lg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); transition: all var(--transition-fast); }
         .et-play-btn:active { transform: scale(0.9); }
+        .et-visual { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md) var(--spacing-sm); margin: 0 auto var(--spacing-md); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .et-visual-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .et-hear-btn { margin: 0 auto var(--spacing-lg); padding: 10px 22px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: 2px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); }
+        .et-hear-btn:active { transform: scale(0.95); }
         .et-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
         .et-option { padding: 16px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); font-size: 18px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); }
         .et-option:active { transform: scale(0.95); }
@@ -1180,6 +1187,7 @@
             <div class="sf-header-actions">
                 <button class="sf-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="sf-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="sf-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="sf-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
@@ -1233,6 +1241,7 @@
             <div class="cd-header-actions">
                 <button class="cd-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="cd-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="cd-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="cd-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="cd-header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
@@ -1329,6 +1338,10 @@
                     <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
                     <span style="color: var(--text-secondary);">Play ›</span>
                 </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
+                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
+                    <span style="color: var(--text-secondary);">Play ›</span>
+                </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">About</div>
@@ -1370,11 +1383,98 @@
         <div class="sheet-body" id="songsSheetBody"></div>
     </div>
 
+    <!-- Tools sheet: Learn & Practice, reachable from every UI mode -->
+    <div class="bottom-sheet" id="toolsSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🧰 Tools</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Learn &amp; Practice</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('learn')">
+                    <div class="settings-label"><span class="settings-icon">📚</span><span>Learn Songs</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('practice')">
+                    <div class="settings-label"><span class="settings-icon">🎯</span><span>Practice Speed</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Your Songs</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSaveModal()">
+                    <div class="settings-label"><span class="settings-icon">💾</span><span>Save Song</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('songs')">
+                    <div class="settings-label"><span class="settings-icon">📂</span><span>Load Saved Song</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Train Your Ear &amp; Eye</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
+                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
+                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
+                    <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learn Songs sheet (global; loads a public-domain song into the current progression) -->
+    <div class="bottom-sheet" id="learnSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="song-filters">
+                <button class="filter-chip active" onclick="filterLearnSheet('all', this)">All</button>
+                <button class="filter-chip" onclick="filterLearnSheet('beginner', this)">🟢 Beginner</button>
+                <button class="filter-chip" onclick="filterLearnSheet('intermediate', this)">🟠 Intermediate</button>
+            </div>
+            <div class="songs-list" id="learnSheetList"></div>
+        </div>
+    </div>
+
+    <!-- Practice sheet (global; speed & count-in controls) -->
+    <div class="bottom-sheet" id="practiceSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎯 Practice</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Playback Speed</div>
+                <div class="practice-controls" style="margin-bottom:0;">
+                    <button class="speed-btn" onclick="setSpeed(0.5); syncPracticeSheet()" id="pSpeed50">50%</button>
+                    <button class="speed-btn" onclick="setSpeed(0.75); syncPracticeSheet()" id="pSpeed75">75%</button>
+                    <button class="speed-btn active" onclick="setSpeed(1); syncPracticeSheet()" id="pSpeed100">100%</button>
+                    <button class="count-in-btn" onclick="toggleCountIn(); syncPracticeSheet()" id="pCountInBtn">📢 Count</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Auto Speed-Up</div>
+                <div class="auto-speed-row">
+                    <span class="auto-speed-label" id="pAutoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
+                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp(); syncPracticeSheet()" id="pAutoSpeedBtn">OFF</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3); syncPracticeSheet()" id="paspd3">+3</button>
+                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5); syncPracticeSheet()" id="paspd5">+5</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10); syncPracticeSheet()" id="paspd10">+10</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chord Diagram Modal -->
     <div class="chord-diagram-modal" id="chordDiagramModal" onclick="closeChordDiagram()">
         <div class="diagram-card" onclick="event.stopPropagation()">
-            <div class="diagram-chord-name" id="diagramChordName">C</div>
+            <div class="diagram-chord-name" id="diagramChordName" role="button" tabindex="0" title="Tap to hear this chord" onclick="playDiagramChord()">C</div>
             <div class="diagram-notes" id="diagramNotes">C - E - G</div>
+            <div class="diagram-hear" role="button" tabindex="0" onclick="playDiagramChord()">🔊 Tap to hear</div>
             <div style="display:flex;gap:4px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;">
                 <button class="dgm-tab active" onclick="switchDgm('guitar',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Guitar</button>
                 <button class="dgm-tab" onclick="switchDgm('guitar7',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 7-String</button>
@@ -1382,7 +1482,7 @@
                 <button class="dgm-tab" onclick="switchDgm('bass',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Bass</button>
                 <button class="dgm-tab" onclick="switchDgm('fretboard',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Fretboard</button>
             </div>
-            <div id="guitarDgm"><svg id="chordDiagramSvg" width="100" height="120" viewBox="0 0 100 120"></svg></div>
+            <div id="guitarDgm"></div>
             <div id="guitar7Dgm" style="display:none;"></div>
             <div id="pianoDgm" style="display:none;"></div>
             <div id="bassDgm" style="display:none;"></div>
@@ -1466,6 +1566,7 @@
             <div class="et-tabs">
                 <button class="et-tab active" onclick="switchEarTrainingTab('chord')" id="etTabChord">🎵 Chords</button>
                 <button class="et-tab" onclick="switchEarTrainingTab('interval')" id="etTabInterval">🎶 Intervals</button>
+                <button class="et-tab" onclick="switchEarTrainingTab('visual')" id="etTabVisual">👁️ Visual</button>
             </div>
             <div class="et-title" id="etTitle">Guess the Chord</div>
             <div class="et-subtitle" id="etSubtitle">Listen to the chord and pick the correct answer</div>
@@ -1474,6 +1575,7 @@
                 <div class="et-score-item"><div class="et-score-num" id="etStreak">0</div><div class="et-score-label">Streak</div></div>
                 <div class="et-score-item"><div class="et-score-num" id="etTotal">0</div><div class="et-score-label">Total</div></div>
             </div>
+            <div class="et-visual" id="etVisual" style="display:none;"></div>
             <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
             <div class="et-feedback" id="etFeedback"></div>
             <div class="et-options" id="etOptions"></div>
@@ -2359,23 +2461,13 @@
         }
 
         // Chord Diagram
+        let currentDiagramChord = null;
         function showChordDiagram(chord) {
             rememberFocusFor('chordDiagram');
+            currentDiagramChord = chord;
             document.getElementById('diagramChordName').textContent = chord;
             document.getElementById('diagramNotes').textContent = getChordNotes(chord).map(n => n.replace(/\d/, '')).join(' - ');
-            const svg = document.getElementById('chordDiagramSvg');
-            const frets = 5, strings = 6;
-            let html = `<rect x="10" y="10" width="80" height="100" fill="none" stroke="#666" stroke-width="2"/>`;
-            for (let i = 1; i < frets; i++) html += `<line x1="10" y1="${10 + i * 20}" x2="90" y2="${10 + i * 20}" stroke="#666"/>`;
-            for (let i = 0; i < strings; i++) html += `<line x1="${10 + i * 16}" y1="10" x2="${10 + i * 16}" y2="110" stroke="#888"/>`;
-            const patterns = { 'C': [[0,1,0], [1,1,2], [2,2,3], [3,3,0]], 'Am': [[0,1,1], [1,2,2], [2,2,3]], 'G': [[0,2,3], [1,3,0], [5,3,0]], 'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0],[4,3,0],[5,1,0]] };
-            const strippedChord = chord.replace(/maj7|dim7|dim|aug|7|sus\d/g, '');
-            const p = patterns[strippedChord] || patterns[strippedChord.replace(/m$/, '')] || [[2, 2, 1], [3, 2, 2], [4, 2, 3]];
-            p.forEach(([string, fret, finger]) => {
-                const x = 10 + string * 16, y = fret * 20;
-                html += `<circle cx="${x}" cy="${y}" r="7" fill="${fret === 0 ? 'none' : 'var(--accent)'}" stroke="${fret === 0 ? '#888' : 'none'}"/>`;
-            });
-            svg.innerHTML = html;
+            document.getElementById('guitarDgm').innerHTML = mkGuitar(chord);
             document.getElementById('chordDiagramModal').classList.add('active');
             document.getElementById('pianoDgm').innerHTML = mkPiano(chord);
             document.getElementById('bassDgm').innerHTML = mkBass(chord);
@@ -2391,6 +2483,7 @@
             if (fbEl) fbEl.style.display='none';
         }
         function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); restoreFocusFor('chordDiagram'); }
+        function playDiagramChord() { if (currentDiagramChord) playChord(currentDiagramChord, '2n'); }
         function switchDgm(view, btn) {
             document.querySelectorAll('.dgm-tab').forEach(t => t.classList.remove('active'));
             if (btn) btn.classList.add('active');
@@ -2466,6 +2559,174 @@
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:4px;"></span>Root</span>`
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-tertiary);border:1.5px solid var(--accent);vertical-align:middle;margin-right:4px;"></span>Chord tone</span>`
                 + `</div>`;
+            return svg;
+        }
+
+        // ============ GUITAR CHORD SHAPES (playable fingerings) ============
+        // Strings are ordered low-to-high: [E(6th), A(5th), D(4th), G(3rd), B(2nd), e(1st)].
+        // In each shape:  -1 = muted (x), 0 = open (o), n = press fret n.  The
+        // companion finger array uses 0 for open/muted and 1-4 for fingers.
+        // Curated open-position voicings keep the common chords idiomatic; anything
+        // not listed here is generated as a movable barre chord (see genBarreShape).
+        const GUITAR_OPEN_SHAPES = {
+            'C':     { f: [-1,3,2,0,1,0],  g: [0,3,2,0,1,0] },
+            'Cmaj7': { f: [-1,3,2,0,0,0],  g: [0,3,2,0,0,0] },
+            'C7':    { f: [-1,3,2,3,1,0],  g: [0,3,2,4,1,0] },
+            'D':     { f: [-1,-1,0,2,3,2], g: [0,0,0,1,3,2] },
+            'Dm':    { f: [-1,-1,0,2,3,1], g: [0,0,0,2,3,1] },
+            'D7':    { f: [-1,-1,0,2,1,2], g: [0,0,0,3,1,2] },
+            'Dmaj7': { f: [-1,-1,0,2,2,2], g: [0,0,0,1,1,1] },
+            'Dm7':   { f: [-1,-1,0,2,1,1], g: [0,0,0,2,1,1] },
+            'Dsus2': { f: [-1,-1,0,2,3,0], g: [0,0,0,1,2,0] },
+            'Dsus4': { f: [-1,-1,0,2,3,3], g: [0,0,0,1,2,3] },
+            'E':     { f: [0,2,2,1,0,0],   g: [0,2,3,1,0,0] },
+            'Em':    { f: [0,2,2,0,0,0],   g: [0,2,3,0,0,0] },
+            'E7':    { f: [0,2,0,1,0,0],   g: [0,2,0,1,0,0] },
+            'Em7':   { f: [0,2,0,0,0,0],   g: [0,2,0,0,0,0] },
+            'Emaj7': { f: [0,2,1,1,0,0],   g: [0,3,1,2,0,0] },
+            'Esus4': { f: [0,2,2,2,0,0],   g: [0,1,2,3,0,0] },
+            'G':     { f: [3,2,0,0,0,3],   g: [2,1,0,0,0,3] },
+            'G7':    { f: [3,2,0,0,0,1],   g: [3,2,0,0,0,1] },
+            'Gmaj7': { f: [3,2,0,0,0,2],   g: [3,2,0,0,0,1] },
+            'A':     { f: [-1,0,2,2,2,0],  g: [0,0,1,2,3,0] },
+            'Am':    { f: [-1,0,2,2,1,0],  g: [0,0,2,3,1,0] },
+            'A7':    { f: [-1,0,2,0,2,0],  g: [0,0,2,0,3,0] },
+            'Amaj7': { f: [-1,0,2,1,2,0],  g: [0,0,3,1,4,0] },
+            'Am7':   { f: [-1,0,2,0,1,0],  g: [0,0,2,0,1,0] },
+            'Asus2': { f: [-1,0,2,2,0,0],  g: [0,0,2,3,0,0] },
+            'Asus4': { f: [-1,0,2,2,3,0],  g: [0,0,1,2,3,0] },
+            'B7':    { f: [-1,2,1,2,0,2],  g: [0,2,1,3,0,4] },
+            'F':     { f: [1,3,3,2,1,1],   g: [1,3,4,2,1,1] },
+            'Fmaj7': { f: [-1,-1,3,2,1,0], g: [0,0,3,2,1,0] }
+        };
+        // Movable barre-chord templates. Relative frets are offsets from the root
+        // (barre) fret; 'x' = muted. E-shapes root on the low-E string, A-shapes on
+        // the A string. Pitch classes use C=0.
+        const GUITAR_PC = { 'C':0,'C#':1,'Db':1,'D':2,'D#':3,'Eb':3,'E':4,'Fb':4,'E#':5,'F':5,'F#':6,'Gb':6,'G':7,'G#':8,'Ab':8,'A':9,'A#':10,'Bb':10,'B':11,'Cb':11,'B#':0 };
+        const GUITAR_E_SHAPES = {
+            maj:  { f: [0,2,2,1,0,0], g: [1,3,4,2,1,1] },
+            min:  { f: [0,2,2,0,0,0], g: [1,3,4,1,1,1] },
+            dom7: { f: [0,2,0,1,0,0], g: [1,3,1,2,1,1] },
+            m7:   { f: [0,2,0,0,0,0], g: [1,3,1,1,1,1] },
+            maj7: { f: [0,2,1,1,0,0], g: [1,4,2,3,1,1] },
+            sus4: { f: [0,2,2,2,0,0], g: [1,2,3,4,1,1] }
+        };
+        const GUITAR_A_SHAPES = {
+            maj:  { f: ['x',0,2,2,2,0], g: [0,1,2,3,4,1] },
+            min:  { f: ['x',0,2,2,1,0], g: [0,1,3,4,2,1] },
+            dom7: { f: ['x',0,2,0,2,0], g: [0,1,3,1,4,1] },
+            m7:   { f: ['x',0,2,0,1,0], g: [0,1,3,1,2,1] },
+            maj7: { f: ['x',0,2,1,2,0], g: [0,1,3,2,4,1] },
+            sus4: { f: ['x',0,2,2,3,0], g: [0,1,2,3,4,1] },
+            sus2: { f: ['x',0,2,2,0,0], g: [0,1,3,4,1,1] },
+            aug:  { f: ['x',0,3,2,2,1], g: [0,1,4,2,3,1] },
+            dim:  { f: ['x',0,1,2,1,'x'], g: [0,1,2,4,3,0] }
+        };
+        // Map a chord suffix to a barre-template quality. Extended chords reduce to
+        // the nearest playable triad/7th so a sensible shape is always shown.
+        function guitarQuality(suffix) {
+            const s = suffix;
+            if (/^(maj7|maj9|maj11|maj13|M7)/.test(s)) return 'maj7';
+            if (/^(m7b5|min7b5)/.test(s)) return 'm7';
+            if (/^(m7|min7|m9|m11|m13|min9)/.test(s)) return 'm7';
+            if (/^(dim)/.test(s)) return 'dim';
+            if (/^(aug|\+)/.test(s)) return 'aug';
+            if (/^(sus2)/.test(s)) return 'sus2';
+            if (/^(sus4|sus)/.test(s)) return 'sus4';
+            if (/^(maj)/.test(s)) return 'maj';
+            if (/^(m6|min6)/.test(s)) return 'min';
+            if (/^(m|min)/.test(s)) return 'min';
+            if (/^(6|7|9|11|13|add)/.test(s)) return /^6/.test(s) ? 'maj' : 'dom7';
+            return 'maj';
+        }
+        function genBarreShape(rootPc, qual) {
+            const eFret = ((rootPc - 4) + 12) % 12; // root on low-E string
+            const aFret = ((rootPc - 9) + 12) % 12; // root on A string
+            const eT = GUITAR_E_SHAPES[qual], aT = GUITAR_A_SHAPES[qual];
+            // Prefer whichever sits lower on the neck; some qualities only have an A-shape.
+            let useE = !!eT && (!aT || eFret <= aFret);
+            const base = useE ? eFret : aFret;
+            const t = useE ? eT : aT;
+            const frets = t.f.map(o => o === 'x' ? -1 : base + o);
+            return { frets, fingers: t.g.slice() };
+        }
+        function getGuitarChordShape(chord) {
+            if (GUITAR_OPEN_SHAPES[chord]) {
+                const o = GUITAR_OPEN_SHAPES[chord];
+                return { frets: o.f.slice(), fingers: o.g.slice() };
+            }
+            const m = chord.match(/^([A-G][#b]?)(.*)$/);
+            const root = m ? m[1] : 'C';
+            const suffix = m ? m[2] : '';
+            const rootPc = GUITAR_PC[root] != null ? GUITAR_PC[root] : 0;
+            return genBarreShape(rootPc, guitarQuality(suffix));
+        }
+        // Render a standard vertical chord-box diagram for any chord.
+        function mkGuitar(chord) {
+            const shape = getGuitarChordShape(chord);
+            const frets = shape.frets, fingers = shape.fingers;
+            const played = frets.filter(v => v > 0);
+            const maxF = played.length ? Math.max(...played) : 0;
+            const minF = played.length ? Math.min(...played) : 0;
+            // Show frets 1-5 from the nut unless the shape sits higher up the neck.
+            const startFret = (maxF <= 5) ? 1 : minF;
+            const showNut = startFret === 1;
+            const NF = 5, NS = 6, padL = 22, padR = 16, padT = 26, cw = 18, ch = 24;
+            const w = padL + (NS - 1) * cw + padR, h = padT + NF * ch + 16;
+            let svg = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="display:block;margin:0 auto;">`;
+            // nut (thick) when open position, else a position label
+            if (showNut) {
+                svg += `<rect x="${padL}" y="${padT - 3}" width="${(NS - 1) * cw}" height="4" fill="var(--text-primary)" rx="1"/>`;
+            } else {
+                svg += `<text x="${padL - 8}" y="${padT + ch * 0.7}" text-anchor="end" font-size="11" font-weight="700" fill="var(--text-secondary)">${startFret}fr</text>`;
+            }
+            // fret lines
+            for (let f = 0; f <= NF; f++) {
+                svg += `<line x1="${padL}" y1="${padT + f * ch}" x2="${padL + (NS - 1) * cw}" y2="${padT + f * ch}" stroke="var(--text-tertiary)" stroke-width="1"/>`;
+            }
+            // string lines (left = low E, right = high e)
+            for (let s = 0; s < NS; s++) {
+                svg += `<line x1="${padL + s * cw}" y1="${padT}" x2="${padL + s * cw}" y2="${padT + NF * ch}" stroke="var(--text-secondary)" stroke-width="1"/>`;
+            }
+            // open / muted markers above the nut
+            for (let s = 0; s < NS; s++) {
+                const x = padL + s * cw, v = frets[s];
+                if (v === -1) {
+                    svg += `<text x="${x}" y="${padT - 7}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text-tertiary)">×</text>`;
+                } else if (v === 0) {
+                    svg += `<circle cx="${x}" cy="${padT - 11}" r="4.5" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>`;
+                }
+            }
+            // barre: the lowest repeated fret is a barre only when every string it
+            // spans is pressed at or above it (no open/muted/lower notes inside the
+            // span) and it covers 3+ strings — this rejects e.g. open G (3 2 0 0 0 3).
+            const fretCount = {};
+            frets.forEach(v => { if (v > 0) fretCount[v] = (fretCount[v] || 0) + 1; });
+            let barreFret = 0;
+            Object.keys(fretCount).map(Number).sort((a, b) => a - b).forEach(v => {
+                if (barreFret || fretCount[v] < 2) return;
+                const strs = frets.map((fv, s) => fv === v ? s : -1).filter(s => s >= 0);
+                const lo = Math.min(...strs), hi = Math.max(...strs);
+                let contiguous = (hi - lo) >= 2;
+                for (let s = lo; s <= hi && contiguous; s++) if (frets[s] < v) contiguous = false;
+                if (contiguous) barreFret = v;
+            });
+            if (barreFret) {
+                const strs = frets.map((v, s) => v === barreFret ? s : -1).filter(s => s >= 0);
+                const x1 = padL + Math.min(...strs) * cw, x2 = padL + Math.max(...strs) * cw;
+                const cy = padT + (barreFret - startFret + 0.5) * ch;
+                svg += `<rect x="${x1 - 7}" y="${cy - 7}" width="${x2 - x1 + 14}" height="14" rx="7" fill="var(--accent)" opacity="0.85"/>`;
+            }
+            // finger dots (strings covered by the barre are left to the bar itself)
+            for (let s = 0; s < NS; s++) {
+                const v = frets[s];
+                if (v <= 0 || v === barreFret) continue;
+                const x = padL + s * cw, cy = padT + (v - startFret + 0.5) * ch;
+                svg += `<circle cx="${x}" cy="${cy}" r="7.5" fill="var(--accent)"/>`;
+                const fg = fingers[s];
+                if (fg > 0) svg += `<text x="${x}" y="${cy + 3.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${fg}</text>`;
+            }
+            svg += `</svg>`;
             return svg;
         }
 
@@ -3496,30 +3757,90 @@
             }
         }
 
-        function loadLearnSongToEditor() {
-            if (!currentLearnSong) return;
+        // Apply a learn song to the shared progression state. Used by both the
+        // dual-mode song player and the global Learn sheet so the logic stays in one place.
+        function applyLearnSong(song) {
             ensurePlaybackStopped();
             saveStateForUndo();
             // Reverse-transpose learn song chords to store in relative form
-            const learnKey = currentLearnSong.key;
-            const keyRoot = normalizeNote(learnKey.replace('m', ''));
+            const keyRoot = normalizeNote(song.key.replace('m', ''));
             const semitones = ALL_NOTES.indexOf(keyRoot);
             state.sections = [{
-                name: currentLearnSong.title.substring(0, 20),
+                name: song.title.substring(0, 20),
                 icon: '📚',
-                progression: semitones > 0 ? currentLearnSong.chords.map(c => transposeChord(c, -semitones)) : [...currentLearnSong.chords]
+                progression: semitones > 0 ? song.chords.map(c => transposeChord(c, -semitones)) : [...song.chords]
             }];
-            state.key = learnKey;
-            state.baseTempo = currentLearnSong.tempo;
-            state.tempo = Math.round(currentLearnSong.tempo * state.speedMultiplier);
-            state.timeSignature = currentLearnSong.timeSignature;
+            state.key = song.key;
+            state.baseTempo = song.tempo;
+            state.tempo = Math.round(song.tempo * state.speedMultiplier);
+            state.timeSignature = song.timeSignature;
             state.currentSection = 0;
             state.currentChordIndex = 0;
+        }
+        function loadLearnSongToEditor() {
+            if (!currentLearnSong) return;
+            applyLearnSong(currentLearnSong);
             closeSongPlayer();
             setMode('create');
             setProduceTab('mixer');
             updateBeatDotContainers(); renderAll();
             showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
+        }
+        // ===== Global Learn sheet (works in any UI mode) =====
+        let learnSheetFilter = 'all';
+        function renderLearnSheet() {
+            const list = document.getElementById('learnSheetList');
+            if (!list) return;
+            const filtered = learnSheetFilter === 'all'
+                ? publicDomainSongs
+                : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSheetFilter);
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                return;
+            }
+            list.innerHTML = filtered.map(song => {
+                const uniqueChords = [...new Set(song.chords)];
+                return `<div class="song-card" role="button" tabindex="0" onclick="loadLearnSongFromSheet('${song.id}')">
+                    <div class="song-header">
+                        <div class="song-title">${escapeHtml(song.title)}</div>
+                        <span class="song-difficulty ${song.difficulty.toLowerCase()}">${song.difficulty}</span>
+                    </div>
+                    <div class="song-meta">Key of ${song.key} | ${song.timeSignature} | ${song.tempo} BPM | ${song.year}</div>
+                    <div class="song-chords">${uniqueChords.map(c => `<span class="song-chord-pill">${escapeHtml(c)}</span>`).join('')}</div>
+                </div>`;
+            }).join('');
+        }
+        function filterLearnSheet(filter, btn) {
+            learnSheetFilter = filter;
+            document.querySelectorAll('#learnSheet .filter-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderLearnSheet();
+        }
+        function loadLearnSongFromSheet(id) {
+            const song = publicDomainSongs.find(s => s.id === id);
+            if (!song) return;
+            applyLearnSong(song);
+            closeSheet();
+            updateBeatDotContainers(); updateTempoDisplay(); renderAll();
+            showToast(`📚 Loaded "${song.title}"`);
+        }
+        // ===== Global Practice sheet state sync =====
+        function syncPracticeSheet() {
+            const sm = state.speedMultiplier;
+            [['pSpeed50', 0.5], ['pSpeed75', 0.75], ['pSpeed100', 1]].forEach(([id, v]) => {
+                const b = document.getElementById(id);
+                if (b) b.classList.toggle('active', Math.abs(sm - v) < 0.001);
+            });
+            const ci = document.getElementById('pCountInBtn');
+            if (ci) ci.classList.toggle('active', !!state.countInEnabled);
+            const asb = document.getElementById('pAutoSpeedBtn');
+            if (asb) { asb.textContent = state.autoSpeedUp ? 'ON' : 'OFF'; asb.classList.toggle('active', !!state.autoSpeedUp); }
+            const lbl = document.getElementById('pAutoSpeedLabel');
+            if (lbl) lbl.textContent = state.autoSpeedUp ? `🏃 Auto Speed-Up: +${state.autoSpeedIncrement} BPM/loop` : '🏃 Auto Speed-Up: OFF';
+            [['paspd3', 3], ['paspd5', 5], ['paspd10', 10]].forEach(([id, v]) => {
+                const b = document.getElementById(id);
+                if (b) b.classList.toggle('active', state.autoSpeedIncrement === v);
+            });
         }
 
         // ============ CUSTOM CHORD INPUT ============
@@ -3856,6 +4177,11 @@
         let earTrainingAnswer = null;
         let earTrainingScore = { correct: 0, streak: 0, total: 0 };
         const INTERVAL_NAMES = ['Unison', 'Minor 2nd', 'Major 2nd', 'Minor 3rd', 'Major 3rd', 'Perfect 4th', 'Tritone', 'Perfect 5th', 'Minor 6th', 'Major 6th', 'Minor 7th', 'Major 7th', 'Octave'];
+        // Chords used by the visual "Name That Chord" quiz — all render as clear,
+        // recognizable guitar shapes via mkGuitar().
+        const VISUAL_QUIZ_POOL = ['C', 'D', 'E', 'F', 'G', 'A', 'Am', 'Dm', 'Em', 'Fm', 'Gm', 'Bm',
+            'Cmaj7', 'Dmaj7', 'Gmaj7', 'Emaj7', 'Am7', 'Dm7', 'Em7',
+            'A7', 'D7', 'E7', 'G7', 'B7', 'C7', 'Asus4', 'Dsus4', 'Esus4', 'Asus2', 'Dsus2'];
 
         function openEarTraining(mode) {
             rememberFocusFor('earTraining');
@@ -3876,8 +4202,18 @@
             earTrainingScore = { correct: 0, streak: 0, total: 0 };
             document.getElementById('etTabChord').classList.toggle('active', mode === 'chord');
             document.getElementById('etTabInterval').classList.toggle('active', mode === 'interval');
-            document.getElementById('etTitle').textContent = mode === 'chord' ? 'Guess the Chord' : 'Name the Interval';
-            document.getElementById('etSubtitle').textContent = mode === 'chord' ? 'Listen and pick the correct chord' : 'Listen and name the interval between the two notes';
+            document.getElementById('etTabVisual').classList.toggle('active', mode === 'visual');
+            const titles = { chord: 'Guess the Chord', interval: 'Name the Interval', visual: 'Name That Chord' };
+            const subs = {
+                chord: 'Listen and pick the correct chord',
+                interval: 'Listen and name the interval between the two notes',
+                visual: 'Look at the guitar chord shape and pick its name'
+            };
+            document.getElementById('etTitle').textContent = titles[mode] || titles.chord;
+            document.getElementById('etSubtitle').textContent = subs[mode] || subs.chord;
+            const isVisual = mode === 'visual';
+            document.getElementById('etPlayBtn').style.display = isVisual ? 'none' : 'flex';
+            document.getElementById('etVisual').style.display = isVisual ? 'flex' : 'none';
             updateEarTrainingScore();
             generateEarTrainingRound();
         }
@@ -3889,6 +4225,13 @@
                 // Generate 3 wrong answers
                 const wrong = chordPool.filter(c => c !== earTrainingAnswer).sort(() => Math.random() - 0.5).slice(0, 3);
                 const options = [earTrainingAnswer, ...wrong].sort(() => Math.random() - 0.5);
+                renderEarTrainingOptions(options);
+            } else if (earTrainingMode === 'visual') {
+                earTrainingAnswer = VISUAL_QUIZ_POOL[Math.floor(Math.random() * VISUAL_QUIZ_POOL.length)];
+                const wrong = VISUAL_QUIZ_POOL.filter(c => c !== earTrainingAnswer).sort(() => Math.random() - 0.5).slice(0, 3);
+                const options = [earTrainingAnswer, ...wrong].sort(() => Math.random() - 0.5);
+                const vis = document.getElementById('etVisual');
+                vis.innerHTML = `<div class="et-visual-label">🎸 What chord is this?</div>${mkGuitar(earTrainingAnswer)}<button class="et-hear-btn" onclick="playEarTrainingChord()">🔊 Hear it</button>`;
                 renderEarTrainingOptions(options);
             } else {
                 const interval = Math.floor(Math.random() * 12) + 1; // 1-12 semitones
@@ -3912,7 +4255,7 @@
         }
         async function playEarTrainingChord() {
             await initAudio();
-            if (earTrainingMode === 'chord') {
+            if (earTrainingMode !== 'interval') {
                 playChord(earTrainingAnswer, '2n');
             } else {
                 // Play two notes sequentially
@@ -3924,11 +4267,11 @@
         }
         function checkEarTrainingAnswer(btn, answer) {
             earTrainingScore.total++;
-            const correct = earTrainingMode === 'chord' ? answer === earTrainingAnswer : answer === earTrainingAnswer.name;
+            const correct = earTrainingMode === 'interval' ? answer === earTrainingAnswer.name : answer === earTrainingAnswer;
             // Disable all buttons
             document.querySelectorAll('.et-option').forEach(b => {
                 b.classList.add('disabled');
-                const isCorrectBtn = earTrainingMode === 'chord' ? b.textContent === earTrainingAnswer : b.textContent === earTrainingAnswer.name;
+                const isCorrectBtn = earTrainingMode === 'interval' ? b.textContent === earTrainingAnswer.name : b.textContent === earTrainingAnswer;
                 if (isCorrectBtn) b.classList.add('correct');
             });
             if (correct) {
@@ -3939,7 +4282,7 @@
             } else {
                 earTrainingScore.streak = 0;
                 btn.classList.add('wrong');
-                const rightAnswer = earTrainingMode === 'chord' ? earTrainingAnswer : earTrainingAnswer.name;
+                const rightAnswer = earTrainingMode === 'interval' ? earTrainingAnswer.name : earTrainingAnswer;
                 document.getElementById('etFeedback').textContent = `❌ It was ${rightAnswer}`;
             }
             updateEarTrainingScore();
@@ -5273,6 +5616,8 @@
             if (type === 'key') renderKeyOptions();
             if (type === 'genre') renderGenreOptions();
             if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
+            if (type === 'learn') renderLearnSheet();
+            if (type === 'practice') syncPracticeSheet();
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
