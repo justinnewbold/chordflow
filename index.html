@@ -4372,6 +4372,7 @@
 
         function openEarTraining(mode) {
             rememberFocusFor('earTraining');
+            ensurePlaybackStopped(); // stop the progression so it doesn't play under the quiz
             earTrainingMode = mode || 'chord';
             earTrainingScore = { correct: 0, streak: 0, total: 0 };
             earTrainingAnswer = null;
