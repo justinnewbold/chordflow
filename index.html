@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.75</title>
+    <title>ChordFlow v0.76</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -823,6 +823,12 @@
         .fx-preset-btn { flex: 1; min-width: 48px; padding: 7px 4px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); text-align: center; }
         .fx-preset-btn:active { transform: scale(0.93); }
         .fx-preset-btn.active { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(191,90,242,0.1); }
+        /* ---- Scale Explorer ---- */
+        .scale-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+        .scale-chip { padding: 7px 12px; background: var(--bg-tertiary); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
+        .scale-chip:hover { border-color: var(--accent); }
+        .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px; }
     </style>
 </head>
 <body>
@@ -1398,6 +1404,10 @@
                     <div class="settings-label"><span class="settings-icon">🎯</span><span>Practice Speed</span></div>
                     <span style="color: var(--text-secondary);">›</span>
                 </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('scales')">
+                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Scale Explorer</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">Your Songs</div>
@@ -1425,6 +1435,37 @@
                     <span style="color: var(--text-secondary);">›</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Scale Explorer sheet (interactive scale fretboard with playback) -->
+    <div class="bottom-sheet" id="scalesSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Scale Explorer</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">Root Note</div>
+                <div class="scale-chip-row" id="scaleRootRow"></div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Scale / Mode</div>
+                <div class="scale-chip-row" id="scaleTypeRow"></div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Tuning</div>
+                <div class="scale-chip-row" id="scaleTuningRow"></div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Display</div>
+                <div class="scale-chip-row">
+                    <button class="scale-chip" id="scaleLabelNotes" onclick="setScaleLabel('notes')">Note Names</button>
+                    <button class="scale-chip" id="scaleLabelDegrees" onclick="setScaleLabel('degrees')">Scale Degrees</button>
+                    <button class="scale-chip" onclick="playCurrentScale()">▶︎ Play Scale</button>
+                </div>
+            </div>
+            <div id="scaleInfo" style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 12px;"></div>
+            <div id="scaleFretboard"></div>
+            <div style="text-align:center; font-size:11px; color: var(--text-tertiary); margin-top:6px;">Tap any note on the neck to hear it • scroll sideways for the full neck</div>
         </div>
     </div>
 
@@ -1700,7 +1741,7 @@
     <div class="metro-flash" id="metroFlash"></div>
 
     <script>
-        const VERSION = '0.75';
+        const VERSION = '0.76';
         // API key removed from client - calls routed through /api/gemini
 
         function escapeHtml(str) {
@@ -2558,6 +2599,152 @@
             svg += `<div style="display:flex;gap:14px;justify-content:center;margin-top:8px;font-size:11px;color:var(--text-secondary);">`
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:4px;"></span>Root</span>`
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-tertiary);border:1.5px solid var(--accent);vertical-align:middle;margin-right:4px;"></span>Chord tone</span>`
+                + `</div>`;
+            return svg;
+        }
+
+        // ============ SCALE EXPLORER (interactive scale fretboard) ============
+        const SCALE_CHROMA = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        const SCALE_ENH = { 'Db':'C#','Eb':'D#','Fb':'E','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B','E#':'F','B#':'C' };
+        const SCALE_DEFS = {
+            major:         { name: 'Major',            ints: [0,2,4,5,7,9,11] },
+            minor:         { name: 'Natural Minor',    ints: [0,2,3,5,7,8,10] },
+            majorPent:     { name: 'Major Pentatonic', ints: [0,2,4,7,9] },
+            minorPent:     { name: 'Minor Pentatonic', ints: [0,3,5,7,10] },
+            blues:         { name: 'Blues',            ints: [0,3,5,6,7,10] },
+            dorian:        { name: 'Dorian',           ints: [0,2,3,5,7,9,10] },
+            phrygian:      { name: 'Phrygian',         ints: [0,1,3,5,7,8,10] },
+            lydian:        { name: 'Lydian',           ints: [0,2,4,6,7,9,11] },
+            mixolydian:    { name: 'Mixolydian',       ints: [0,2,4,5,7,9,10] },
+            locrian:       { name: 'Locrian',          ints: [0,1,3,5,6,8,10] },
+            harmonicMinor: { name: 'Harmonic Minor',   ints: [0,2,3,5,7,8,11] },
+            melodicMinor:  { name: 'Melodic Minor',    ints: [0,2,3,5,7,9,11] }
+        };
+        const SCALE_DEGREE_LABELS = ['1','b2','2','b3','3','4','b5','5','b6','6','b7','7'];
+        const SCALE_TUNINGS = {
+            guitar6: { name: 'Guitar',        strings: ['E2','A2','D3','G3','B3','E4'] },
+            guitar7: { name: '7-String',      strings: ['B1','E2','A2','D3','G3','B3','E4'] },
+            dropD:   { name: 'Drop D',        strings: ['D2','A2','D3','G3','B3','E4'] },
+            bass4:   { name: 'Bass',          strings: ['E1','A1','D2','G2'] },
+            bass5:   { name: '5-String Bass', strings: ['B0','E1','A1','D2','G2'] }
+        };
+        const scaleState = { root: 0, type: 'major', tuning: 'guitar6', label: 'degrees', synced: false };
+
+        function scaleNoteIndex(n) { n = SCALE_ENH[n] || n; return SCALE_CHROMA.indexOf(n); }
+        function scaleParseOpen(s) {
+            const m = s.match(/^([A-G]#?)(-?\d)$/);
+            return { idx: SCALE_CHROMA.indexOf(m[1]), oct: parseInt(m[2], 10) };
+        }
+        // note+octave sounding at a given fret on an open string (for Tone.js playback)
+        function scaleNoteAtFret(openStr, fret) {
+            const o = scaleParseOpen(openStr);
+            const total = o.idx + o.oct * 12 + fret;
+            return SCALE_CHROMA[((total % 12) + 12) % 12] + Math.floor(total / 12);
+        }
+
+        function renderScaleExplorer() {
+            // On first open, default the root to the song's current key.
+            if (!scaleState.synced) {
+                const ri = scaleNoteIndex((state.key || 'C').replace(/m$/, ''));
+                if (ri >= 0) scaleState.root = ri;
+                scaleState.synced = true;
+            }
+            const rootRow = document.getElementById('scaleRootRow');
+            if (rootRow) rootRow.innerHTML = SCALE_CHROMA.map((n, i) =>
+                `<button class="scale-chip${i === scaleState.root ? ' active' : ''}" onclick="setScaleRoot(${i})">${n}</button>`).join('');
+            const typeRow = document.getElementById('scaleTypeRow');
+            if (typeRow) typeRow.innerHTML = Object.entries(SCALE_DEFS).map(([k, v]) =>
+                `<button class="scale-chip${k === scaleState.type ? ' active' : ''}" onclick="setScaleType('${k}')">${v.name}</button>`).join('');
+            const tuneRow = document.getElementById('scaleTuningRow');
+            if (tuneRow) tuneRow.innerHTML = Object.entries(SCALE_TUNINGS).map(([k, v]) =>
+                `<button class="scale-chip${k === scaleState.tuning ? ' active' : ''}" onclick="setScaleTuning('${k}')">${v.name}</button>`).join('');
+            const ln = document.getElementById('scaleLabelNotes'), ld = document.getElementById('scaleLabelDegrees');
+            if (ln) ln.classList.toggle('active', scaleState.label === 'notes');
+            if (ld) ld.classList.toggle('active', scaleState.label === 'degrees');
+            renderScaleInfo();
+            const fb = document.getElementById('scaleFretboard');
+            if (fb) fb.innerHTML = mkScaleFretboard();
+        }
+
+        function renderScaleInfo() {
+            const el = document.getElementById('scaleInfo'); if (!el) return;
+            const def = SCALE_DEFS[scaleState.type];
+            const rootName = SCALE_CHROMA[scaleState.root];
+            const notes = def.ints.map(iv => SCALE_CHROMA[(scaleState.root + iv) % 12]);
+            const degs = def.ints.map(iv => SCALE_DEGREE_LABELS[iv]);
+            el.innerHTML =
+                `<div style="font-weight:700;color:var(--text-primary);margin-bottom:3px;">${rootName} ${def.name}</div>`
+                + `<div style="color:var(--text-secondary);font-size:12px;">Notes: ${notes.join(' \u00b7 ')}</div>`
+                + `<div style="color:var(--text-tertiary);font-size:11px;margin-top:3px;">Formula: ${degs.join('  ')}</div>`;
+        }
+
+        function setScaleRoot(i) { scaleState.root = i; renderScaleExplorer(); }
+        function setScaleType(t) { scaleState.type = t; renderScaleExplorer(); }
+        function setScaleTuning(t) { scaleState.tuning = t; renderScaleExplorer(); }
+        function setScaleLabel(l) { scaleState.label = l; renderScaleExplorer(); }
+
+        async function playScaleNote(noteOct) {
+            try { await initAudio(); if (synth) synth.triggerAttackRelease(noteOct, '8n'); } catch (e) {}
+        }
+        async function playCurrentScale() {
+            try { await initAudio(); } catch (e) { return; }
+            const def = SCALE_DEFS[scaleState.type];
+            const base = 4;
+            const seq = def.ints.concat([12]).map(iv => {
+                const total = scaleState.root + iv + base * 12;
+                return SCALE_CHROMA[total % 12] + Math.floor(total / 12);
+            });
+            seq.forEach((n, i) => setTimeout(() => {
+                try { if (synth) synth.triggerAttackRelease(n, '8n'); } catch (e) {}
+            }, i * 220));
+        }
+
+        // Full-neck scale diagram: every scale tone across the chosen tuning, root highlighted.
+        function mkScaleFretboard() {
+            const def = SCALE_DEFS[scaleState.type];
+            const rootIdx = scaleState.root;
+            const degByNote = new Map();
+            def.ints.forEach(iv => degByNote.set((rootIdx + iv) % 12, SCALE_DEGREE_LABELS[iv]));
+            const display = SCALE_TUNINGS[scaleState.tuning].strings.slice().reverse(); // high string on top
+            const nStr = display.length;
+            const nFrets = 15, padL = 30, padR = 14, padT = 22, padB = 8;
+            const fretW = 34, strGap = 26;
+            const w = padL + nFrets * fretW + padR;
+            const h = padT + (nStr - 1) * strGap + padB;
+            const midY = padT + (nStr - 1) * strGap / 2;
+            let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="min-width:${w}px;height:auto;">`;
+            svg += `<rect x="${padL}" y="${padT}" width="${nFrets * fretW}" height="${(nStr - 1) * strGap}" fill="rgba(127,127,127,0.06)" rx="3"/>`;
+            [3,5,7,9,15].forEach(f => { svg += `<circle cx="${padL + (f - 0.5) * fretW}" cy="${midY}" r="4" fill="var(--text-tertiary)" opacity="0.45"/>`; });
+            svg += `<circle cx="${padL + 11.5 * fretW}" cy="${midY - strGap * 0.6}" r="4" fill="var(--text-tertiary)" opacity="0.45"/>`;
+            svg += `<circle cx="${padL + 11.5 * fretW}" cy="${midY + strGap * 0.6}" r="4" fill="var(--text-tertiary)" opacity="0.45"/>`;
+            for (let f = 0; f <= nFrets; f++) {
+                const x = padL + f * fretW;
+                svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + (nStr - 1) * strGap}" stroke="var(--text-secondary)" stroke-width="${f === 0 ? 3 : 1}"/>`;
+            }
+            for (let f = 1; f <= nFrets; f++) {
+                svg += `<text x="${padL + (f - 0.5) * fretW}" y="${padT - 7}" text-anchor="middle" font-size="9" fill="var(--text-tertiary)">${f}</text>`;
+            }
+            display.forEach((openStr, i) => {
+                const y = padT + i * strGap;
+                svg += `<line x1="${padL}" y1="${y}" x2="${padL + nFrets * fretW}" y2="${y}" stroke="var(--text-tertiary)" stroke-width="1"/>`;
+                const openIdx = scaleParseOpen(openStr).idx;
+                for (let f = 0; f <= nFrets; f++) {
+                    const nIdx = (openIdx + f) % 12;
+                    if (!degByNote.has(nIdx)) continue;
+                    const isRoot = nIdx === rootIdx;
+                    const cx = f === 0 ? padL - 15 : padL + (f - 0.5) * fretW;
+                    const label = scaleState.label === 'degrees' ? degByNote.get(nIdx) : SCALE_CHROMA[nIdx];
+                    const noteOct = scaleNoteAtFret(openStr, f);
+                    svg += `<g style="cursor:pointer;" onclick="playScaleNote('${noteOct}')">`;
+                    svg += `<circle cx="${cx}" cy="${y}" r="9.5" fill="${isRoot ? 'var(--accent)' : 'var(--bg-tertiary)'}" stroke="var(--accent)" stroke-width="1.5"/>`;
+                    svg += `<text x="${cx}" y="${y + 3}" text-anchor="middle" font-size="${label.length > 1 ? 7 : 8}" font-weight="700" fill="${isRoot ? '#fff' : 'var(--text-primary)'}" style="pointer-events:none;">${label}</text>`;
+                    svg += `</g>`;
+                }
+            });
+            svg += `</svg>`;
+            svg += `<div style="display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:11px;color:var(--text-secondary);">`
+                + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:4px;"></span>Root</span>`
+                + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-tertiary);border:1.5px solid var(--accent);vertical-align:middle;margin-right:4px;"></span>Scale tone</span>`
                 + `</div>`;
             return svg;
         }
@@ -5618,6 +5805,7 @@
             if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
             if (type === 'learn') renderLearnSheet();
             if (type === 'practice') syncPracticeSheet();
+            if (type === 'scales') renderScaleExplorer();
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
