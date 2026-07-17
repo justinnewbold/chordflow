@@ -367,6 +367,18 @@
         .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
         .diagram-hear { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--bg-tertiary); border-radius: var(--radius-full); padding: 5px 14px; margin-bottom: var(--spacing-lg); cursor: pointer; user-select: none; transition: transform var(--transition-fast); }
         .diagram-hear:active { transform: scale(0.94); }
+        /* Guitar Chord Sheet & Tuner */
+        .chord-sheet-hint { font-size: 12px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-md); }
+        .chord-sheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: var(--spacing-sm); }
+        .chord-sheet-card { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 10px 6px 6px; text-align: center; cursor: pointer; user-select: none; transition: transform var(--transition-fast); }
+        .chord-sheet-card:active { transform: scale(0.95); }
+        .chord-sheet-card .cs-name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .chord-sheet-card svg { max-width: 100%; height: auto; }
+        .tuner-strings { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .tuner-string { display: flex; align-items: center; justify-content: space-between; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); padding: 14px 18px; cursor: pointer; user-select: none; transition: all var(--transition-fast); }
+        .tuner-string:active { transform: scale(0.97); border-color: var(--accent); }
+        .tuner-string .ts-note { font-size: 22px; font-weight: 800; }
+        .tuner-string .ts-label { font-size: 13px; color: var(--text-secondary); }
         .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
 
         /* Shortcuts Modal */
@@ -1335,6 +1347,17 @@
                 </div>
             </div>
             <div class="settings-group">
+                <div class="settings-group-title">Guitar</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
+                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
+                    <span style="color: var(--text-secondary);">View ›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
+                    <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
+                    <span style="color: var(--text-secondary);">Open ›</span>
+                </div>
+            </div>
+            <div class="settings-group">
                 <div class="settings-group-title">Ear Training</div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
                     <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
@@ -1394,6 +1417,17 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">🧰 Tools</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
+            <div class="settings-group">
+                <div class="settings-group-title">🎸 Guitar</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
+                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
+                    <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
             <div class="settings-group">
                 <div class="settings-group-title">Learn &amp; Practice</div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openSheet('learn')">
@@ -1507,6 +1541,26 @@
                     <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10); syncPracticeSheet()" id="paspd10">+10</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Guitar Chord Sheet (all chords in the current progression as guitar diagrams) -->
+    <div class="bottom-sheet" id="chordSheetSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Chord Sheet</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="chord-sheet-hint" id="chordSheetHint">Every chord in your progression — tap any shape to hear it</div>
+            <div class="chord-sheet-grid" id="chordSheetGrid"></div>
+        </div>
+    </div>
+
+    <!-- Guitar Tuner (reference pitches for standard tuning) -->
+    <div class="bottom-sheet" id="tunerSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="chord-sheet-hint">Standard tuning — tap a string to hear its reference pitch</div>
+            <div class="tuner-strings" id="tunerStrings"></div>
         </div>
     </div>
 
@@ -4012,6 +4066,37 @@
             updateBeatDotContainers(); updateTempoDisplay(); renderAll();
             showToast(`📚 Loaded "${song.title}"`);
         }
+        // ===== Guitar Chord Sheet: every chord in the current progression as a diagram =====
+        function renderChordSheet() {
+            const grid = document.getElementById('chordSheetGrid');
+            if (!grid) return;
+            const unique = [...new Set(getTransposedProgression())];
+            grid.innerHTML = unique.map(ch =>
+                `<div class="chord-sheet-card" role="button" tabindex="0" onclick="playChord('${ch.replace(/'/g, "\\'")}', '2n')">
+                    <div class="cs-name">${escapeHtml(ch)}</div>${mkGuitar(ch)}
+                </div>`).join('');
+        }
+        // ===== Guitar Tuner: reference pitches for standard tuning =====
+        const TUNER_STRINGS = [
+            { note: 'E2', label: '6th string · Low E' },
+            { note: 'A2', label: '5th string · A' },
+            { note: 'D3', label: '4th string · D' },
+            { note: 'G3', label: '3rd string · G' },
+            { note: 'B3', label: '2nd string · B' },
+            { note: 'E4', label: '1st string · High E' }
+        ];
+        function renderTuner() {
+            const wrap = document.getElementById('tunerStrings');
+            if (!wrap) return;
+            wrap.innerHTML = TUNER_STRINGS.map(s =>
+                `<div class="tuner-string" role="button" tabindex="0" onclick="playTunerNote('${s.note}')">
+                    <span class="ts-note">${s.note.replace(/\d/, '')}</span><span class="ts-label">${s.label}</span>
+                </div>`).join('');
+        }
+        async function playTunerNote(note) {
+            await initAudio();
+            try { synth.triggerAttackRelease(note, '2n'); } catch (e) { console.warn('Tuner note error:', e); }
+        }
         // ===== Global Practice sheet state sync =====
         function syncPracticeSheet() {
             const sm = state.speedMultiplier;
@@ -5819,6 +5904,8 @@
             if (type === 'learn') renderLearnSheet();
             if (type === 'practice') syncPracticeSheet();
             if (type === 'scales') renderScaleExplorer();
+            if (type === 'chordSheet') renderChordSheet();
+            if (type === 'tuner') renderTuner();
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
