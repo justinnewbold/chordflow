@@ -379,6 +379,18 @@
         .tuner-string:active { transform: scale(0.97); border-color: var(--accent); }
         .tuner-string .ts-note { font-size: 22px; font-weight: 800; }
         .tuner-string .ts-label { font-size: 13px; color: var(--text-secondary); }
+        .strum-option { background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: var(--spacing-sm); cursor: pointer; user-select: none; transition: all var(--transition-fast); }
+        .strum-option:active { transform: scale(0.98); }
+        .strum-option.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.12); }
+        .strum-option-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+        .strum-name { font-size: 16px; font-weight: 700; }
+        .strum-desc { font-size: 12px; color: var(--text-secondary); }
+        .strum-arrows { display: inline-flex; gap: 3px; font-variant-numeric: tabular-nums; }
+        .strum-arrow { width: 14px; text-align: center; font-size: 15px; font-weight: 700; }
+        .strum-arrow.on { color: var(--accent); }
+        .strum-arrow.off { color: var(--text-tertiary); opacity: 0.5; }
+        .strum-arrow.and.on { color: var(--accent-orange); }
+        .strum-arrows-off { color: var(--text-tertiary); font-size: 15px; }
         .diagram-close { padding: 12px 32px; background: var(--accent); border: none; border-radius: var(--radius-full); color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: var(--spacing-lg); }
 
         /* Shortcuts Modal */
@@ -1352,6 +1364,10 @@
                     <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
                     <span style="color: var(--text-secondary);">View ›</span>
                 </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('strum')">
+                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Strumming Pattern</span></div>
+                    <span style="color: var(--text-secondary);">Choose ›</span>
+                </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
                     <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
                     <span style="color: var(--text-secondary);">Open ›</span>
@@ -1421,6 +1437,10 @@
                 <div class="settings-group-title">🎸 Guitar</div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
                     <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('strum')">
+                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Strumming Pattern</span></div>
                     <span style="color: var(--text-secondary);">›</span>
                 </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
@@ -1561,6 +1581,16 @@
         <div class="sheet-body">
             <div class="chord-sheet-hint">Standard tuning — tap a string to hear its reference pitch</div>
             <div class="tuner-strings" id="tunerStrings"></div>
+        </div>
+    </div>
+
+    <!-- Strumming pattern picker (applies during playback) -->
+    <div class="bottom-sheet" id="strumSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Strumming Pattern</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-body">
+            <div class="chord-sheet-hint">Pick a rhythm — it plays while the progression is running</div>
+            <div id="strumList"></div>
         </div>
     </div>
 
@@ -2243,6 +2273,7 @@
             undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
             playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
+            strumId: safeGetItem('chordflow-strum') || 'off',
             theme: safeGetItem('chordflow-theme') || 'dark',
             abLoopStart: -1, abLoopEnd: -1,
             autoSpeedUp: false, autoSpeedIncrement: 5,
@@ -2258,6 +2289,50 @@
         // Audio
         let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
         let playInterval = null, beatInterval = null, arpeggioTimeouts = [];
+        let strumTimeouts = [];
+
+        // ===== Strumming patterns =====
+        // Each pattern is 8 eighth-note slots across a 4/4 measure (index 0 = beat 1
+        // downbeat, 1 = the "&", 2 = beat 2, ...). 'D' = down-strum, 'U' = up-strum,
+        // '' = no strum. For other time signatures the slots are indexed modulo length.
+        const STRUM_PATTERNS = [
+            { id: 'off',   name: 'Off', desc: 'Single strum per chord', slots: null },
+            { id: 'basic', name: 'Basic', desc: 'Quarter-note downstrokes', slots: ['D','','D','','D','','D',''] },
+            { id: 'pop',   name: 'Pop', desc: 'D · D U · U D U', slots: ['D','','D','U','','U','D','U'] },
+            { id: 'folk',  name: 'Folk', desc: 'D · D U D · D U', slots: ['D','','D','U','D','','D','U'] },
+            { id: 'rock',  name: 'Rock', desc: 'Driving eighth downstrokes', slots: ['D','D','D','D','D','D','D','D'] }
+        ];
+        function getStrumPattern() { return STRUM_PATTERNS.find(p => p.id === state.strumId) || STRUM_PATTERNS[0]; }
+        function getStrumSlots() { const p = getStrumPattern(); return p && p.slots; }
+        // Play a chord as a quick low-to-high (down) or high-to-low (up) strum.
+        function strumChord(chord, direction) {
+            if (!synth) return;
+            const notes = getChordNotes(chord);
+            const ordered = direction === 'up' ? [...notes].reverse() : notes;
+            const gap = 26; // ms between adjacent strings
+            ordered.forEach((note, i) => {
+                strumTimeouts.push(setTimeout(() => {
+                    try { synth.triggerAttackRelease(note, '4n'); } catch (e) {}
+                }, i * gap));
+            });
+            if (direction !== 'up' && state.bassEnabled && bassSynth) {
+                try { bassSynth.triggerAttackRelease(notes[0].replace(/\d/, '') + '2', '8n'); } catch (e) {}
+            }
+        }
+        // Fire the strums scheduled for a given beat of the current measure.
+        function strumBeat(beatIndex) {
+            const slots = getStrumSlots();
+            if (!slots) return;
+            const chord = getTransposedProgression()[state.currentChordIndex];
+            if (!chord) return;
+            const beatMs = 60000 / state.tempo;
+            const on = slots[(beatIndex * 2) % slots.length];
+            const off = slots[(beatIndex * 2 + 1) % slots.length];
+            if (on === 'D' || on === 'U') strumChord(chord, on === 'U' ? 'up' : 'down');
+            if (off === 'D' || off === 'U') {
+                strumTimeouts.push(setTimeout(() => strumChord(chord, off === 'U' ? 'up' : 'down'), beatMs / 2));
+            }
+        }
 
         async function initAudio() {
             if (audioInit) return;
@@ -3752,7 +3827,8 @@
             playMetronomeTick(true);
             playDrumBeat(0);
             updateBeatDots(0);
-            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
+            if (getStrumSlots()) strumBeat(0);
+            else playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             state.currentBeat = 1;
 
             // Track absolute scheduled beat times to prevent drift from setTimeout imprecision
@@ -3773,6 +3849,7 @@
                     playMetronomeTick(state.currentBeat === 0);
                     playDrumBeat(state.currentBeat);
                     updateBeatDots(state.currentBeat);
+                    if (getStrumSlots()) strumBeat(state.currentBeat);
                     state.currentBeat++;
                     if (state.currentBeat >= getBeatsPerMeasure()) {
                         state.currentBeat = 0;
@@ -3804,7 +3881,7 @@
                     state.currentChordIndex = 0;
                     renderAll();
                     showToast(`🎼 ${state.sections[state.currentSection].icon} ${state.sections[state.currentSection].name}`);
-                    playChord(getTransposedProgression()[0], '2n');
+                    if (!getStrumSlots()) playChord(getTransposedProgression()[0], '2n');
                     return;
                 }
                 if (state.isLooping || hasABLoop) {
@@ -3817,13 +3894,14 @@
                     if (handleAutoSpeedUp()) return true; // restartPlayback already played the chord
                 } else { stopPlayback(); return true; }
             }
-            playChord(getTransposedProgression()[state.currentChordIndex], '2n');
+            if (!getStrumSlots()) playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             renderPlaybackTick();
         }
         function stopPlaybackTimers() {
             if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
             arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
+            strumTimeouts.forEach(t => clearTimeout(t)); strumTimeouts = [];
         }
         function ensurePlaybackStopped() {
             if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); }
@@ -4096,6 +4174,32 @@
         async function playTunerNote(note) {
             await initAudio();
             try { synth.triggerAttackRelease(note, '2n'); } catch (e) { console.warn('Tuner note error:', e); }
+        }
+        // ===== Strumming pattern picker =====
+        function strumArrows(slots) {
+            if (!slots) return '<span class="strum-arrows-off">— single strum —</span>';
+            return '<span class="strum-arrows">' + slots.map((s, i) => {
+                const ch = s === 'D' ? '↓' : s === 'U' ? '↑' : '·';
+                const kind = s ? 'on' : 'off';
+                const pos = i % 2 === 0 ? 'beat' : 'and';
+                return `<span class="strum-arrow ${kind} ${pos}">${ch}</span>`;
+            }).join('') + '</span>';
+        }
+        function renderStrumSheet() {
+            const wrap = document.getElementById('strumList');
+            if (!wrap) return;
+            wrap.innerHTML = STRUM_PATTERNS.map(p => `
+                <div class="strum-option ${state.strumId === p.id ? 'active' : ''}" role="button" tabindex="0" onclick="setStrumPattern('${p.id}')">
+                    <div class="strum-option-head"><span class="strum-name">${p.name}</span>${strumArrows(p.slots)}</div>
+                    <div class="strum-desc">${p.desc}</div>
+                </div>`).join('');
+        }
+        function setStrumPattern(id) {
+            state.strumId = id;
+            safeSetItem('chordflow-strum', id);
+            renderStrumSheet();
+            const p = getStrumPattern();
+            showToast(id === 'off' ? '🎸 Strumming off' : `🎸 Strum: ${p.name}`);
         }
         // ===== Global Practice sheet state sync =====
         function syncPracticeSheet() {
@@ -5906,6 +6010,7 @@
             if (type === 'scales') renderScaleExplorer();
             if (type === 'chordSheet') renderChordSheet();
             if (type === 'tuner') renderTuner();
+            if (type === 'strum') renderStrumSheet();
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
