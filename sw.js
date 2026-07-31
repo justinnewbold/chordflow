@@ -1,5 +1,5 @@
 // ChordFlow Service Worker v12.1 - Enhanced Offline Support
-const CACHE_NAME = 'chordflow-v122';
+const CACHE_NAME = 'chordflow-v123';
 
 // Only cache successful, non-opaque responses so a 404/500 doesn't poison the cache.
 function isCacheable(response) {
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   '/index.html',
   '/manifest.json',
   '/icon-192.svg',
+  '/icon-180.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js'
 ];
