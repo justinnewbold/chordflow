@@ -9,7 +9,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
-    <link rel="apple-touch-icon" href="/icon-192.svg">
+    <!-- iOS requires a raster PNG for home-screen icons; SVG renders blank -->
+    <link rel="apple-touch-icon" href="/icon-180.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,6 +29,12 @@
             --transition-fast: 0.15s ease; --transition-smooth: 0.3s cubic-bezier(0.32, 0.72, 0, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* iOS: Safari ignores user-scalable=no, so kill double-tap-zoom on controls
+           explicitly (manipulation still allows scroll/pinch on containers), and
+           suppress the long-press callout/text-selection on tap targets — chord
+           cards use long-press/drag gestures of their own. Inputs stay selectable. */
+        button, [role="button"], [role="switch"], [role="radio"], .chord-card, .beat-dot, input[type="range"] { touch-action: manipulation; }
+        button, [role="button"], [role="switch"], [role="radio"], .chord-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
         html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: 100dvh; overflow: hidden; overscroll-behavior: none; }
         button { font-family: var(--font); }
 
@@ -328,7 +335,7 @@
         /* Bottom Sheets */
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .sheet-overlay.active { opacity: 1; pointer-events: auto; }
-        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 600; transform: translateY(100%); transition: transform var(--transition-smooth); max-height: 85vh; display: flex; flex-direction: column; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 600; transform: translateY(100%); transition: transform var(--transition-smooth); max-height: 85vh; max-height: 85dvh; display: flex; flex-direction: column; }
         .bottom-sheet.active { transform: translateY(0); }
         .sheet-handle { width: 36px; height: 4px; background: var(--separator); border-radius: 2px; margin: var(--spacing-sm) auto; }
         .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--separator); }
@@ -3834,6 +3841,7 @@
         }
         function startPlayback() {
             state.currentBeat = 0;
+            acquireWakeLock();
 
             // Play first beat immediately with chord
             playMetronomeTick(true);
@@ -3916,11 +3924,12 @@
             strumTimeouts.forEach(t => clearTimeout(t)); strumTimeouts = [];
         }
         function ensurePlaybackStopped() {
-            if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); }
+            if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); releaseWakeLock(); }
         }
         function stopPlayback() {
             state.isPlaying = false;
             stopPlaybackTimers();
+            releaseWakeLock();
             state.currentChordIndex = 0;
             state.currentBeat = 0;
             state.arrangementSectionIndex = 0;
@@ -3936,6 +3945,45 @@
             stopPlaybackTimers();
             if (state.isPlaying) startPlayback();
         }
+
+        // ============ MOBILE / iOS LIFECYCLE ============
+        // Keep the screen awake while the progression is playing (practice mode!).
+        // Screen Wake Lock is supported on iOS 16.4+ and Android Chrome; elsewhere
+        // this is a silent no-op.
+        let screenWakeLock = null;
+        async function acquireWakeLock() {
+            if (!('wakeLock' in navigator) || screenWakeLock) return;
+            try { screenWakeLock = await navigator.wakeLock.request('screen'); }
+            catch (e) { screenWakeLock = null; }
+        }
+        function releaseWakeLock() {
+            if (screenWakeLock) { try { screenWakeLock.release(); } catch (e) {} screenWakeLock = null; }
+        }
+        // Backgrounding the app (app switch, lock, Safari tab change) must stop the
+        // music: setTimeout-driven playback would otherwise fire erratically in the
+        // background and resume mid-measure chaos on return.
+        function handleAppHidden() {
+            ensurePlaybackStopped();
+            if (typeof stopLearnSongPlay === 'function') stopLearnSongPlay();
+            releaseWakeLock();
+        }
+        // iOS suspends the AudioContext after interruptions (phone call, Siri,
+        // backgrounding). Without an explicit resume, sound stays dead until the
+        // page is reloaded — the classic "PWA went silent" bug.
+        function resumeAudioContext() {
+            try {
+                if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state === 'suspended') {
+                    Tone.context.resume();
+                }
+            } catch (e) {}
+        }
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) handleAppHidden();
+            else resumeAudioContext();
+        });
+        window.addEventListener('pagehide', handleAppHidden);
+        // Belt-and-braces: also resume on the next touch after an interruption.
+        document.addEventListener('touchstart', resumeAudioContext, { passive: true });
 
         // ============ LEARN SONGS ============
         let learnSongsFilter = 'all';
