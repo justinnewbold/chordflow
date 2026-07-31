@@ -62,6 +62,15 @@
         .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: var(--spacing-sm); }
         .header-actions { display: flex; gap: var(--spacing-sm); }
         .header-btn { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--bg-tertiary); border: none; color: var(--text-primary); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-fast); }
+        /* Keep the home-screen header on one line as more quick-access icons are added:
+           the icon row never shrinks; only the app title yields (and ellipsizes) on
+           very narrow phones so the page never scrolls sideways. */
+        .header-actions, .sf-header-actions, .cd-header-actions { flex-shrink: 0; }
+        .logo, .sf-logo, .cd-logo { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        @media (max-width: 430px) {
+            .header-btn, .sf-header-btn, .cd-header-btn { width: 32px; height: 32px; font-size: 16px; }
+            .header-actions, .sf-header-actions, .cd-header-actions { gap: 5px; }
+        }
         .header-btn:active { transform: scale(0.92); }
         .header-btn.active { background: var(--accent); }
         .mode-toggle { position: fixed; top: calc(var(--safe-top) + 70px); left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border-radius: var(--radius-full); padding: 4px; display: flex; z-index: 200; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
@@ -902,6 +911,7 @@
             <div class="header-actions">
                 <button class="header-btn" onclick="openHistory()" title="Progression History">🕐</button>
                 <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
                 <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome">🥁</button>
                 <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
                 <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
@@ -1217,6 +1227,7 @@
             <div class="sf-header-actions">
                 <button class="sf-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="sf-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="sf-header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
                 <button class="sf-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="sf-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
@@ -1271,6 +1282,7 @@
             <div class="cd-header-actions">
                 <button class="cd-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="cd-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
+                <button class="cd-header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
                 <button class="cd-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
                 <button class="cd-header-btn" onclick="openSheet('key')">🎵</button>
                 <button class="cd-header-btn" onclick="openSheet('settings')">⚙️</button>
