@@ -1379,7 +1379,7 @@
                     <span style="color: var(--text-secondary);">?</span>
                 </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="resetOnboarding()">
-                    <div class="settings-label"><span class="settings-icon">🔄</span><span>Reset Onboarding</span></div>
+                    <div class="settings-label"><span class="settings-icon">👋</span><span>Welcome Screen</span></div>
                 </div>
             </div>
             <div class="settings-group">
@@ -1643,6 +1643,7 @@
             <div class="diagram-chord-name" id="diagramChordName" role="button" tabindex="0" title="Tap to hear this chord" onclick="playDiagramChord()">C</div>
             <div class="diagram-notes" id="diagramNotes">C - E - G</div>
             <div class="diagram-hear" role="button" tabindex="0" onclick="playDiagramChord()">🔊 Tap to hear</div>
+            <div class="diagram-hear" id="diagramEditBtn" role="button" tabindex="0" style="display:none;margin-left:8px;" onclick="editDiagramChord()">✏️ Edit</div>
             <div style="display:flex;gap:4px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;">
                 <button class="dgm-tab active" onclick="switchDgm('guitar',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 Guitar</button>
                 <button class="dgm-tab" onclick="switchDgm('guitar7',this)" style="padding:6px 12px;background:var(--bg-tertiary);border:none;border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-weight:600;cursor:pointer;">🎸 7-String</button>
@@ -2593,7 +2594,6 @@
             resetABLoopState();
             renderAll();
             saveToHistory();
-            showToast(`🎲 Generated ${state.genre} progression`);
         }
         function getChordColorClass(chord) {
             // Order matters: check the most-specific suffixes first.
@@ -2648,6 +2648,27 @@
             state.redoStack = [];
             updateUndoButtons();
         }
+        // Session auto-save: the working song (progression, key, tempo, sections)
+        // survives app restarts — iOS evicts PWAs from memory aggressively, and
+        // before this only an explicit Save kept your work. Reuses the undo
+        // snapshot shape; restored in init(), flushed immediately on app-hide.
+        let autosaveTimer = null;
+        function scheduleAutosave() {
+            clearTimeout(autosaveTimer);
+            autosaveTimer = setTimeout(() => safeSetItem('chordflow-session', snapshotState()), 400);
+        }
+        function flushAutosave() { clearTimeout(autosaveTimer); safeSetItem('chordflow-session', snapshotState()); }
+        function restoreSession() {
+            const saved = safeJsonParse('chordflow-session');
+            if (!saved || !Array.isArray(saved.sections) || saved.sections.length === 0) return false;
+            try {
+                Object.assign(state, saved);
+                state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
+                state.currentSection = Math.min(saved.currentSection || 0, state.sections.length - 1);
+                state.currentChordIndex = 0;
+                return true;
+            } catch (e) { return false; }
+        }
         function undo() {
             if (state.undoStack.length === 0) return;
             ensurePlaybackStopped();
@@ -2676,9 +2697,17 @@
 
         // Chord Diagram
         let currentDiagramChord = null;
-        function showChordDiagram(chord) {
+        let currentDiagramIndex = -1;
+        function showChordDiagram(chord, index) {
             rememberFocusFor('chordDiagram');
             currentDiagramChord = chord;
+            // When opened from a progression chord we know its position, which
+            // makes the visible Edit path possible (double-tap-to-edit on the card
+            // is undiscoverable on mobile). Other callers (quiz, chord sheet) don't
+            // pass an index, so the Edit pill hides.
+            currentDiagramIndex = (typeof index === 'number') ? index : -1;
+            const editBtn = document.getElementById('diagramEditBtn');
+            if (editBtn) editBtn.style.display = currentDiagramIndex >= 0 ? 'inline-block' : 'none';
             document.getElementById('diagramChordName').textContent = chord;
             document.getElementById('diagramNotes').textContent = getChordNotes(chord).map(n => n.replace(/\d/, '')).join(' - ');
             document.getElementById('guitarDgm').innerHTML = mkGuitar(chord);
@@ -2698,6 +2727,11 @@
         }
         function closeChordDiagram() { document.getElementById('chordDiagramModal').classList.remove('active'); restoreFocusFor('chordDiagram'); }
         function playDiagramChord() { if (currentDiagramChord) playChord(currentDiagramChord, '2n'); }
+        function editDiagramChord() {
+            if (currentDiagramIndex < 0) return;
+            closeChordDiagram();
+            openChordEditModal(currentDiagramIndex);
+        }
         function switchDgm(view, btn) {
             document.querySelectorAll('.dgm-tab').forEach(t => t.classList.remove('active'));
             if (btn) btn.classList.add('active');
@@ -3110,13 +3144,11 @@
             const btn = document.getElementById(`speed${multiplier * 100}`);
             if (btn) btn.classList.add('active');
             if (state.isPlaying) restartPlayback();
-            showToast(`⏱️ Speed: ${multiplier * 100}%`);
         }
         function toggleCountIn() {
             state.countInEnabled = !state.countInEnabled;
             const btn = document.getElementById('countInBtn');
             if (btn) btn.classList.toggle('active', state.countInEnabled);
-            showToast(state.countInEnabled ? '📢 Count-in ON' : '📢 Count-in OFF');
         }
         let tapTimes = [];
         function handleTempoTap() {
@@ -3425,9 +3457,13 @@
             setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
         }
         function resetOnboarding() {
-            localStorage.removeItem('chordflow-onboarding');
-            closeSheet(); showToast('🔄 Reloading...');
-            setTimeout(() => location.reload(), 500);
+            // Show the welcome/interface-picker overlay on demand (first launch no
+            // longer shows it, so this opens it directly instead of reloading).
+            closeSheet();
+            selectOnboardingMode(state.uiMode);
+            const ob = document.getElementById('onboarding');
+            ob.classList.remove('hidden');
+            ob.style.display = 'flex';
         }
 
         // UI Modes
@@ -3454,7 +3490,6 @@
             state.uiMode = mode;
             safeSetItem('chordflow-ui', mode);
             activateUI(); closeSheet();
-            showToast({ dual: '📱 Dual Mode', sheet: '📄 Sheet Flow', cards: '🃏 Card Deck' }[mode]);
         }
         function updateUISelectors() {
             const optDual = document.getElementById('uiOptDual');
@@ -3689,7 +3724,7 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')})">🎸</button>
+                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')}, ${i})">🎸</button>
                     <div class="chord-name">${escapeHtml(chord)}</div>
                     <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
@@ -3994,6 +4029,7 @@
             ensurePlaybackStopped();
             if (typeof stopLearnSongPlay === 'function') stopLearnSongPlay();
             releaseWakeLock();
+            flushAutosave();
         }
         // iOS suspends the AudioContext after interruptions (phone call, Siri,
         // backgrounding). Without an explicit resume, sound stays dead until the
@@ -4309,8 +4345,6 @@
             state.strumId = id;
             safeSetItem('chordflow-strum', id);
             renderStrumSheet();
-            const p = getStrumPattern();
-            showToast(id === 'off' ? '🎸 Strumming off' : `🎸 Strum: ${p.name}`);
         }
         // ===== Global Practice sheet state sync =====
         function syncPracticeSheet() {
@@ -4487,7 +4521,6 @@
             safeSetItem('chordflow-theme', state.theme);
             const label = document.getElementById('themeLabel');
             if (label) label.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
-            showToast(state.theme === 'dark' ? '🌙 Dark mode' : '☀️ Light mode');
         }
         // Apply saved theme on load
         if (state.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
@@ -6039,6 +6072,7 @@
             const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+            scheduleAutosave();
         }
 
         // Lightweight per-beat / per-index update for the playback hot path. Only
@@ -6692,10 +6726,20 @@
             const loaded = loadSharedProgression();
             if (loaded) showToast('🔗 Loaded shared progression!');
             else if (loadSharedSongFromUrl()) { /* loadCloudSong shows its own toast */ }
+            else restoreSession(); // otherwise pick up exactly where the user left off
             // Apply theme
             const themeLabel = document.getElementById('themeLabel');
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
-            if (!state.onboardingComplete) { document.getElementById('onboarding').style.display = 'flex'; selectOnboardingMode(state.uiMode); }
+            // First launch: no interface quiz — start straight in Dual Mode with a
+            // playable progression already loaded. The mode picker stays reachable
+            // via Settings (UI Mode / Choose Interface Style).
+            if (!state.onboardingComplete) {
+                safeSetItem('chordflow-onboarding', 'complete');
+                state.onboardingComplete = true;
+                document.getElementById('onboarding').style.display = 'none';
+                activateUI();
+                showToast('👋 Welcome! Press ▶️ to hear your progression');
+            }
             else { document.getElementById('onboarding').style.display = 'none'; activateUI(); }
             console.log(`🎵 ChordFlow v${VERSION} - Chord Subs, Favorites, FX Presets, Sec.Dominants, History, COF, Mood, Diatonic, Auth, Cloud, Community, Templates, Drums, MIDI, PDF, WAV`);
         }
