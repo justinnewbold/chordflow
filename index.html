@@ -35,6 +35,25 @@
            cards use long-press/drag gestures of their own. Inputs stay selectable. */
         button, [role="button"], [role="switch"], [role="radio"], .chord-card, .beat-dot, input[type="range"] { touch-action: manipulation; }
         button, [role="button"], [role="switch"], [role="radio"], .chord-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+        /* Small controls get an invisible expanded hit area so their effective touch
+           target reaches Apple's 44pt minimum without changing the visual layout.
+           (.chord-diagram-btn is already position:absolute, so no relative needed.) */
+        .section-delete, .saved-song-delete, .sheet-close, .sf-panel-close { position: relative; }
+        .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after, .sf-panel-close::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+        .section-delete::after { content: ''; position: absolute; inset: -12px; border-radius: 50%; }
+        /* Respect the OS-level reduced-motion setting: collapse animations and
+           transitions to effectively instant. */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
+        /* Phone held sideways (music-stand position): compact the chrome so the
+           content — especially fretboard views in sheets — gets the height. */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header, .sf-header, .cd-header { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
+            .mode-toggle { top: calc(var(--safe-top) + 52px); }
+            .bottom-sheet { max-height: 95dvh; }
+            #dualModeUI { padding-bottom: calc(var(--safe-bottom) + 70px); }
+        }
         html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: 100dvh; overflow: hidden; overscroll-behavior: none; }
         button { font-family: var(--font); }
 
@@ -336,8 +355,13 @@
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .sheet-overlay.active { opacity: 1; pointer-events: auto; }
         .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: var(--radius-xl) var(--radius-xl) 0 0; z-index: 600; transform: translateY(100%); transition: transform var(--transition-smooth); max-height: 85vh; max-height: 85dvh; display: flex; flex-direction: column; }
-        .bottom-sheet.active { transform: translateY(0); }
+        /* --drag-y lets the swipe-to-dismiss gesture drag the open sheet with the
+           finger; it must appear in every .active transform (incl. the desktop
+           variant below) so dragging composes with the centering translateX. */
+        .bottom-sheet.active { transform: translateY(var(--drag-y, 0px)); }
+        .bottom-sheet.dragging { transition: none; }
         .sheet-handle { width: 36px; height: 4px; background: var(--separator); border-radius: 2px; margin: var(--spacing-sm) auto; }
+        .sheet-handle, .sheet-header { touch-action: none; }
         .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--separator); }
         .sheet-title { font-size: 18px; font-weight: 700; }
         .sheet-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -653,7 +677,7 @@
             .header { padding: var(--spacing-md) var(--spacing-xl); }
             .transport { padding: var(--spacing-md) var(--spacing-xl); }
             .bottom-sheet { max-width: 480px; left: 50%; transform: translateX(-50%) translateY(100%); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-            .bottom-sheet.active { transform: translateX(-50%) translateY(0); }
+            .bottom-sheet.active { transform: translateX(-50%) translateY(var(--drag-y, 0px)); }
             .modal-content { max-width: 400px; }
             .ear-training-card { max-width: 440px; }
             .presets-card { max-width: 500px; }
@@ -3842,6 +3866,7 @@
         function startPlayback() {
             state.currentBeat = 0;
             acquireWakeLock();
+            updateMediaSession();
 
             // Play first beat immediately with chord
             playMetronomeTick(true);
@@ -3915,6 +3940,8 @@
                 } else { stopPlayback(); return true; }
             }
             if (!getStrumSlots()) playChord(getTransposedProgression()[state.currentChordIndex], '2n');
+            // Light haptic on the chord boundary (Android; iOS ignores vibrate)
+            if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
             renderPlaybackTick();
         }
         function stopPlaybackTimers() {
@@ -3924,12 +3951,13 @@
             strumTimeouts.forEach(t => clearTimeout(t)); strumTimeouts = [];
         }
         function ensurePlaybackStopped() {
-            if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); releaseWakeLock(); }
+            if (state.isPlaying) { state.isPlaying = false; stopPlaybackTimers(); updatePlayButtons(); releaseWakeLock(); updateMediaSession(); }
         }
         function stopPlayback() {
             state.isPlaying = false;
             stopPlaybackTimers();
             releaseWakeLock();
+            updateMediaSession();
             state.currentChordIndex = 0;
             state.currentBeat = 0;
             state.arrangementSectionIndex = 0;
@@ -3984,6 +4012,29 @@
         window.addEventListener('pagehide', handleAppHidden);
         // Belt-and-braces: also resume on the next touch after an interruption.
         document.addEventListener('touchstart', resumeAudioContext, { passive: true });
+        // Media Session: surface the playing progression on the lock screen /
+        // notification shade with working play-pause controls (Android Chrome now;
+        // iOS as WebAudio support lands). Feature-detected throughout.
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            try {
+                const section = state.sections[state.currentSection];
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: getTransposedProgression().join(' · '),
+                    artist: 'ChordFlow',
+                    album: section ? `${section.icon} ${section.name} — ${getKeyInfo().display}` : 'ChordFlow',
+                    artwork: [{ src: '/icon-180.png', sizes: '180x180', type: 'image/png' }]
+                });
+                navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
+            } catch (e) {}
+        }
+        if ('mediaSession' in navigator) {
+            try {
+                navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
+                navigator.mediaSession.setActionHandler('pause', () => { ensurePlaybackStopped(); updateMediaSession(); });
+                navigator.mediaSession.setActionHandler('stop', () => { stopPlayback(); updateMediaSession(); });
+            } catch (e) {}
+        }
 
         // ============ LEARN SONGS ============
         let learnSongsFilter = 'all';
@@ -6078,6 +6129,34 @@
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
             restoreFocusFor('sheet');
         }
+        // Swipe-down to dismiss bottom sheets: drag from the handle or header, the
+        // sheet follows the finger (via --drag-y), and releasing past the threshold
+        // dismisses; otherwise it springs back. Delegated once for all sheets.
+        (function initSheetSwipeDismiss() {
+            let sheet = null, startY = 0, dy = 0;
+            const endDrag = () => {
+                if (!sheet) return;
+                sheet.classList.remove('dragging');
+                sheet.style.removeProperty('--drag-y');
+                if (dy > 90) closeSheet();
+                sheet = null;
+            };
+            document.addEventListener('touchstart', e => {
+                const grip = e.target.closest('.sheet-handle, .sheet-header');
+                if (!grip) return;
+                const s = grip.closest('.bottom-sheet');
+                if (!s || !s.classList.contains('active')) return;
+                sheet = s; startY = e.touches[0].clientY; dy = 0;
+                sheet.classList.add('dragging');
+            }, { passive: true });
+            document.addEventListener('touchmove', e => {
+                if (!sheet) return;
+                dy = Math.max(0, e.touches[0].clientY - startY);
+                sheet.style.setProperty('--drag-y', dy + 'px');
+            }, { passive: true });
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
+        })();
         function renderInstrumentOptions() {
             const list = document.getElementById('instrumentList'); if (!list) return;
             list.innerHTML = instruments.map(inst => `<div class="option-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="selectInstrument('${inst.id}')"><span class="option-icon">${inst.icon}</span><div class="option-text"><div class="option-title">${inst.name}</div></div><span class="option-check">✓</span></div>`).join('');
