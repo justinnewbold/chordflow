@@ -1360,6 +1360,15 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
+            <!-- Settings holds preferences only; everything you *do* lives in the
+                 Tools sheet. This signpost is the route there for Dual Mode, whose
+                 header has no room for the 🧰 button the other UI modes carry. -->
+            <div class="settings-group">
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tools')">
+                    <div class="settings-label"><span class="settings-icon">🧰</span><span>All Tools</span></div>
+                    <span style="color: var(--text-secondary);">Guitar, practice, quizzes ›</span>
+                </div>
+            </div>
             <div class="settings-group">
                 <div class="settings-group-title">Account</div>
                 <div id="accountSection"></div>
@@ -1380,55 +1389,6 @@
                 </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="resetOnboarding()">
                     <div class="settings-label"><span class="settings-icon">👋</span><span>Welcome Screen</span></div>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Tools</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openPresets()">
-                    <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
-                    <span style="color: var(--text-secondary);">Browse ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openTemplates()">
-                    <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
-                    <span style="color: var(--text-secondary);">Browse ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openCommunity()">
-                    <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
-                    <span style="color: var(--text-secondary);">Discover ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="shareQRCode()">
-                    <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
-                    <span style="color: var(--text-secondary);">Generate ›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Guitar</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
-                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
-                    <span style="color: var(--text-secondary);">View ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('strum')">
-                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Strumming Pattern</span></div>
-                    <span style="color: var(--text-secondary);">Choose ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
-                    <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
-                    <span style="color: var(--text-secondary);">Open ›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Ear Training</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
-                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
-                    <span style="color: var(--text-secondary);">Play ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
-                    <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
-                    <span style="color: var(--text-secondary);">Play ›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
-                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
-                    <span style="color: var(--text-secondary);">Play ›</span>
                 </div>
             </div>
             <div class="settings-group">
@@ -1507,17 +1467,6 @@
                 </div>
             </div>
             <div class="settings-group">
-                <div class="settings-group-title">Your Songs</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSaveModal()">
-                    <div class="settings-label"><span class="settings-icon">💾</span><span>Save Song</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('songs')">
-                    <div class="settings-label"><span class="settings-icon">📂</span><span>Load Saved Song</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-            <div class="settings-group">
                 <div class="settings-group-title">Train Your Ear &amp; Eye</div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
                     <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
@@ -1529,6 +1478,36 @@
                 </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
                     <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Your Songs</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSaveModal()">
+                    <div class="settings-label"><span class="settings-icon">💾</span><span>Save Song</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('songs')">
+                    <div class="settings-label"><span class="settings-icon">📂</span><span>Load Saved Song</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title">Create &amp; Discover</div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openPresets()">
+                    <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openTemplates()">
+                    <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="openCommunity()">
+                    <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
+                    <span style="color: var(--text-secondary);">›</span>
+                </div>
+                <div class="settings-item" tabindex="0" role="button" onclick="shareQRCode()">
+                    <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
                     <span style="color: var(--text-secondary);">›</span>
                 </div>
             </div>
