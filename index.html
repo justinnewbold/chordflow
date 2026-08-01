@@ -41,6 +41,30 @@
         .section-delete, .saved-song-delete, .sheet-close, .sf-panel-close { position: relative; }
         .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after, .sf-panel-close::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
         .section-delete::after { content: ''; position: absolute; inset: -12px; border-radius: 50%; }
+        /* Hover styling only where a real pointer exists. On touch, :hover
+           sticks after a tap, leaving cards and chips looking selected long
+           after the user moved on. */
+        @media (hover: hover) and (pointer: fine) {
+            .chord-drag-handle:hover { opacity: 1; }
+            .ai-transform-btn.jazzy:hover { background: rgba(191, 90, 242, 0.1); }
+            .ai-transform-btn.simplify:hover { background: rgba(48, 209, 88, 0.1); }
+            .community-song-card:hover { border-color: var(--accent); }
+            .template-item:hover { border-color: var(--accent); }
+            .history-item:hover { border-color: var(--accent); }
+            .chord-sub-chip:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+            .scale-chip:hover { border-color: var(--accent); }
+        }
+        /* On-screen keyboard handling. These overlays are `inset: 0`, which measures
+           the LAYOUT viewport — unchanged when the keyboard opens — so a centred
+           dialog stays centred behind the keyboard and hides its own input and
+           buttons. --kb-inset is kept in sync with visualViewport (see JS); padding
+           it out of the bottom makes the flex centring happen in the space that is
+           actually visible. Scroll is enabled so tall dialogs stay fully reachable. */
+        .modal, .chord-edit-modal, .auth-modal, .publish-modal {
+            padding-bottom: calc(var(--spacing-lg) + var(--kb-inset, 0px));
+            transition: opacity var(--transition-fast), padding-bottom var(--transition-fast);
+            overflow-y: auto;
+        }
         /* Respect the OS-level reduced-motion setting: collapse animations and
            transitions to effectively instant. */
         @media (prefers-reduced-motion: reduce) {
@@ -143,7 +167,7 @@
         .undo-btn:disabled { opacity: 0.4; }
         .undo-btn:active:not(:disabled) { transform: scale(0.97); background: var(--bg-tertiary); }
 
-        .sections-strip { display: flex; gap: var(--spacing-sm); overflow-x: auto; padding-bottom: var(--spacing-md); scrollbar-width: none; -ms-overflow-style: none; }
+        .sections-strip { display: flex; gap: var(--spacing-sm); overflow-x: auto; padding-bottom: var(--spacing-md); scrollbar-width: none; -ms-overflow-style: none;  overscroll-behavior-x: contain; }
         .sections-strip::-webkit-scrollbar { display: none; }
         .section-pill { display: flex; align-items: center; gap: 6px; padding: 10px 16px; background: var(--bg-secondary); border: 2px solid transparent; border-radius: var(--radius-full); font-size: 14px; font-weight: 600; color: var(--text-primary); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
         .section-pill.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
@@ -164,7 +188,6 @@
         .chord-card.dragging { opacity: 0.5; transform: scale(1.05); }
         .chord-card.drag-over { border: 2px dashed var(--accent); background: rgba(10, 132, 255, 0.1); }
         .chord-drag-handle { position: absolute; top: 8px; left: 28px; color: var(--text-tertiary); cursor: grab; font-size: 14px; opacity: 0.5; transition: opacity 0.2s; }
-        .chord-drag-handle:hover { opacity: 1; }
         .chord-card.dragging .chord-drag-handle { cursor: grabbing; }
         .effects-section { margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--separator); }
         .effects-section h4 { font-size: 12px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -275,7 +298,7 @@
         .sf-chord-label { font-size: 16px; color: var(--text-secondary); margin-top: var(--spacing-md); }
         .sf-progress { margin-top: var(--spacing-lg); width: 200px; }
         .sf-beat-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
-        .sf-chord-strip { display: flex; gap: var(--spacing-md); overflow-x: auto; padding: var(--spacing-md) 0; scrollbar-width: none; }
+        .sf-chord-strip { display: flex; gap: var(--spacing-md); overflow-x: auto; padding: var(--spacing-md) 0; scrollbar-width: none;  overscroll-behavior-x: contain; }
         .sf-chord-strip::-webkit-scrollbar { display: none; }
         .sf-strip-chord { flex-shrink: 0; width: 70px; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
         .sf-strip-chord.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
@@ -401,7 +424,7 @@
 
         .chord-diagram-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 700; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .chord-diagram-modal.active { opacity: 1; pointer-events: auto; }
-        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; max-width: 96vw; max-height: 92vh; overflow: auto; }
+        .diagram-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-xl); text-align: center; min-width: 200px; max-width: 96vw; max-height: 92vh; max-height: 92dvh; overflow: auto; }
         .diagram-chord-name { font-size: 36px; font-weight: 800; margin-bottom: var(--spacing-sm); cursor: pointer; user-select: none; transition: transform var(--transition-fast); }
         .diagram-chord-name:active { transform: scale(0.94); }
         .diagram-notes { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-sm); }
@@ -436,7 +459,7 @@
         /* Shortcuts Modal */
         .shortcuts-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .shortcuts-modal.active { opacity: 1; pointer-events: auto; }
-        .shortcuts-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 360px; max-height: 80vh; overflow-y: auto; }
+        .shortcuts-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 360px; max-height: 80vh; max-height: 80dvh; overflow-y: auto; }
         .shortcuts-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: var(--spacing-lg); }
         .shortcut-row { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-sm) 0; border-bottom: 1px solid var(--separator); }
         .shortcut-row:last-child { border-bottom: none; }
@@ -495,7 +518,7 @@
         .song-control-btn.playing { background: var(--accent-orange); }
         
         /* Filter chips for songs */
-        .song-filters { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-sm); }
+        .song-filters { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); overflow-x: auto; padding-bottom: var(--spacing-sm);  overscroll-behavior-x: contain; }
         .filter-chip { padding: 8px 16px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); }
         .filter-chip.active { background: var(--accent); color: white; }
 
@@ -530,9 +553,7 @@
         .ai-transform-btn:active { transform: scale(0.96); }
         .ai-transform-btn.loading { animation: shimmer 1.5s infinite; }
         .ai-transform-btn.jazzy { border-color: var(--accent-purple); }
-        .ai-transform-btn.jazzy:hover { background: rgba(191, 90, 242, 0.1); }
         .ai-transform-btn.simplify { border-color: var(--accent-green); }
-        .ai-transform-btn.simplify:hover { background: rgba(48, 209, 88, 0.1); }
 
         /* Theory Hint */
         .theory-hint { background: rgba(191, 90, 242, 0.08); border: 1px solid rgba(191, 90, 242, 0.3); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); margin-bottom: var(--spacing-md); font-size: 13px; color: var(--text-secondary); line-height: 1.4; display: flex; align-items: flex-start; gap: var(--spacing-sm); }
@@ -628,7 +649,7 @@
         /* Preset Library Modal */
         .presets-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .presets-modal.active { opacity: 1; pointer-events: auto; }
-        .presets-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .presets-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 400px; max-height: 80vh; max-height: 80dvh; overflow-y: auto; }
         .presets-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-lg); }
         .preset-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
         .preset-item:active { transform: scale(0.98); background: var(--bg-elevated); }
@@ -754,13 +775,12 @@
         .community-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); border-bottom: 1px solid var(--separator); }
         .community-title { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: var(--spacing-sm); }
         .community-close { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .community-filters { display: flex; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); overflow-x: auto; scrollbar-width: none; }
+        .community-filters { display: flex; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); overflow-x: auto; scrollbar-width: none;  overscroll-behavior-x: contain; }
         .community-filters::-webkit-scrollbar { display: none; }
         .community-body { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg); }
         .community-grid { display: flex; flex-direction: column; gap: var(--spacing-md); }
         .community-song-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
         .community-song-card:active { transform: scale(0.98); }
-        .community-song-card:hover { border-color: var(--accent); }
         .community-song-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--spacing-sm); }
         .community-song-title { font-size: 17px; font-weight: 700; }
         .community-song-genre { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-full); background: var(--accent-purple); color: white; }
@@ -777,14 +797,13 @@
         /* Song Templates */
         .templates-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .templates-modal.active { opacity: 1; pointer-events: auto; }
-        .templates-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 85vh; overflow-y: auto; }
+        .templates-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 85vh; max-height: 85dvh; overflow-y: auto; }
         .templates-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-sm); }
         .templates-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
         .template-category { margin-bottom: var(--spacing-lg); }
         .template-category-title { font-size: 13px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); padding-left: var(--spacing-sm); }
         .template-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
         .template-item:active { transform: scale(0.98); background: var(--bg-elevated); }
-        .template-item:hover { border-color: var(--accent); }
         .template-item-header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); }
         .template-item-icon { font-size: 20px; }
         .template-item-name { font-size: 16px; font-weight: 700; flex: 1; }
@@ -803,11 +822,10 @@
         /* ── Feature: Progression History ── */
         .history-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 800; display: flex; align-items: center; justify-content: center; padding: var(--spacing-lg); opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
         .history-modal.active { opacity: 1; pointer-events: auto; }
-        .history-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 82vh; overflow-y: auto; }
+        .history-card { background: var(--bg-secondary); border-radius: var(--radius-xl); padding: var(--spacing-lg); width: 100%; max-width: 440px; max-height: 82vh; max-height: 82dvh; overflow-y: auto; }
         .history-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: var(--spacing-xs); }
         .history-subtitle { font-size: 14px; color: var(--text-secondary); text-align: center; margin-bottom: var(--spacing-lg); }
         .history-item { background: var(--bg-tertiary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); cursor: pointer; border: 2px solid transparent; transition: all var(--transition-fast); }
-        .history-item:hover { border-color: var(--accent); }
         .history-item:active { transform: scale(0.98); }
         .history-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
         .history-item-meta { font-size: 12px; color: var(--text-secondary); }
@@ -861,7 +879,6 @@
         .chord-subs-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
         .chord-subs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .chord-sub-chip { padding: 7px 11px; background: var(--bg-tertiary); border: 2px solid var(--separator); border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); text-align: center; }
-        .chord-sub-chip:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
         .chord-sub-chip:active { transform: scale(0.93); }
         .chord-sub-chip .sub-reason { display: block; font-size: 10px; color: var(--text-tertiary); font-weight: 500; margin-top: 1px; }
 
@@ -890,9 +907,8 @@
         /* ---- Scale Explorer ---- */
         .scale-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
         .scale-chip { padding: 7px 12px; background: var(--bg-tertiary); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
-        .scale-chip:hover { border-color: var(--accent); }
         .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px; }
+        #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px;  overscroll-behavior-x: contain; }
     </style>
 </head>
 <body>
@@ -4034,6 +4050,23 @@
         window.addEventListener('pagehide', handleAppHidden);
         // Belt-and-braces: also resume on the next touch after an interruption.
         document.addEventListener('touchstart', resumeAudioContext, { passive: true });
+        // Keep --kb-inset equal to the height the on-screen keyboard covers, so
+        // centred dialogs re-centre into the visible area instead of hiding their
+        // input behind it. visualViewport is the only reliable signal here: the
+        // layout viewport does not change when the keyboard opens on iOS.
+        (function trackKeyboardInset() {
+            const vv = window.visualViewport;
+            if (!vv) return; // no support: dialogs simply behave as before
+            const sync = () => {
+                // Gap between the visual viewport's bottom and the layout viewport's.
+                const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+                // Ignore small deltas from Safari's collapsing toolbar.
+                document.documentElement.style.setProperty('--kb-inset', (covered > 120 ? covered : 0) + 'px');
+            };
+            vv.addEventListener('resize', sync);
+            vv.addEventListener('scroll', sync);
+            sync();
+        })();
         // Media Session: surface the playing progression on the lock screen /
         // notification shade with working play-pause controls (Android Chrome now;
         // iOS as WebAudio support lands). Feature-detected throughout.
