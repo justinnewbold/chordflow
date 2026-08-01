@@ -3897,27 +3897,34 @@
                 const beatMs = 60000 / state.tempo;
                 // Advance the absolute clock by one beat
                 nextBeatTime += beatMs;
-                // Apply swing as an offset from the scheduled time (doesn't shift overall clock)
+                // Apply swing as an offset from the scheduled time (doesn't shift overall clock).
+                // Parity is measured on the beat that will actually sound, so a
+                // measure-wrapping tick swings like the downbeat it is (offset 0).
+                const upcomingBeat = state.currentBeat >= getBeatsPerMeasure() ? 0 : state.currentBeat;
                 const swingFactor = state.swing / 100;
-                const isOddBeat = state.currentBeat % 2 === 1;
+                const isOddBeat = upcomingBeat % 2 === 1;
                 const swingOffset = isOddBeat
                     ? beatMs * swingFactor * 0.33
-                    : (state.currentBeat === 0 ? 0 : -beatMs * swingFactor * 0.33);
+                    : (upcomingBeat === 0 ? 0 : -beatMs * swingFactor * 0.33);
                 const ms = Math.max(0, nextBeatTime + swingOffset - Date.now());
                 beatInterval = setTimeout(() => {
+                    // Wrap the measure at the START of the tick, so the new chord
+                    // sounds ON the downbeat, together with the kick. Advancing at
+                    // the END of the previous tick made every chord land a full beat
+                    // before the drum pattern restarted — the progression ran ahead
+                    // of the groove.
+                    if (state.currentBeat >= getBeatsPerMeasure()) {
+                        state.currentBeat = 0;
+                        // advanceChord returns true when it handled scheduling itself
+                        // (e.g. restartPlayback on auto speed-up, or stopPlayback)
+                        if (advanceChord()) return;
+                        if (!state.isPlaying) return;
+                    }
                     playMetronomeTick(state.currentBeat === 0);
                     playDrumBeat(state.currentBeat);
                     updateBeatDots(state.currentBeat);
                     if (getStrumSlots()) strumBeat(state.currentBeat);
                     state.currentBeat++;
-                    if (state.currentBeat >= getBeatsPerMeasure()) {
-                        state.currentBeat = 0;
-                        const handled = advanceChord();
-                        // advanceChord returns true when it handled scheduling itself
-                        // (e.g. restartPlayback on auto speed-up, or stopPlayback)
-                        if (!handled && state.isPlaying) scheduleNextBeat();
-                        return;
-                    }
                     if (state.isPlaying) scheduleNextBeat();
                 }, ms);
             }
