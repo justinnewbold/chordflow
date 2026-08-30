@@ -131,6 +131,12 @@
         /* min-height:0 is required: a flex item defaults to min-height:auto, which
            refuses to shrink below its content and defeats overflow-y on its own,
            even once the container has a definite height. */
+        .more-ways { margin-bottom: var(--spacing-md); }
+        .more-ways > summary { cursor: pointer; list-style: none; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); border-radius: var(--radius-md); }
+        .more-ways > summary::-webkit-details-marker { display: none; }
+        .more-ways > summary::after { content: ' ▾'; }
+        .more-ways[open] > summary::after { content: ' ▴'; }
+        .more-ways[open] > summary { margin-bottom: var(--spacing-md); }
         .tabbar { display: flex; flex-shrink: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); }
         .tabbar-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 10px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; transition: color var(--transition-fast); }
         .tabbar-btn .tabbar-icon { font-size: 20px; line-height: 1; }
@@ -903,7 +909,6 @@
             <div class="header-actions">
                 <button class="header-btn" onclick="openHistory()" title="Progression History">🕐</button>
                 <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
-                <button class="header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
                 <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome">🥁</button>
                 <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
                 <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
@@ -999,7 +1004,11 @@
                     <div class="diatonic-chips" id="diatonicChips"></div>
                 </div>
 
-                <!-- Mood / Vibe Selector -->
+                <!-- One primary Generate; everything else that makes chords is
+                     folded away so Play leads with the song, not the toolbox. -->
+                <button class="generate-btn" onclick="aiGenerate('smart')" id="aiMagicBtn" style="width:100%;">✨ Generate a progression</button>
+                <details class="more-ways">
+                    <summary>More ways to generate</summary>
                 <div class="mood-section">
                     <div class="mood-section-label">🎭 AI Mood</div>
                     <div class="mood-row" id="moodRow">
@@ -1019,10 +1028,8 @@
                     <button class="generate-btn" onclick="openTemplates()" style="flex:1;margin-bottom:0;background:linear-gradient(135deg, var(--accent-orange), var(--accent-pink));">🎼 Templates</button>
                 </div>
                 <div class="ai-grid">
-                    <button class="ai-btn" onclick="aiGenerate('smart')" id="aiMagicBtn"><span class="icon">✨</span> AI Magic</button>
                     <button class="ai-btn" onclick="aiGenerate('surprise')" id="aiSurpriseBtn"><span class="icon">🎁</span> Surprise</button>
                     <button class="ai-btn" onclick="aiGenerate('enhance')" id="aiEnhanceBtn"><span class="icon">💎</span> Enhance</button>
-                    <button class="ai-btn" onclick="aiGenerate('genre')" id="aiGenreBtn"><span class="icon">🎷</span> Jazzify</button>
                 </div>
                 <!-- AI Transform Buttons -->
                 <div class="ai-transform-row">
@@ -1038,6 +1045,7 @@
                     <span>🎶</span>
                     <span id="melodyText"></span>
                 </div>
+                </details>
             </div>
             <!-- PRACTICE: everything about getting better at playing the part -->
             <div class="mode-view" id="practiceView">
@@ -1230,10 +1238,6 @@
                         <button class="save-btn" onclick="openSaveModal()">💾 Save Song</button>
                         <button class="load-btn" onclick="document.getElementById('loadFileInput').click()">📂 Load File</button>
                     </div>
-                    <div class="save-load-grid" style="margin-top:0;">
-                        <button class="save-btn" onclick="openCommunity()" style="background:rgba(191,90,242,0.15);color:var(--accent-purple);">🌍 Community</button>
-                        <button class="load-btn" onclick="openTemplates()" style="background:rgba(255,159,10,0.15);color:var(--accent-orange);">🎼 Templates</button>
-                    </div>
                     <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadSongFile(event)">
                     <div id="cloudSongsList"></div>
                     <div class="saved-songs" id="savedSongsList"></div>
@@ -1391,33 +1395,6 @@
                 <button class="filter-chip" onclick="filterLearnSheet('intermediate', this)">🟠 Intermediate</button>
             </div>
             <div class="songs-list" id="learnSheetList"></div>
-        </div>
-    </div>
-
-    <!-- Practice sheet (global; speed & count-in controls) -->
-    <div class="bottom-sheet" id="practiceSheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎯 Practice</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-        <div class="sheet-body">
-            <div class="settings-group">
-                <div class="settings-group-title">Playback Speed</div>
-                <div class="practice-controls" style="margin-bottom:0;">
-                    <button class="speed-btn" onclick="setSpeed(0.5); syncPracticeSheet()" id="pSpeed50">50%</button>
-                    <button class="speed-btn" onclick="setSpeed(0.75); syncPracticeSheet()" id="pSpeed75">75%</button>
-                    <button class="speed-btn active" onclick="setSpeed(1); syncPracticeSheet()" id="pSpeed100">100%</button>
-                    <button class="count-in-btn" onclick="toggleCountIn(); syncPracticeSheet()" id="pCountInBtn">📢 Count</button>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Auto Speed-Up</div>
-                <div class="auto-speed-row">
-                    <span class="auto-speed-label" id="pAutoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
-                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp(); syncPracticeSheet()" id="pAutoSpeedBtn">OFF</button>
-                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3); syncPracticeSheet()" id="paspd3">+3</button>
-                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5); syncPracticeSheet()" id="paspd5">+5</button>
-                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10); syncPracticeSheet()" id="paspd10">+10</button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -3102,7 +3079,7 @@
             }
         }
         function setAIButtonsLoading(loading) {
-            ['aiMagicBtn', 'aiSurpriseBtn', 'aiEnhanceBtn', 'aiGenreBtn'].forEach(id => {
+            ['aiMagicBtn', 'aiSurpriseBtn', 'aiEnhanceBtn'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) { btn.disabled = loading; btn.classList.toggle('loading', loading); }
             });
@@ -3438,7 +3415,6 @@
             // Each tab is its own scroll context; start at the top when switching.
             const mc = document.querySelector('.main-content');
             if (mc) mc.scrollTop = 0;
-            if (tab === 'practice') syncPracticeSheet();
         }
         function setProduceTab(tab) {
             state.produceTab = tab;
@@ -4094,23 +4070,6 @@
             renderStrumSheet();
         }
         // ===== Global Practice sheet state sync =====
-        function syncPracticeSheet() {
-            const sm = state.speedMultiplier;
-            [['pSpeed50', 0.5], ['pSpeed75', 0.75], ['pSpeed100', 1]].forEach(([id, v]) => {
-                const b = document.getElementById(id);
-                if (b) b.classList.toggle('active', Math.abs(sm - v) < 0.001);
-            });
-            const ci = document.getElementById('pCountInBtn');
-            if (ci) ci.classList.toggle('active', !!state.countInEnabled);
-            const asb = document.getElementById('pAutoSpeedBtn');
-            if (asb) { asb.textContent = state.autoSpeedUp ? 'ON' : 'OFF'; asb.classList.toggle('active', !!state.autoSpeedUp); }
-            const lbl = document.getElementById('pAutoSpeedLabel');
-            if (lbl) lbl.textContent = state.autoSpeedUp ? `🏃 Auto Speed-Up: +${state.autoSpeedIncrement} BPM/loop` : '🏃 Auto Speed-Up: OFF';
-            [['paspd3', 3], ['paspd5', 5], ['paspd10', 10]].forEach(([id, v]) => {
-                const b = document.getElementById(id);
-                if (b) b.classList.toggle('active', state.autoSpeedIncrement === v);
-            });
-        }
 
         // ============ CUSTOM CHORD INPUT ============
         function addCustomChord() {
@@ -5910,7 +5869,6 @@
             if (type === 'genre') renderGenreOptions();
             if (type === 'songs') { renderSavedSongs(); renderLearnSongs(); }
             if (type === 'learn') renderLearnSheet();
-            if (type === 'practice') syncPracticeSheet();
             if (type === 'scales') renderScaleExplorer();
             if (type === 'chordSheet') renderChordSheet();
             if (type === 'tuner') renderTuner();
