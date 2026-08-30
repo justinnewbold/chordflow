@@ -1,7 +1,7 @@
 {
-  "name": "ChordFlow Pro",
+  "name": "ChordFlow \u2014 Guitar Chords & Practice",
   "short_name": "ChordFlow",
-  "description": "AI-Powered Chord Progression Generator & Songwriting Suite",
+  "description": "Write chord progressions, hear them played, and learn them on the guitar neck.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
@@ -22,14 +22,37 @@
       "purpose": "any"
     }
   ],
-  "categories": ["music", "entertainment", "productivity"],
+  "categories": [
+    "music",
+    "entertainment",
+    "productivity"
+  ],
   "shortcuts": [
     {
-      "name": "Generate Progression",
+      "name": "Practice",
+      "short_name": "Practice",
+      "description": "Scales, tuner, strumming and quizzes",
+      "url": "/?tab=practice",
+      "icons": [
+        {
+          "src": "/icon-180.png",
+          "sizes": "180x180",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Generate a progression",
       "short_name": "Generate",
-      "description": "Create a new chord progression",
+      "description": "Start a new chord progression",
       "url": "/?action=generate",
-      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icon-180.png",
+          "sizes": "180x180",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

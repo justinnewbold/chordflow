@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChordFlow v0.76</title>
+    <title>ChordFlow — Guitar Chords &amp; Practice</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1661,7 +1661,7 @@
     <div class="metro-flash" id="metroFlash"></div>
 
     <script>
-        const VERSION = '0.76';
+        const VERSION = '0.77';
         // API key removed from client - calls routed through /api/gemini
 
         function escapeHtml(str) {
@@ -6419,12 +6419,15 @@
             if (loaded) showToast('🔗 Loaded shared progression!');
             else if (loadSharedSongFromUrl()) { /* loadCloudSong shows its own toast */ }
             else restoreSession(); // otherwise pick up exactly where the user left off
+            // Home-screen shortcuts land here as ?tab=<name>; honour it so the
+            // manifest's Practice shortcut opens on Practice rather than Play.
+            const startTab = new URLSearchParams(window.location.search).get('tab');
+            if (startTab && TABS.includes(startTab)) state.tab = startTab;
             // Apply theme
             const themeLabel = document.getElementById('themeLabel');
             if (themeLabel) themeLabel.textContent = (state.theme === 'dark' ? 'Dark' : 'Light') + ' ›';
-            // First launch: no interface quiz — start straight in Dual Mode with a
-            // playable progression already loaded. The mode picker stays reachable
-            // via Settings (UI Mode / Choose Interface Style).
+            // First launch: straight into the app with a playable progression
+            // already loaded. The welcome screen stays reachable from Settings.
             if (!state.onboardingComplete) {
                 safeSetItem('chordflow-onboarding', 'complete');
                 state.onboardingComplete = true;
