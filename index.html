@@ -38,8 +38,8 @@
         /* Small controls get an invisible expanded hit area so their effective touch
            target reaches Apple's 44pt minimum without changing the visual layout.
            (.chord-diagram-btn is already position:absolute, so no relative needed.) */
-        .section-delete, .saved-song-delete, .sheet-close, .sf-panel-close { position: relative; }
-        .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after, .sf-panel-close::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+        .section-delete, .saved-song-delete, .sheet-close { position: relative; }
+        .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
         .section-delete::after { content: ''; position: absolute; inset: -12px; border-radius: 50%; }
         /* Hover styling only where a real pointer exists. On touch, :hover
            sticks after a tap, leaving cards and chips looking selected long
@@ -73,7 +73,7 @@
         /* Phone held sideways (music-stand position): compact the chrome so the
            content — especially fretboard views in sheets — gets the height. */
         @media (orientation: landscape) and (max-height: 500px) {
-            .header, .sf-header, .cd-header { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
+            .header { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
             .mode-toggle { top: calc(var(--safe-top) + 52px); }
             .bottom-sheet { max-height: 95dvh; }
             #dualModeUI { padding-bottom: calc(var(--safe-bottom) + 70px); }
@@ -121,11 +121,11 @@
         /* Keep the home-screen header on one line as more quick-access icons are added:
            the icon row never shrinks; only the app title yields (and ellipsizes) on
            very narrow phones so the page never scrolls sideways. */
-        .header-actions, .sf-header-actions, .cd-header-actions { flex-shrink: 0; }
-        .logo, .sf-logo, .cd-logo { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .header-actions { flex-shrink: 0; }
+        .logo { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         @media (max-width: 430px) {
-            .header-btn, .sf-header-btn, .cd-header-btn { width: 32px; height: 32px; font-size: 16px; }
-            .header-actions, .sf-header-actions, .cd-header-actions { gap: 5px; }
+            .header-btn { width: 32px; height: 32px; font-size: 16px; }
+            .header-actions { gap: 5px; }
         }
         .header-btn:active { transform: scale(0.92); }
         .header-btn.active { background: var(--accent); }
@@ -308,93 +308,11 @@
         .tempo-tap .bpm-label { font-size: 10px; color: var(--text-secondary); }
 
         /* SHEET FLOW */
-        #sheetFlowUI { background: var(--bg-primary); }
-        .sf-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); background: var(--bg-primary); }
-        .sf-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .sf-header-actions { display: flex; gap: var(--spacing-sm); }
-        .sf-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sf-canvas { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--spacing-lg); position: relative; }
-        .sf-chord-display { text-align: center; margin-bottom: var(--spacing-xl); }
-        .sf-current-chord { font-size: 120px; font-weight: 900; line-height: 1; transition: all 0.2s ease; }
-        .sf-current-chord.playing { animation: pulse 0.5s ease infinite; color: var(--accent); }
-        .sf-chord-label { font-size: 16px; color: var(--text-secondary); margin-top: var(--spacing-md); }
-        .sf-progress { margin-top: var(--spacing-lg); width: 200px; }
-        .sf-beat-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
-        .sf-chord-strip { display: flex; gap: var(--spacing-md); overflow-x: auto; padding: var(--spacing-md) 0; scrollbar-width: none;  overscroll-behavior-x: contain; }
-        .sf-chord-strip::-webkit-scrollbar { display: none; }
-        .sf-strip-chord { flex-shrink: 0; width: 70px; padding: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); text-align: center; cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
-        .sf-strip-chord.active { border-color: var(--accent); background: rgba(10, 132, 255, 0.15); }
-        .sf-strip-name { font-size: 20px; font-weight: 700; }
-        .sf-strip-num { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-        .sf-gesture-hint { display: flex; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); color: var(--text-tertiary); font-size: 12px; }
 
         /* Sheet Flow Transport */
-        .sf-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: space-around; z-index: 100; }
-        .sf-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
-        .sf-transport-btn:active { transform: scale(0.9); }
-        .sf-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 22px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
-        .sf-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
-        .sf-tempo { font-size: 16px; font-weight: 700; color: var(--text-secondary); min-width: 40px; text-align: center; }
 
-        .sf-panel { position: fixed; top: 0; bottom: 0; width: 280px; background: var(--bg-secondary); z-index: 300; transform: translateX(-100%); transition: transform var(--transition-smooth); display: flex; flex-direction: column; }
-        .sf-panel-right { right: 0; left: auto; transform: translateX(100%); }
-        .sf-panel.open { transform: translateX(0); }
-        .sf-panel-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-md) var(--spacing-md); border-bottom: 1px solid var(--separator); }
-        .sf-panel-title { font-size: 18px; font-weight: 700; }
-        .sf-panel-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sf-panel-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-md); }
-        .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
-        .sf-instrument-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
-        .sf-instrument-icon { font-size: 24px; }
-        .sf-instrument-name { flex: 1; font-size: 15px; font-weight: 500; }
-        .sf-instrument-check { color: var(--accent); opacity: 0; }
-        .sf-instrument-item.selected .sf-instrument-check { opacity: 1; }
-        .sf-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 250; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
-        .sf-overlay.active { opacity: 1; pointer-events: auto; }
 
         /* CARD DECK */
-        #cardDeckUI { background: var(--bg-primary); padding-bottom: calc(var(--safe-bottom) + 80px); }
-        .cd-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-lg) var(--spacing-md); }
-        .cd-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .cd-header-actions { display: flex; gap: var(--spacing-sm); }
-        .cd-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .cd-stack-container { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); perspective: 1000px; }
-        .cd-card-stack { position: relative; width: 100%; max-width: 350px; height: 380px; }
-        .cd-card { position: absolute; width: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); overflow: hidden; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
-        .cd-card.active { z-index: 10; transform: translateY(0) scale(1); opacity: 1; }
-        .cd-card.next { z-index: 5; transform: translateY(20px) scale(0.95); opacity: 0.7; }
-        .cd-card.behind { z-index: 1; transform: translateY(40px) scale(0.9); opacity: 0.4; }
-        .cd-card.hidden-card { z-index: 0; transform: translateY(60px) scale(0.85); opacity: 0; }
-        .cd-card.expanded { position: fixed; top: var(--safe-top); left: var(--spacing-md); right: var(--spacing-md); bottom: calc(var(--safe-bottom) + 100px); width: auto; height: auto; z-index: 400; border-radius: var(--radius-xl); }
-        .cd-card-header { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); border-bottom: 1px solid var(--separator); }
-        .cd-card-icon { font-size: 24px; }
-        .cd-card-label { flex: 1; font-size: 18px; font-weight: 700; }
-        .cd-card-close { display: none; width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; }
-        .cd-card.expanded .cd-card-close { display: flex; align-items: center; justify-content: center; }
-        .cd-card-body { padding: var(--spacing-lg); height: calc(100% - 70px); overflow-y: auto; }
-        .cd-progression-display { text-align: center; padding: var(--spacing-lg) 0; }
-        .cd-big-chord { font-size: 72px; font-weight: 900; margin-bottom: var(--spacing-sm); transition: color 0.2s ease; }
-        .cd-big-chord.playing { color: var(--accent); animation: pulse 0.5s ease infinite; }
-        .cd-chord-info { font-size: 14px; color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
-        .cd-mini-chords { display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap; }
-        .cd-mini-chord { padding: 8px 16px; background: var(--bg-tertiary); border-radius: var(--radius-full); font-size: 14px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
-        .cd-mini-chord.active { background: var(--accent); color: white; }
-        .cd-tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
-        .cd-tool-item { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-lg); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
-        .cd-tool-item:active { transform: scale(0.95); background: var(--bg-elevated); }
-        .cd-tool-item.loading { animation: shimmer 1.5s infinite; }
-        .cd-tool-item .icon { font-size: 28px; }
-        .cd-tool-item .label { font-size: 14px; font-weight: 500; }
-        .cd-nav-dots { display: flex; justify-content: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
-        .cd-nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bg-tertiary); cursor: pointer; transition: all var(--transition-fast); }
-        .cd-nav-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
-        .cd-transport { position: fixed; bottom: var(--safe-bottom); left: 0; right: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); padding: var(--spacing-md) var(--spacing-lg); display: flex; align-items: center; justify-content: center; gap: var(--spacing-lg); z-index: 100; }
-        .cd-transport-btn { width: 44px; height: 44px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 20px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
-        .cd-transport-btn:active { transform: scale(0.9); }
-        .cd-transport-btn.active { background: var(--accent); }
-        .cd-transport-btn.play { background: var(--accent); width: 56px; height: 56px; font-size: 24px; box-shadow: 0 4px 20px rgba(10, 132, 255, 0.4); }
-        .cd-transport-btn.play.playing { background: var(--accent-orange); box-shadow: 0 4px 20px rgba(255, 159, 10, 0.4); }
-        .cd-tempo { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
 
         /* Bottom Sheets */
         .sheet-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 500; opacity: 0; pointer-events: none; transition: opacity var(--transition-fast); }
@@ -943,39 +861,37 @@
     <!-- Onboarding -->
     <div class="onboarding" id="onboarding">
         <div class="onboarding-header">
-            <div class="onboarding-logo">🎵</div>
-            <h1 class="onboarding-title">Welcome to ChordFlow</h1>
-            <p class="onboarding-subtitle">AI-powered chord progressions. Choose your interface.</p>
+            <div class="onboarding-logo">🎸</div>
+            <h1 class="onboarding-title">ChordFlow</h1>
+            <p class="onboarding-subtitle">Write chord progressions, hear them played, and learn them on the guitar neck.</p>
         </div>
+        <!-- Replaces the old interface picker: new users could not meaningfully
+             choose between three layouts. This says what the app is for instead. -->
         <div class="onboarding-modes">
-            <div class="mode-option selected" data-mode="dual" tabindex="0" role="radio" aria-checked="true" onclick="selectOnboardingMode('dual')">
-                <div class="mode-option-icon">📱</div>
+            <div class="mode-option">
+                <div class="mode-option-icon">🎸</div>
                 <div class="mode-option-content">
-                    <div class="mode-option-title">Dual Mode</div>
-                    <div class="mode-option-desc">Simple Create/Produce toggle. Best for beginners.</div>
+                    <div class="mode-option-title">Play</div>
+                    <div class="mode-option-desc">Your progression, with the shape for every chord on the neck.</div>
                 </div>
-                <div class="mode-option-check">✓</div>
             </div>
-            <div class="mode-option" data-mode="sheet" tabindex="0" role="radio" aria-checked="false" onclick="selectOnboardingMode('sheet')">
-                <div class="mode-option-icon">📄</div>
+            <div class="mode-option">
+                <div class="mode-option-icon">🎯</div>
                 <div class="mode-option-content">
-                    <div class="mode-option-title">Sheet Flow</div>
-                    <div class="mode-option-desc">Gesture-based with sliding panels.</div>
+                    <div class="mode-option-title">Practice</div>
+                    <div class="mode-option-desc">Scales, tuner, strumming patterns, play-along songs and quizzes.</div>
                 </div>
-                <div class="mode-option-check">✓</div>
             </div>
-            <div class="mode-option" data-mode="cards" tabindex="0" role="radio" aria-checked="false" onclick="selectOnboardingMode('cards')">
-                <div class="mode-option-icon">🃏</div>
+            <div class="mode-option">
+                <div class="mode-option-icon">🎛️</div>
                 <div class="mode-option-content">
-                    <div class="mode-option-title">Card Deck</div>
-                    <div class="mode-option-desc">Swipeable cards for different tools.</div>
+                    <div class="mode-option-title">Studio</div>
+                    <div class="mode-option-desc">Mix, add drums, then export or share what you wrote.</div>
                 </div>
-                <div class="mode-option-check">✓</div>
             </div>
         </div>
         <div class="onboarding-footer">
-            <button class="onboarding-cta" onclick="completeOnboarding()">🚀 Get Started</button>
-            <button class="onboarding-skip" onclick="skipOnboarding()">I'll explore later</button>
+            <button class="onboarding-cta" onclick="completeOnboarding()">🎸 Start playing</button>
         </div>
     </div>
 
@@ -1310,84 +1226,6 @@
     </div>
 
     <!-- Sheet Flow UI -->
-    <div id="sheetFlowUI" class="ui-container">
-        <div class="sf-header">
-            <div class="sf-logo">🎸 ChordFlow</div>
-            <div class="sf-header-actions">
-                <button class="sf-header-btn" onclick="openHistory()" title="History">🕐</button>
-                <button class="sf-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
-                <button class="sf-header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
-                <button class="sf-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
-                <button class="sf-header-btn" onclick="openSheet('key')">🎵</button>
-                <button class="sf-header-btn" onclick="openSheet('settings')">⚙️</button>
-            </div>
-        </div>
-        <div class="sf-canvas" id="sfCanvas">
-            <div class="sf-chord-display">
-                <div class="sf-current-chord" id="sfCurrentChord">Am</div>
-                <div class="sf-chord-label" id="sfChordLabel">A minor • Chord 1 of 4</div>
-                <div class="sf-progress">
-                    <div class="progress-bar"><div class="progress-fill" id="sfProgressFill"></div></div>
-                    <div class="sf-beat-dots" id="sfBeatDots">
-                        <div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div><div class="beat-dot"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="sf-chord-strip" id="sfChordStrip"></div>
-        </div>
-        <div class="sf-gesture-hint"><span>← Instruments</span><span>Sections →</span></div>
-        
-        <!-- Sheet Flow Transport -->
-        <div class="sf-transport">
-            <button class="sf-transport-btn" onclick="openSFPanel('left')">🎹</button>
-            <button class="sf-transport-btn" onclick="generateProgression()">🎲</button>
-            <button class="sf-transport-btn play" onclick="togglePlay()" id="sfPlayBtn">▶️</button>
-            <button class="sf-transport-btn" onclick="aiGenerate('smart')">✨</button>
-            <button class="sf-transport-btn" onclick="openSFPanel('right')">📑</button>
-            <span class="sf-tempo" id="sfTempo">120</span>
-        </div>
-
-        <div class="sf-panel sf-panel-left" id="sfLeftPanel">
-            <div class="sf-panel-header">
-                <div class="sf-panel-title">🎹 Instruments</div>
-                <button class="sf-panel-close" onclick="closeSFPanel('left')">✕</button>
-            </div>
-            <div class="sf-panel-body" id="sfInstrumentList"></div>
-        </div>
-        <div class="sf-panel sf-panel-right" id="sfRightPanel">
-            <div class="sf-panel-header">
-                <div class="sf-panel-title">📑 Sections</div>
-                <button class="sf-panel-close" onclick="closeSFPanel('right')">✕</button>
-            </div>
-            <div class="sf-panel-body" id="sfSectionsList"></div>
-        </div>
-        <div class="sf-overlay" id="sfOverlay" onclick="closeAllSFPanels()"></div>
-    </div>
-
-    <!-- Card Deck UI -->
-    <div id="cardDeckUI" class="ui-container">
-        <div class="cd-header">
-            <div class="cd-logo">🎸 ChordFlow</div>
-            <div class="cd-header-actions">
-                <button class="cd-header-btn" onclick="openHistory()" title="History">🕐</button>
-                <button class="cd-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
-                <button class="cd-header-btn" onclick="openSheet('scales')" title="Scale &amp; Fretboard">🎸</button>
-                <button class="cd-header-btn" onclick="openSheet('tools')" title="Learn &amp; Practice Tools">🧰</button>
-                <button class="cd-header-btn" onclick="openSheet('key')">🎵</button>
-                <button class="cd-header-btn" onclick="openSheet('settings')">⚙️</button>
-            </div>
-        </div>
-        <div class="cd-stack-container" id="cdStackContainer">
-            <div class="cd-card-stack" id="cdCardStack"></div>
-        </div>
-        <div class="cd-nav-dots" id="cdNavDots"></div>
-        <div class="cd-transport">
-            <button class="cd-transport-btn active" onclick="toggleLoop()" id="cdLoopBtn">🔁</button>
-            <button class="cd-transport-btn play" onclick="togglePlay()" id="cdPlayBtn">▶️</button>
-            <span class="cd-tempo" id="cdTempo">120 BPM</span>
-        </div>
-    </div>
-
     <!-- Bottom Sheets -->
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
     
@@ -1433,10 +1271,6 @@
             </div>
             <div class="settings-group">
                 <div class="settings-group-title">Interface</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('uiMode')">
-                    <div class="settings-label"><span class="settings-icon">🎨</span><span>UI Mode</span></div>
-                    <span id="currentUILabel" style="color: var(--text-secondary);">Dual Mode ›</span>
-                </div>
                 <div class="settings-item" tabindex="0" role="button" onclick="toggleTheme()">
                     <div class="settings-label"><span class="settings-icon">🌓</span><span>Theme</span></div>
                     <span id="themeLabel" style="color: var(--text-secondary);">Dark ›</span>
@@ -1459,29 +1293,6 @@
         </div>
     </div>
     
-    <div class="bottom-sheet" id="uiModeSheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎨 UI Mode</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-        <div class="sheet-body">
-            <div class="option-list">
-                <div class="option-item" id="uiOptDual" tabindex="0" role="radio" onclick="switchUIMode('dual')">
-                    <span class="option-icon">📱</span>
-                    <div class="option-text"><div class="option-title">Dual Mode</div><div class="option-desc">Create & Produce toggle</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-                <div class="option-item" id="uiOptSheet" tabindex="0" role="radio" onclick="switchUIMode('sheet')">
-                    <span class="option-icon">📄</span>
-                    <div class="option-text"><div class="option-title">Sheet Flow</div><div class="option-desc">Gesture-based panels</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-                <div class="option-item" id="uiOptCards" tabindex="0" role="radio" onclick="switchUIMode('cards')">
-                    <span class="option-icon">🃏</span>
-                    <div class="option-text"><div class="option-title">Card Deck</div><div class="option-desc">Swipeable cards</div></div>
-                    <span class="option-check">✓</span>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <div class="bottom-sheet" id="songsSheet">
         <div class="sheet-handle"></div>
@@ -2001,12 +1812,6 @@
         ];
         const majorKeys = ['C', 'G', 'D', 'A', 'E', 'B', 'F', 'Bb', 'Eb', 'Ab'];
         const minorKeys = ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'Dm', 'Gm', 'Cm', 'Fm', 'Bbm'];
-        const cardTypes = [
-            { type: 'progression', label: 'Chords', icon: '🎵' },
-            { type: 'ai', label: 'AI Tools', icon: '✨' },
-            { type: 'mixer', label: 'Mixer', icon: '🎚️' },
-            { type: 'export', label: 'Export', icon: '📤' }
-        ];
         const CHORD_NOTES = {
             'C': ['C4', 'E4', 'G4'], 'Cm': ['C4', 'Eb4', 'G4'], 'C7': ['C4', 'E4', 'G4', 'Bb4'], 'Cmaj7': ['C4', 'E4', 'G4', 'B4'], 'Cm7': ['C4', 'Eb4', 'G4', 'Bb4'],
             'D': ['D4', 'F#4', 'A4'], 'Dm': ['D4', 'F4', 'A4'], 'D7': ['D4', 'F#4', 'A4', 'C5'], 'Dmaj7': ['D4', 'F#4', 'A4', 'C#5'], 'Dm7': ['D4', 'F4', 'A4', 'C5'],
@@ -2340,9 +2145,7 @@
 
         // State
         const state = {
-            uiMode: safeGetItem('chordflow-ui') || 'dual',
             onboardingComplete: safeGetItem('chordflow-onboarding') === 'complete',
-            selectedOnboardingMode: 'dual',
             mode: 'create', produceTab: 'mixer',
             key: 'C', genre: 'pop', instrument: 'piano',
             baseTempo: 120, tempo: 120, speedMultiplier: 1,
@@ -2351,7 +2154,7 @@
             currentSection: 0, editingSections: false,
             chordVolume: 80, bassVolume: 70, masterVolume: 100,
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
-            undoStack: [], redoStack: [], aiLoading: false, currentCardIndex: 0,
+            undoStack: [], redoStack: [], aiLoading: false,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
             playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
             strumId: safeGetItem('chordflow-strum') || 'off',
@@ -2503,7 +2306,6 @@
             const display = document.getElementById(`${type}VolumeDisplay`);
             if (display) display.textContent = value + '%';
             // Card deck displays
-            document.querySelectorAll(`.cd-${type}-vol`).forEach(el => el.textContent = value + '%');
         }
         
         function updateEffect(type, value) {
@@ -3338,7 +3140,6 @@
                 const btn = document.getElementById(id);
                 if (btn) { btn.disabled = loading; btn.classList.toggle('loading', loading); }
             });
-            document.querySelectorAll('.cd-tool-item[data-ai]').forEach(el => el.classList.toggle('loading', loading));
         }
 
         // Export
@@ -3516,38 +3317,18 @@
             if (songsBody) songsBody.innerHTML = html;
         }
 
-        // Onboarding
-        function selectOnboardingMode(mode) {
-            state.selectedOnboardingMode = mode;
-            document.querySelectorAll('.mode-option').forEach(el => {
-                const on = el.dataset.mode === mode;
-                el.classList.toggle('selected', on);
-                el.setAttribute('aria-checked', on ? 'true' : 'false');
-            });
-        }
+        // Onboarding — now a plain "what this app is" welcome, with no interface
+        // to choose, so completing it only records that it has been seen.
         function completeOnboarding() {
-            state.uiMode = state.selectedOnboardingMode;
-            safeSetItem('chordflow-ui', state.uiMode);
-            safeSetItem('chordflow-onboarding', 'complete');
-            state.onboardingComplete = true;
-            document.getElementById('onboarding').classList.add('hidden');
-            setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
-        }
-        function skipOnboarding() {
-            if (state.selectedOnboardingMode) {
-                state.uiMode = state.selectedOnboardingMode;
-                safeSetItem('chordflow-ui', state.uiMode);
-            }
             safeSetItem('chordflow-onboarding', 'complete');
             state.onboardingComplete = true;
             document.getElementById('onboarding').classList.add('hidden');
             setTimeout(() => { document.getElementById('onboarding').style.display = 'none'; activateUI(); }, 500);
         }
         function resetOnboarding() {
-            // Show the welcome/interface-picker overlay on demand (first launch no
-            // longer shows it, so this opens it directly instead of reloading).
+            // Show the welcome overlay on demand (first launch no longer shows it,
+            // so this opens it directly instead of reloading).
             closeSheet();
-            selectOnboardingMode(state.uiMode);
             const ob = document.getElementById('onboarding');
             ob.classList.remove('hidden');
             ob.style.display = 'flex';
@@ -3555,12 +3336,11 @@
 
         // UI Modes
         function activateUI() {
-            const uiMap = { dual: 'dualModeUI', sheet: 'sheetFlowUI', cards: 'cardDeckUI' };
-            document.querySelectorAll('.ui-container').forEach(c => c.classList.remove('active'));
-            const container = document.getElementById(uiMap[state.uiMode]);
+            // Single interface: Sheet Flow and Card Deck were retired, so there is
+            // nothing to choose between and no mode state to consult.
+            const container = document.getElementById('dualModeUI');
             if (container) container.classList.add('active');
-            updateUISelectors(); syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
-            if (state.uiMode === 'cards') initCardDeck();
+            syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
             // v0.73: Initialize new features
             renderAccountSection();
             renderCloudSongsPrompt();
@@ -3572,21 +3352,6 @@
             const versionDisplay = document.getElementById('versionDisplay');
             if (versionDisplay) versionDisplay.textContent = VERSION;
             updateBeatDotContainers();
-        }
-        function switchUIMode(mode) {
-            state.uiMode = mode;
-            safeSetItem('chordflow-ui', mode);
-            activateUI(); closeSheet();
-        }
-        function updateUISelectors() {
-            const optDual = document.getElementById('uiOptDual');
-            const optSheet = document.getElementById('uiOptSheet');
-            const optCards = document.getElementById('uiOptCards');
-            if (optDual) optDual.classList.toggle('selected', state.uiMode === 'dual');
-            if (optSheet) optSheet.classList.toggle('selected', state.uiMode === 'sheet');
-            if (optCards) optCards.classList.toggle('selected', state.uiMode === 'cards');
-            const label = document.getElementById('currentUILabel');
-            if (label) label.textContent = { dual: 'Dual Mode ›', sheet: 'Sheet Flow ›', cards: 'Card Deck ›' }[state.uiMode];
         }
         function syncUIState() {
             const bassToggle = document.getElementById('bassToggle');
@@ -3846,108 +3611,6 @@
             showToast('🔀 Chords reordered');
         }
         async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); await playChord(chords[i], '4n'); }
-
-        // Sheet Flow
-        function renderSheetFlowUI() {
-            const displayChords = getTransposedProgression();
-            const chord = displayChords[state.currentChordIndex] || 'C';
-            const el = document.getElementById('sfCurrentChord');
-            if (el) { el.textContent = chord; el.classList.toggle('playing', state.isPlaying); }
-            const label = document.getElementById('sfChordLabel');
-            if (label) label.textContent = `${getChordTypeLabel(chord)} • Chord ${state.currentChordIndex + 1} of ${displayChords.length}`;
-            const strip = document.getElementById('sfChordStrip');
-            if (strip) strip.innerHTML = displayChords.map((c, i) => `<div class="sf-strip-chord ${i === state.currentChordIndex ? 'active' : ''}" onclick="sfSelectChord(${i})"><div class="sf-strip-name">${escapeHtml(c)}</div><div class="sf-strip-num">${i + 1}</div></div>`).join('');
-            const instList = document.getElementById('sfInstrumentList');
-            if (instList) instList.innerHTML = instruments.map(inst => `<div class="sf-instrument-item ${state.instrument === inst.id ? 'selected' : ''}" onclick="sfSelectInstrument('${inst.id}')"><span class="sf-instrument-icon">${inst.icon}</span><span class="sf-instrument-name">${inst.name}</span><span class="sf-instrument-check">✓</span></div>`).join('');
-            const secList = document.getElementById('sfSectionsList');
-            if (secList) secList.innerHTML = '<div class="option-list">' + state.sections.map((s, i) => `<div class="option-item ${state.currentSection === i ? 'selected' : ''}" onclick="selectSection(${i}); closeSFPanel('right')"><span class="option-icon">${escapeHtml(s.icon)}</span><div class="option-text"><div class="option-title">${escapeHtml(s.name)}</div></div></div>`).join('') + '</div>';
-            // Update SF transport buttons
-            const sfPlayBtn = document.getElementById('sfPlayBtn');
-            if (sfPlayBtn) { 
-                sfPlayBtn.textContent = state.isPlaying ? '⏸️' : '▶️'; 
-                sfPlayBtn.classList.toggle('playing', state.isPlaying); 
-            }
-            const sfTempo = document.getElementById('sfTempo');
-            if (sfTempo) sfTempo.textContent = state.tempo;
-        }
-        function sfSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); playChord(chords[i], '4n'); }
-        function sfSelectInstrument(id) { state.instrument = id; if (audioInit) createSynth(); renderSheetFlowUI(); closeSFPanel('left'); const inst = instruments.find(i => i.id === id); showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`); }
-        function openSFPanel(side) { 
-            const overlay = document.getElementById('sfOverlay');
-            if (overlay) overlay.classList.add('active'); 
-            const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
-            if (panel) panel.classList.add('open'); 
-        }
-        function closeSFPanel(side) {
-            const panel = document.getElementById(side === 'left' ? 'sfLeftPanel' : 'sfRightPanel');
-            if (panel) panel.classList.remove('open');
-            // Only drop the overlay once both panels are closed, otherwise the remaining
-            // panel is left floating without a backdrop.
-            const otherPanel = document.getElementById(side === 'left' ? 'sfRightPanel' : 'sfLeftPanel');
-            if (!otherPanel || !otherPanel.classList.contains('open')) {
-                const overlay = document.getElementById('sfOverlay');
-                if (overlay) overlay.classList.remove('active');
-            }
-        }
-        function closeAllSFPanels() { 
-            const overlay = document.getElementById('sfOverlay');
-            if (overlay) overlay.classList.remove('active'); 
-            document.querySelectorAll('.sf-panel').forEach(p => p.classList.remove('open')); 
-        }
-
-        // Card Deck
-        let cdExpandedCard = null, cdSwipeInitialized = false;
-        function initCardDeck() { renderCardStack(); if (!cdSwipeInitialized) { setupCardSwipe(); cdSwipeInitialized = true; } }
-        function renderCardStack() {
-            const stack = document.getElementById('cdCardStack'), dots = document.getElementById('cdNavDots');
-            if (!stack) return;
-            const displayChords = getTransposedProgression(), chord = displayChords[state.currentChordIndex] || 'C';
-            stack.innerHTML = cardTypes.map((card, i) => {
-                const offset = (i - state.currentCardIndex + cardTypes.length) % cardTypes.length;
-                const cardClass = offset === 0 ? 'active' : offset === 1 ? 'next' : offset === 2 ? 'behind' : 'hidden-card';
-                let body = '';
-                if (card.type === 'progression') body = `<div class="cd-progression-display"><div class="cd-big-chord ${state.isPlaying ? 'playing' : ''}">${escapeHtml(chord)}</div><div class="cd-chord-info">${escapeHtml(getChordTypeLabel(chord))} • ${state.currentChordIndex + 1} of ${displayChords.length}</div><div class="cd-mini-chords">${displayChords.map((c, j) => `<div class="cd-mini-chord ${j === state.currentChordIndex ? 'active' : ''}" onclick="event.stopPropagation(); cdSelectChord(${j})">${escapeHtml(c)}</div>`).join('')}</div></div>`;
-                else if (card.type === 'ai') body = `<div class="cd-tool-grid"><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('smart')"><span class="icon">✨</span><span class="label">AI Magic</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('surprise')"><span class="icon">🎁</span><span class="label">Surprise</span></div><div class="cd-tool-item ${state.aiLoading ? 'loading' : ''}" data-ai="true" onclick="event.stopPropagation(); aiGenerate('enhance')"><span class="icon">💎</span><span class="label">Enhance</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); generateProgression()"><span class="icon">🎲</span><span class="label">Random</span></div></div>`;
-                else if (card.type === 'mixer') body = `<div class="mixer-channel"><div class="channel-name">🎹 Chords</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.chordVolume}" oninput="updateFader('chord', this.value)"><span class="fader-value cd-chord-vol">${state.chordVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🎸 Bass</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.bassVolume}" oninput="updateFader('bass', this.value)"><span class="fader-value cd-bass-vol">${state.bassVolume}%</span></div></div><div class="mixer-channel"><div class="channel-name">🔊 Master</div><div class="fader-container"><input type="range" class="fader" min="0" max="100" value="${state.masterVolume}" oninput="updateFader('master', this.value)"><span class="fader-value cd-master-vol">${state.masterVolume}%</span></div></div>`;
-                else body = `<div class="cd-tool-grid"><div class="cd-tool-item" onclick="event.stopPropagation(); exportMIDI()"><span class="icon">🎹</span><span class="label">MIDI</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); exportPDF()"><span class="icon">📄</span><span class="label">PDF</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSaveModal()"><span class="icon">💾</span><span class="label">Save</span></div><div class="cd-tool-item" onclick="event.stopPropagation(); openSheet('songs')"><span class="icon">📂</span><span class="label">Load</span></div></div>`;
-                return `<div class="cd-card ${cardClass}" data-type="${card.type}" data-index="${i}"><div class="cd-card-header"><span class="cd-card-icon">${card.icon}</span><span class="cd-card-label">${card.label}</span><button class="cd-card-close" onclick="event.stopPropagation(); cdCollapseCard()">✕</button></div><div class="cd-card-body">${body}</div></div>`;
-            }).join('');
-            if (dots) dots.innerHTML = cardTypes.map((_, i) => `<div class="cd-nav-dot ${i === state.currentCardIndex ? 'active' : ''}" onclick="cdGoToCard(${i})"></div>`).join('');
-            const cdTempo = document.getElementById('cdTempo'); if (cdTempo) cdTempo.textContent = `${state.tempo} BPM`;
-            const cdPlayBtn = document.getElementById('cdPlayBtn');
-            if (cdPlayBtn) { cdPlayBtn.textContent = state.isPlaying ? '⏸️' : '▶️'; cdPlayBtn.classList.toggle('playing', state.isPlaying); }
-        }
-        let cdTouchStartX = 0, cdIsSwiping = false;
-        function setupCardSwipe() {
-            const container = document.getElementById('cdStackContainer');
-            if (!container) return;
-            container.addEventListener('touchstart', e => {
-                if (cdExpandedCard || e.touches.length === 0) return;
-                cdTouchStartX = e.touches[0].clientX;
-                cdIsSwiping = false;
-            }, { passive: true });
-            container.addEventListener('touchmove', e => {
-                if (cdExpandedCard || e.touches.length === 0) return;
-                if (Math.abs(e.touches[0].clientX - cdTouchStartX) > 20) cdIsSwiping = true;
-            }, { passive: true });
-            container.addEventListener('touchend', e => {
-                if (cdExpandedCard) return;
-                if (e.changedTouches.length === 0) { cdIsSwiping = false; return; }
-                const dx = e.changedTouches[0].clientX - cdTouchStartX;
-                if (cdIsSwiping && Math.abs(dx) > 70) { // Increased threshold from 50 to 70
-                    if (dx < 0) cdNextCard(); else cdPrevCard();
-                }
-                cdIsSwiping = false;
-            }, { passive: true });
-            container.addEventListener('click', e => { const card = e.target.closest('.cd-card'); if (card && !cdExpandedCard && card.classList.contains('active')) cdExpandCard(card); });
-        }
-        function cdNextCard() { state.currentCardIndex = (state.currentCardIndex + 1) % cardTypes.length; renderCardStack(); }
-        function cdPrevCard() { state.currentCardIndex = (state.currentCardIndex - 1 + cardTypes.length) % cardTypes.length; renderCardStack(); }
-        function cdGoToCard(i) { state.currentCardIndex = i; renderCardStack(); }
-        function cdExpandCard(card) { if (cdExpandedCard) return; cdExpandedCard = card; card.classList.add('expanded'); }
-        function cdCollapseCard() { if (cdExpandedCard) { cdExpandedCard.classList.remove('expanded'); cdExpandedCard = null; } }
-        function cdSelectChord(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); playChord(chords[i], '4n'); }
-        function renderCardDeckUI() { if (state.uiMode === 'cards') renderCardStack(); }
 
         // Playback
         let playTogglePending = false;
@@ -6176,7 +5839,7 @@
         }
 
         function renderAll() {
-            renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
+            renderSections(); renderChords(); updateProgress();
             renderTheoryHint(); updateMediaSession(); renderDiatonicHelper();
             renderHeroFretboard();
             const keyDisplay = document.getElementById('keyDisplay');
@@ -6239,28 +5902,6 @@
                     card.classList.toggle('playing', i === idx && playing);
                 });
             }
-
-            const sfCurrent = document.getElementById('sfCurrentChord');
-            if (sfCurrent) {
-                sfCurrent.textContent = chord;
-                sfCurrent.classList.toggle('playing', playing);
-            }
-            const sfLabel = document.getElementById('sfChordLabel');
-            if (sfLabel) sfLabel.textContent = `${getChordTypeLabel(chord)} • Chord ${idx + 1} of ${displayChords.length}`;
-            const strip = document.getElementById('sfChordStrip');
-            if (strip) strip.querySelectorAll('.sf-strip-chord').forEach((el, i) => el.classList.toggle('active', i === idx));
-            const sfPlayBtn = document.getElementById('sfPlayBtn');
-            if (sfPlayBtn) {
-                sfPlayBtn.textContent = playing ? '⏸️' : '▶️';
-                sfPlayBtn.classList.toggle('playing', playing);
-            }
-
-            const cdBig = document.querySelector('#cdCardStack .cd-big-chord');
-            if (cdBig) {
-                cdBig.textContent = chord;
-                cdBig.classList.toggle('playing', playing);
-            }
-            document.querySelectorAll('#cdCardStack .cd-mini-chord').forEach((el, i) => el.classList.toggle('active', i === idx));
 
             updateProgress();
         }
@@ -6824,35 +6465,8 @@
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
-            if (e.code === 'Escape') { closeSheet(); cdCollapseCard(); closeAllSFPanels(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); closeAuthModal(); closeCommunity(); closeTemplates(); closePublishModal(); closeHistory(); closeCircleOfFifths(); }
-            if (e.code === 'ArrowLeft' && state.uiMode === 'cards') cdPrevCard();
-            if (e.code === 'ArrowRight' && state.uiMode === 'cards') cdNextCard();
+            if (e.code === 'Escape') { closeSheet(); closeChordDiagram(); closeSaveModal(); closeShortcuts(); closeEarTraining(); closeChordEditModal(); closePresets(); closeQRModal(); closeAuthModal(); closeCommunity(); closeTemplates(); closePublishModal(); closeHistory(); closeCircleOfFifths(); }
         });
-
-        // Sheet Flow swipe gestures
-        let sfTouchStartX = 0, sfTouchStartY = 0, sfSwipeCanceled = false;
-        const sfCanvas = document.getElementById('sfCanvas');
-        if (sfCanvas) {
-            sfCanvas.addEventListener('touchstart', e => {
-                // Pinch-zoom and two-finger gestures arrive here too. Treat any
-                // multi-touch as "not a swipe" so accidentally pinching the sheet
-                // doesn't pop a panel open.
-                if (e.touches.length !== 1) { sfSwipeCanceled = true; return; }
-                sfSwipeCanceled = false;
-                sfTouchStartX = e.touches[0].clientX;
-                sfTouchStartY = e.touches[0].clientY;
-            }, { passive: true });
-            sfCanvas.addEventListener('touchend', e => {
-                if (sfSwipeCanceled || e.changedTouches.length === 0) return;
-                const dx = e.changedTouches[0].clientX - sfTouchStartX;
-                const dy = e.changedTouches[0].clientY - sfTouchStartY;
-                // Require a horizontal-dominant gesture (>2x horizontal vs vertical)
-                // so a diagonal scroll-with-some-X doesn't open a panel mid-scroll.
-                if (Math.abs(dx) > 100 && Math.abs(dx) > Math.abs(dy) * 2) {
-                    if (dx > 0) openSFPanel('left'); else openSFPanel('right');
-                }
-            }, { passive: true });
-        }
 
         // Cloud share links from /api/songs?action=share land here as ?song=<uuid>.
         // Without an explicit handler the parameter was silently ignored — the
