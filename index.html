@@ -38,9 +38,14 @@
         /* Small controls get an invisible expanded hit area so their effective touch
            target reaches Apple's 44pt minimum without changing the visual layout.
            (.chord-diagram-btn is already position:absolute, so no relative needed.) */
-        .section-delete, .saved-song-delete, .sheet-close { position: relative; }
-        .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
+        .section-delete, .saved-song-delete, .sheet-close, .header-btn { position: relative; }
+        .chord-diagram-btn::after, .saved-song-delete::after, .sheet-close::after, .header-btn::after { content: ''; position: absolute; inset: -8px; border-radius: 50%; }
         .section-delete::after { content: ''; position: absolute; inset: -12px; border-radius: 50%; }
+        /* Small pill controls sit in flex rows, so the hit area is expanded
+           vertically only — expanding sideways too would let neighbouring chips
+           overlap and swallow each other's taps. Takes each to >=44pt tall. */
+        .mood-chip, .speed-btn, .ab-btn, .auto-speed-btn, .count-in-btn { position: relative; }
+        .mood-chip::after, .speed-btn::after, .ab-btn::after, .auto-speed-btn::after, .count-in-btn::after { content: ''; position: absolute; inset: -5px 0; }
         /* Hover styling only where a real pointer exists. On touch, :hover
            sticks after a tap, leaving cards and chips looking selected long
            after the user moved on. */
@@ -156,9 +161,9 @@
         /* Tempo Control Row */
         .tempo-control-row { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); }
         .tempo-label { font-size: 12px; color: var(--text-secondary); margin-right: var(--spacing-xs); }
-        .tempo-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
-        .tempo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-        .tempo-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .tempo-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 8px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
+        .tempo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .tempo-slider::-moz-range-thumb { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
         .tempo-value { min-width: 60px; padding: 6px 10px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; transition: all var(--transition-fast); }
         .tempo-value:active, .tempo-value.tapping { background: var(--accent); transform: scale(1.05); }
 
@@ -173,10 +178,11 @@
 
         /* Practice Mode */
         .practice-controls { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm); }
-        .speed-btn { flex: 1; padding: 10px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .speed-btn { flex: 1; padding: 13px 10px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
         .speed-btn.active { background: var(--accent); }
         .speed-btn:active { transform: scale(0.95); }
-        .count-in-btn { padding: 10px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .count-in-btn { padding: 13px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .count-in-btn:active { transform: scale(0.94); }
         .count-in-btn.active { background: var(--accent-green); }
 
         .undo-redo-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
@@ -227,7 +233,7 @@
         .effect-control { display: flex; align-items: center; gap: var(--spacing-sm); }
         .effect-control label { font-size: 13px; color: var(--text-secondary); min-width: 60px; }
         .effect-slider { flex: 1; height: 4px; -webkit-appearance: none; background: var(--bg-tertiary); border-radius: 2px; }
-        .effect-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
+        .effect-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
         .export-card.recording { border-color: var(--accent-pink); animation: recording-pulse 1s ease infinite; }
         @keyframes recording-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 55, 95, 0.4); } 50% { box-shadow: 0 0 0 10px rgba(255, 55, 95, 0); } }
         .recording-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 9999; flex-direction: column; gap: 20px; }
@@ -262,8 +268,8 @@
         .channel-name { font-size: 14px; font-weight: 600; margin-bottom: var(--spacing-sm); }
         .fader-container { display: flex; align-items: center; gap: var(--spacing-md); }
         .fader { flex: 1; -webkit-appearance: none; appearance: none; height: 8px; background: var(--bg-tertiary); border-radius: 4px; outline: none; }
-        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
-        .fader::-moz-range-thumb { width: 24px; height: 24px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
+        .fader::-moz-range-thumb { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4); }
         .fader-value { min-width: 50px; text-align: right; font-size: 14px; color: var(--text-secondary); font-weight: 600; }
 
         .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-md); margin-bottom: var(--spacing-sm); }
@@ -277,8 +283,8 @@
         .ts-btn { padding: 6px 12px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
         .ts-btn.active { background: var(--accent); color: white; }
         .swing-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; background: var(--bg-tertiary); border-radius: 3px; outline: none; }
-        .swing-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-        .swing-slider::-moz-range-thumb { width: 20px; height: 20px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
+        .swing-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+        .swing-slider::-moz-range-thumb { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; cursor: pointer; border: none; }
         .dgm-tab.active { background: var(--accent) !important; color: white !important; }
 
         .export-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); }
@@ -521,7 +527,7 @@
 
         /* A-B Loop indicators */
         .ab-loop-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; }
-        .ab-btn { padding: 8px 14px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
+        .ab-btn { padding: 12px 14px; background: var(--bg-secondary); border: 2px solid var(--separator); border-radius: var(--radius-md); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); }
         .ab-btn.active { border-color: var(--accent-pink); background: rgba(255, 55, 95, 0.15); color: var(--accent-pink); }
         .ab-btn:active { transform: scale(0.95); }
         .ab-label { font-size: 12px; color: var(--text-secondary); }
@@ -531,7 +537,8 @@
 
         /* Auto Speed-Up */
         .auto-speed-row { display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); align-items: center; background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); }
-        .auto-speed-btn { padding: 8px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .auto-speed-btn { padding: 12px 14px; background: var(--bg-tertiary); border: none; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .auto-speed-btn:active { transform: scale(0.94); }
         .auto-speed-btn.active { background: var(--accent-orange); color: white; }
         .auto-speed-label { flex: 1; font-size: 12px; color: var(--text-secondary); }
 
@@ -796,7 +803,7 @@
         .mood-section { margin-bottom: var(--spacing-md); }
         .mood-section-label { font-size: 12px; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: var(--spacing-sm); }
         .mood-row { display: flex; flex-wrap: wrap; gap: 6px; }
-        .mood-chip { padding: 6px 11px; background: var(--bg-secondary); border: 2px solid transparent; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); color: var(--text-secondary); white-space: nowrap; }
+        .mood-chip { padding: 10px 14px; background: var(--bg-secondary); border: 2px solid transparent; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; cursor: pointer; transition: all var(--transition-fast); color: var(--text-secondary); white-space: nowrap; }
         .mood-chip.selected { background: rgba(10,132,255,0.15); border-color: var(--accent); color: var(--accent); }
         .mood-chip:active { transform: scale(0.93); }
 
@@ -846,8 +853,8 @@
         .fx-slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .fx-slider-name { font-size: 13px; color: var(--text-primary); font-weight: 600; min-width: 68px; }
         .fx-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: var(--bg-elevated); border-radius: 2px; outline: none; }
-        .fx-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
-        .fx-slider::-moz-range-thumb { width: 16px; height: 16px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; border: none; }
+        .fx-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; }
+        .fx-slider::-moz-range-thumb { width: 28px; height: 28px; background: var(--accent-purple); border-radius: 50%; cursor: pointer; border: none; }
         .fx-val { min-width: 32px; font-size: 12px; color: var(--text-secondary); text-align: right; font-weight: 600; }
         .fx-preset-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: var(--spacing-sm); }
         .fx-preset-btn { flex: 1; min-width: 48px; padding: 7px 4px; background: var(--bg-tertiary); border: 2px solid transparent; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: all var(--transition-fast); text-align: center; }
@@ -3342,6 +3349,7 @@
         // Toggles
         function toggleBass() {
             state.bassEnabled = !state.bassEnabled;
+            haptic(10);
             const toggle = document.getElementById('bassToggle');
             if (toggle) {
                 toggle.classList.toggle('active', state.bassEnabled);
@@ -3359,6 +3367,7 @@
         }
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
+            haptic(10);
             const toggle = document.getElementById('metronomeToggle');
             if (toggle) {
                 toggle.classList.toggle('active', state.metronomeEnabled);
@@ -3396,6 +3405,7 @@
         }
         function toggleLoop() {
             state.isLooping = !state.isLooping;
+            haptic(10);
             const loopBtn = document.getElementById('loopBtn');
             if (loopBtn) loopBtn.classList.toggle('active', state.isLooping);
             const cdLoopBtn = document.getElementById('cdLoopBtn');
@@ -3420,6 +3430,7 @@
             // Each tab is its own scroll context; start at the top when switching.
             const mc = document.querySelector('.main-content');
             if (mc) mc.scrollTop = 0;
+            haptic(8);
         }
         function setProduceTab(tab) {
             state.produceTab = tab;
@@ -3571,7 +3582,7 @@
             e.preventDefault();
             moveChord(parseInt(e.dataTransfer.getData('text/plain')), targetIndex);
         }
-        async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); await playChord(chords[i], '4n'); }
+        async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; haptic(8); state.currentChordIndex = i; renderPlaybackTick(); await playChord(chords[i], '4n'); }
 
         // Playback
         let playTogglePending = false;
@@ -4621,6 +4632,7 @@
         };
         function toggleDrums() {
             state.drumsEnabled = !state.drumsEnabled;
+            haptic(10);
             const btn = document.getElementById('drumToggleBtn');
             if (btn) btn.classList.toggle('active', state.drumsEnabled);
             const label = document.getElementById('drumPatternLabel');
@@ -6031,7 +6043,7 @@
                 if (!sheet) return;
                 sheet.classList.remove('dragging');
                 sheet.style.removeProperty('--drag-y');
-                if (dy > 90) closeSheet();
+                if (dy > 90) { haptic(10); closeSheet(); }
                 sheet = null;
             };
             document.addEventListener('touchstart', e => {
