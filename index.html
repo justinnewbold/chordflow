@@ -2374,7 +2374,18 @@
         }
 
         async function initAudio() {
-            if (audioInit) return;
+            if (audioInit) {
+                // Already built — but iOS suspends the AudioContext on interruptions
+                // (calls, Siri), on backgrounding, and sometimes before it is ever
+                // unlocked. Resume it here rather than returning blind: every play
+                // path funnels through initAudio, so nothing else has to remember to.
+                try {
+                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
+                        await Tone.context.resume();
+                    }
+                } catch (e) {}
+                return;
+            }
             try {
                 await Tone.start();
                 reverb = new Tone.Reverb({ decay: 2.5, wet: state.reverbAmount / 100 }).toDestination();
@@ -2888,7 +2899,12 @@
         async function playScaleNote(noteOct) {
             try { await initAudio(); if (synth) synth.triggerAttackRelease(noteOct, '8n'); } catch (e) {}
         }
+        let scaleRunTimeouts = [];
         async function playCurrentScale() {
+            // Re-tapping restarts the run rather than layering a second sequence
+            // of overlapping notes on top of the first.
+            scaleRunTimeouts.forEach(t => clearTimeout(t));
+            scaleRunTimeouts = [];
             try { await initAudio(); } catch (e) { return; }
             const def = SCALE_DEFS[scaleState.type];
             const base = 4;
@@ -2896,9 +2912,14 @@
                 const total = scaleState.root + iv + base * 12;
                 return SCALE_CHROMA[total % 12] + Math.floor(total / 12);
             });
-            seq.forEach((n, i) => setTimeout(() => {
-                try { if (synth) synth.triggerAttackRelease(n, '8n'); } catch (e) {}
-            }, i * 220));
+            const hit = n => { try { if (synth) synth.triggerAttackRelease(n, '8n'); } catch (e) {} };
+            // Sound the first note right away. Deferring every note through
+            // setTimeout left the user-gesture task before anything played, so on
+            // iOS a not-yet-running context swallowed the whole scale silently.
+            hit(seq[0]);
+            seq.slice(1).forEach((n, i) => {
+                scaleRunTimeouts.push(setTimeout(() => hit(n), (i + 1) * 220));
+            });
         }
 
         // Full-neck scale diagram: every scale tone across the chosen tuning, root highlighted.
