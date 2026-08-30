@@ -216,6 +216,8 @@
         .chord-card.seventh { border-left: 4px solid var(--accent-orange); }
         .chord-card.diminished { border-left: 4px solid var(--accent-pink); }
         .chord-card.dragging { opacity: 0.5; transform: scale(1.05); }
+        .chord-card.lifted { z-index: 50; opacity: 0.95; box-shadow: 0 12px 32px rgba(0,0,0,0.5); transition: none; }
+        .chord-card.shift { border-color: var(--accent); }
         .chord-card.drag-over { border: 2px dashed var(--accent); background: rgba(10, 132, 255, 0.1); }
         .chord-drag-handle { position: absolute; top: 8px; left: 28px; color: var(--text-tertiary); cursor: grab; font-size: 14px; opacity: 0.5; transition: opacity 0.2s; }
         .chord-card.dragging .chord-drag-handle { cursor: grabbing; }
@@ -2339,13 +2341,16 @@
                 }
             } catch (e) { console.warn('Chord play error:', e); }
         }
+        // Short vibration where the platform supports it (Android; iOS ignores
+        // navigator.vibrate). Wrapped once so call sites stay one-liners.
+        function haptic(ms) {
+            if (!navigator.vibrate) return;
+            try { navigator.vibrate(ms); } catch (e) {}
+        }
         function playMetronomeTick(accent = false) {
             if (!metronomeClick || !state.metronomeEnabled) return;
             try { metronomeClick.triggerAttackRelease(accent ? 'C5' : 'C4', '32n'); } catch (e) {}
-            // Haptic feedback on beat
-            if (navigator.vibrate) {
-                try { navigator.vibrate(accent ? 30 : 10); } catch(e) {}
-            }
+            haptic(accent ? 30 : 10);   // haptic feedback on beat
         }
 
         // Transposition
@@ -3539,13 +3544,15 @@
         function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
         function handleDragEnter(e, index) { e.preventDefault(); const card = e.target.closest('.chord-card'); if (card && !card.classList.contains('dragging')) card.classList.add('drag-over'); }
         function handleDragLeave(e) { e.target.closest('.chord-card')?.classList.remove('drag-over'); }
-        function handleDrop(e, targetIndex) {
-            e.preventDefault();
-            const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        // Single implementation of "move chord from -> to", shared by the desktop
+        // drag-and-drop handler and the touch long-press drag. Keeping one copy
+        // matters most for the A-B reset below: a second implementation that
+        // forgot it would leave the loop pointing at the wrong chords.
+        function moveChord(sourceIndex, targetIndex) {
             const prog = state.sections[state.currentSection].progression;
-            if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= prog.length) return;
-            if (targetIndex < 0 || targetIndex >= prog.length) return;
-            if (sourceIndex === targetIndex) return;
+            if (isNaN(sourceIndex) || sourceIndex < 0 || sourceIndex >= prog.length) return false;
+            if (targetIndex < 0 || targetIndex >= prog.length) return false;
+            if (sourceIndex === targetIndex) return false;
             saveStateForUndo();
             const [moved] = prog.splice(sourceIndex, 1);
             prog.splice(targetIndex, 0, moved);
@@ -3558,6 +3565,11 @@
             resetABLoopState();
             renderAll();
             showToast('🔀 Chords reordered');
+            return true;
+        }
+        function handleDrop(e, targetIndex) {
+            e.preventDefault();
+            moveChord(parseInt(e.dataTransfer.getData('text/plain')), targetIndex);
         }
         async function playChordAtIndex(i) { const chords = getTransposedProgression(); if (i < 0 || i >= chords.length) return; state.currentChordIndex = i; renderPlaybackTick(); await playChord(chords[i], '4n'); }
 
@@ -3682,7 +3694,7 @@
             }
             if (!getStrumSlots()) playChord(getTransposedProgression()[state.currentChordIndex], '2n');
             // Light haptic on the chord boundary (Android; iOS ignores vibrate)
-            if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+            haptic(12);
             renderPlaybackTick();
         }
         function stopPlaybackTimers() {
@@ -5885,6 +5897,93 @@
         // Swipe-down to dismiss bottom sheets: drag from the handle or header, the
         // sheet follows the finger (via --drag-y), and releasing past the threshold
         // dismisses; otherwise it springs back. Delegated once for all sheets.
+        // Long-press a chord card to lift it, then drag to reorder. The desktop
+        // path uses HTML5 drag-and-drop, which never fires from touch input — so
+        // without this, reordering was impossible on a phone while the card still
+        // showed a grab handle. Releasing without moving opens the chord editor,
+        // which is the discoverable mobile stand-in for desktop's double-click.
+        let chordLifted = null;   // the card element currently lifted (read by the tab swipe)
+        (function initChordTouchReorder() {
+            const LIFT_MS = 350, MOVE_CANCEL = 10, TAP_SLOP = 12;
+            let timer = null, card = null, srcIndex = -1, startX = 0, startY = 0;
+            let moved = false, didReorder = false;
+
+            const clearTimer = () => { if (timer) { clearTimeout(timer); timer = null; } };
+            const release = () => {
+                if (card) { card.classList.remove('lifted'); card.style.transform = ''; }
+                document.querySelectorAll('.chord-card.shift').forEach(c => c.classList.remove('shift'));
+                card = null; chordLifted = null; srcIndex = -1; moved = false;
+            };
+
+            document.addEventListener('touchstart', e => {
+                const c = e.target.closest && e.target.closest('.chord-card');
+                if (!c || e.touches.length !== 1) return;
+                card = c; srcIndex = parseInt(c.dataset.index, 10);
+                startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+                moved = false; didReorder = false;
+                clearTimer();
+                timer = setTimeout(() => {
+                    timer = null;
+                    if (!card) return;
+                    chordLifted = card;
+                    card.classList.add('lifted');
+                    haptic(15);
+                }, LIFT_MS);
+            }, { passive: true });
+
+            // Non-passive: once lifted we must preventDefault to stop the page
+            // scrolling out from under the drag.
+            document.addEventListener('touchmove', e => {
+                if (!card || e.touches.length !== 1) return;
+                const t = e.touches[0];
+                const dx = t.clientX - startX, dy = t.clientY - startY;
+                if (!chordLifted) {
+                    // Still waiting on the long-press: any real movement is a scroll.
+                    if (Math.abs(dx) > MOVE_CANCEL || Math.abs(dy) > MOVE_CANCEL) { clearTimer(); card = null; }
+                    return;
+                }
+                e.preventDefault();
+                moved = moved || Math.abs(dx) > TAP_SLOP || Math.abs(dy) > TAP_SLOP;
+                card.style.transform = `translate(${dx}px, ${dy}px) scale(1.06)`;
+                // Show where it would land.
+                document.querySelectorAll('.chord-card.shift').forEach(c => c.classList.remove('shift'));
+                const over = document.elementFromPoint(t.clientX, t.clientY);
+                const target = over && over.closest && over.closest('.chord-card');
+                if (target && target !== card) target.classList.add('shift');
+            }, { passive: false });
+
+            const finish = () => {
+                clearTimer();
+                if (!card) return;
+                if (chordLifted) {
+                    const target = document.querySelector('.chord-card.shift');
+                    if (moved && target) {
+                        const to = parseInt(target.dataset.index, 10);
+                        didReorder = moveChord(srcIndex, to);
+                        if (didReorder) haptic(20);
+                    } else if (!moved) {
+                        // Long-press held in place = edit this chord.
+                        const i = srcIndex;
+                        release();
+                        openChordEditModal(i);
+                        didReorder = true;   // also suppresses the trailing click
+                        return;
+                    }
+                }
+                release();
+            };
+            document.addEventListener('touchend', finish);
+            document.addEventListener('touchcancel', () => { clearTimer(); release(); });
+
+            // A completed drag/edit must not also fire the card's tap-to-play.
+            document.addEventListener('click', e => {
+                if (!didReorder) return;
+                didReorder = false;
+                const c = e.target.closest && e.target.closest('.chord-card');
+                if (c) { e.preventDefault(); e.stopPropagation(); }
+            }, true);
+        })();
+
         (function initSheetSwipeDismiss() {
             let sheet = null, startY = 0, dy = 0;
             const endDrag = () => {
