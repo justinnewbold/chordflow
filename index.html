@@ -906,6 +906,12 @@
         .fx-preset-btn.active { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(191,90,242,0.1); }
         /* ---- Scale Explorer ---- */
         .scale-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+        /* Note currently sounding during a Play Scale run. Green reads clearly
+           against both the blue root fill and the unlit scale tones. */
+        .scale-fb-note circle { transition: fill .12s ease, stroke .12s ease, stroke-width .12s ease; }
+        .scale-fb-note text { transition: fill .12s ease; }
+        .scale-fb-note.lit circle { fill: var(--accent-green); stroke: var(--accent-green); stroke-width: 3; }
+        .scale-fb-note.lit text { fill: #fff; }
         .scale-chip { padding: 7px 12px; background: var(--bg-tertiary); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
         .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px;  overscroll-behavior-x: contain; }
@@ -2856,6 +2862,9 @@
         }
 
         function renderScaleExplorer() {
+            // A run in flight refers to notes that are about to be replaced, so
+            // cancel it rather than letting it light up the redrawn neck.
+            stopScaleRun();
             // On first open, default the root to the song's current key.
             if (!scaleState.synced) {
                 const ri = scaleNoteIndex((state.key || 'C').replace(/m$/, ''));
@@ -2900,26 +2909,43 @@
             try { await initAudio(); if (synth) synth.triggerAttackRelease(noteOct, '8n'); } catch (e) {}
         }
         let scaleRunTimeouts = [];
+        // Light up every position of the pitch class currently sounding, so the run
+        // is visible on the neck and not just audible. Passing null clears.
+        function litScaleNotes(pc) {
+            document.querySelectorAll('.scale-fb-note.lit').forEach(g => g.classList.remove('lit'));
+            if (pc === null) return;
+            document.querySelectorAll(`.scale-fb-note[data-pc="${pc}"]`).forEach(g => g.classList.add('lit'));
+        }
+        function stopScaleRun() {
+            scaleRunTimeouts.forEach(t => clearTimeout(t));
+            scaleRunTimeouts = [];
+            litScaleNotes(null);
+        }
         async function playCurrentScale() {
             // Re-tapping restarts the run rather than layering a second sequence
             // of overlapping notes on top of the first.
-            scaleRunTimeouts.forEach(t => clearTimeout(t));
-            scaleRunTimeouts = [];
+            stopScaleRun();
             try { await initAudio(); } catch (e) { return; }
             const def = SCALE_DEFS[scaleState.type];
             const base = 4;
+            const STEP = 220;
             const seq = def.ints.concat([12]).map(iv => {
                 const total = scaleState.root + iv + base * 12;
-                return SCALE_CHROMA[total % 12] + Math.floor(total / 12);
+                return { name: SCALE_CHROMA[total % 12] + Math.floor(total / 12), pc: total % 12 };
             });
-            const hit = n => { try { if (synth) synth.triggerAttackRelease(n, '8n'); } catch (e) {} };
+            const hit = s => {
+                litScaleNotes(s.pc);
+                try { if (synth) synth.triggerAttackRelease(s.name, '8n'); } catch (e) {}
+            };
             // Sound the first note right away. Deferring every note through
             // setTimeout left the user-gesture task before anything played, so on
             // iOS a not-yet-running context swallowed the whole scale silently.
             hit(seq[0]);
-            seq.slice(1).forEach((n, i) => {
-                scaleRunTimeouts.push(setTimeout(() => hit(n), (i + 1) * 220));
+            seq.slice(1).forEach((s, i) => {
+                scaleRunTimeouts.push(setTimeout(() => hit(s), (i + 1) * STEP));
             });
+            // Clear the last note's highlight once the run finishes.
+            scaleRunTimeouts.push(setTimeout(() => litScaleNotes(null), seq.length * STEP));
         }
 
         // Full-neck scale diagram: every scale tone across the chosen tuning, root highlighted.
@@ -2958,7 +2984,9 @@
                     const cx = f === 0 ? padL - 15 : padL + (f - 0.5) * fretW;
                     const label = scaleState.label === 'degrees' ? degByNote.get(nIdx) : SCALE_CHROMA[nIdx];
                     const noteOct = scaleNoteAtFret(openStr, f);
-                    svg += `<g style="cursor:pointer;" onclick="playScaleNote('${noteOct}')">`;
+                    // data-pc tags the pitch class so the Play Scale run can light
+                    // up every position of the note currently sounding.
+                    svg += `<g class="scale-fb-note" data-pc="${nIdx}" style="cursor:pointer;" onclick="playScaleNote('${noteOct}')">`;
                     svg += `<circle cx="${cx}" cy="${y}" r="9.5" fill="${isRoot ? 'var(--accent)' : 'var(--bg-tertiary)'}" stroke="var(--accent)" stroke-width="1.5"/>`;
                     svg += `<text x="${cx}" y="${y + 3}" text-anchor="middle" font-size="${label.length > 1 ? 7 : 8}" font-weight="700" fill="${isRoot ? '#fff' : 'var(--text-primary)'}" style="pointer-events:none;">${label}</text>`;
                     svg += `</g>`;
@@ -2968,6 +2996,7 @@
             svg += `<div style="display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:11px;color:var(--text-secondary);">`
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:4px;"></span>Root</span>`
                 + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-tertiary);border:1.5px solid var(--accent);vertical-align:middle;margin-right:4px;"></span>Scale tone</span>`
+                + `<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent-green);vertical-align:middle;margin-right:4px;"></span>Playing</span>`
                 + `</div>`;
             return svg;
         }
@@ -6201,6 +6230,8 @@
             const overlay = document.getElementById('sheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            // Don't let a scale keep playing after its sheet is dismissed.
+            if (typeof stopScaleRun === 'function') stopScaleRun();
             restoreFocusFor('sheet');
         }
         // Swipe-down to dismiss bottom sheets: drag from the handle or header, the
