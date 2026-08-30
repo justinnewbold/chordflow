@@ -5984,6 +5984,47 @@
             }, true);
         })();
 
+        // Swipe left/right across the content to move between Play, Practice and
+        // Studio — the gesture a bottom tab bar implies. Deliberately narrow so it
+        // cannot fire by accident: it needs a clearly horizontal gesture, it never
+        // starts inside a sideways-scrolling strip (sections, filters, the scale
+        // neck), and it stands down entirely while a chord is lifted for dragging.
+        (function initTabSwipe() {
+            const DIST = 80, DOMINANCE = 2;
+            let x0 = 0, y0 = 0, tracking = false;
+            const inHorizontalScroller = el => {
+                for (let n = el; n && n !== document.body; n = n.parentElement) {
+                    if (n.scrollWidth > n.clientWidth + 4) {
+                        const ox = getComputedStyle(n).overflowX;
+                        if (ox === 'auto' || ox === 'scroll') return true;
+                    }
+                }
+                return false;
+            };
+            const main = () => document.querySelector('.main-content');
+            document.addEventListener('touchstart', e => {
+                tracking = false;
+                if (e.touches.length !== 1 || chordLifted) return;
+                const mc = main();
+                if (!mc || !mc.contains(e.target)) return;
+                if (e.target.closest && e.target.closest('input, textarea, select')) return;
+                if (inHorizontalScroller(e.target)) return;
+                x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; tracking = true;
+            }, { passive: true });
+            document.addEventListener('touchend', e => {
+                if (!tracking || chordLifted || e.changedTouches.length === 0) { tracking = false; return; }
+                tracking = false;
+                const dx = e.changedTouches[0].clientX - x0;
+                const dy = e.changedTouches[0].clientY - y0;
+                if (Math.abs(dx) < DIST || Math.abs(dx) < Math.abs(dy) * DOMINANCE) return;
+                const i = TABS.indexOf(state.tab);
+                const next = i + (dx < 0 ? 1 : -1);
+                if (next < 0 || next >= TABS.length) return;   // no wrap: ends feel like ends
+                setTab(TABS[next]);
+                haptic(10);
+            }, { passive: true });
+        })();
+
         (function initSheetSwipeDismiss() {
             let sheet = null, startY = 0, dy = 0;
             const endDrag = () => {
