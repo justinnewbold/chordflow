@@ -74,7 +74,6 @@
            content — especially fretboard views in sheets — gets the height. */
         @media (orientation: landscape) and (max-height: 500px) {
             .header { padding-top: var(--spacing-sm); padding-bottom: var(--spacing-sm); }
-            .mode-toggle { top: calc(var(--safe-top) + 52px); }
             .bottom-sheet { max-height: 95dvh; }
             #dualModeUI { padding-bottom: calc(var(--safe-bottom) + 70px); }
         }
@@ -129,13 +128,16 @@
         }
         .header-btn:active { transform: scale(0.92); }
         .header-btn.active { background: var(--accent); }
-        .mode-toggle { position: fixed; top: calc(var(--safe-top) + 70px); left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border-radius: var(--radius-full); padding: 4px; display: flex; z-index: 200; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
-        .mode-btn { padding: 10px 24px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
-        .mode-btn.active { background: var(--accent); color: white; }
         /* min-height:0 is required: a flex item defaults to min-height:auto, which
            refuses to shrink below its content and defeats overflow-y on its own,
            even once the container has a definite height. */
-        .main-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-lg); padding-top: 80px; }
+        .tabbar { display: flex; flex-shrink: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); }
+        .tabbar-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 10px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; transition: color var(--transition-fast); }
+        .tabbar-btn .tabbar-icon { font-size: 20px; line-height: 1; }
+        .tabbar-btn .tabbar-label { font-size: 11px; font-weight: 600; }
+        .tabbar-btn.active { color: var(--accent); }
+        .tabbar-btn:active { transform: scale(0.96); }
+        .main-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-lg); }
 
         .mode-view { display: none; }
         .mode-view.active { display: block; }
@@ -644,7 +646,6 @@
             .presets-card { max-width: 500px; }
         }
         @media (min-width: 1024px) {
-            .main-content { padding-top: 60px; }
             .chord-grid { grid-template-columns: repeat(4, 1fr); gap: var(--spacing-lg); }
             .tempo-control-row { max-width: 600px; }
             .custom-chord-row { max-width: 600px; }
@@ -908,12 +909,8 @@
                 <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
             </div>
         </header>
-        <div class="mode-toggle">
-            <button class="mode-btn active" onclick="setMode('create')" id="createModeBtn">✨ Create</button>
-            <button class="mode-btn" onclick="setMode('produce')" id="produceModeBtn">🎚️ Produce</button>
-        </div>
         <main class="main-content">
-            <div class="mode-view active" id="createView">
+            <div class="mode-view active" id="playView">
                 <!-- Guitar-first hero: the shape for the chord under the playhead,
                      visible the moment the app opens and tracking playback live. -->
                 <div class="hero-fb" id="heroFb" role="button" tabindex="0" onclick="openHeroChordDiagram()">
@@ -961,41 +958,10 @@
                     </div>
                 </div>
 
-                <div class="practice-controls">
-                    <button class="speed-btn" onclick="setSpeed(0.5)" id="speed50">50%</button>
-                    <button class="speed-btn" onclick="setSpeed(0.75)" id="speed75">75%</button>
-                    <button class="speed-btn active" onclick="setSpeed(1)" id="speed100">100%</button>
-                    <button class="count-in-btn" onclick="toggleCountIn()" id="countInBtn">📢 Count</button>
-                </div>
 
-                <!-- Auto Speed-Up Practice -->
-                <div class="auto-speed-row">
-                    <span class="auto-speed-label" id="autoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
-                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp()" id="autoSpeedBtn">OFF</button>
-                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3)" id="aspd3">+3</button>
-                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5)" id="aspd5">+5</button>
-                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10)" id="aspd10">+10</button>
-                </div>
 
-                <!-- A-B Loop -->
-                <div class="ab-loop-row">
-                    <button class="ab-btn" onclick="setABPoint('A')" id="abStartBtn">🅰️ Start</button>
-                    <button class="ab-btn" onclick="setABPoint('B')" id="abEndBtn">🅱️ End</button>
-                    <button class="ab-btn" onclick="clearABLoop()" id="abClearBtn">✕ Clear</button>
-                    <span class="ab-label" id="abLabel">A-B Loop: OFF</span>
-                </div>
 
-                <!-- Drum Pattern Toggle -->
-                <div class="drum-toggle-row">
-                    <button class="drum-toggle-btn" onclick="toggleDrums()" id="drumToggleBtn">🥁 Drums</button>
-                    <span class="drum-pattern-label" id="drumPatternLabel">Drums: OFF</span>
-                </div>
 
-                <!-- Arrangement Playback -->
-                <div class="arrangement-row">
-                    <button class="arrangement-btn" onclick="toggleArrangementPlay()" id="arrangementBtn">🎼 Play All Sections</button>
-                    <span class="arrangement-label" id="arrangementLabel">Play through all sections in order</span>
-                </div>
 
                 <div class="undo-redo-row">
                     <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
@@ -1072,6 +1038,84 @@
                     <span>🎶</span>
                     <span id="melodyText"></span>
                 </div>
+            </div>
+            <!-- PRACTICE: everything about getting better at playing the part -->
+            <div class="mode-view" id="practiceView">
+                <div class="settings-group">
+                    <div class="settings-group-title">Speed &amp; Looping</div>
+                <div class="practice-controls">
+                    <button class="speed-btn" onclick="setSpeed(0.5)" id="speed50">50%</button>
+                    <button class="speed-btn" onclick="setSpeed(0.75)" id="speed75">75%</button>
+                    <button class="speed-btn active" onclick="setSpeed(1)" id="speed100">100%</button>
+                    <button class="count-in-btn" onclick="toggleCountIn()" id="countInBtn">📢 Count</button>
+                </div>
+                <!-- Auto Speed-Up Practice -->
+                <div class="auto-speed-row">
+                    <span class="auto-speed-label" id="autoSpeedLabel">🏃 Auto Speed-Up: OFF</span>
+                    <button class="auto-speed-btn" onclick="toggleAutoSpeedUp()" id="autoSpeedBtn">OFF</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(3)" id="aspd3">+3</button>
+                    <button class="auto-speed-btn active" onclick="setAutoSpeedIncrement(5)" id="aspd5">+5</button>
+                    <button class="auto-speed-btn" onclick="setAutoSpeedIncrement(10)" id="aspd10">+10</button>
+                </div>
+                <!-- A-B Loop -->
+                <div class="ab-loop-row">
+                    <button class="ab-btn" onclick="setABPoint('A')" id="abStartBtn">🅰️ Start</button>
+                    <button class="ab-btn" onclick="setABPoint('B')" id="abEndBtn">🅱️ End</button>
+                    <button class="ab-btn" onclick="clearABLoop()" id="abClearBtn">✕ Clear</button>
+                    <span class="ab-label" id="abLabel">A-B Loop: OFF</span>
+                </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-group-title">🎸 Guitar</div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openSheet('scales')">
+                        <div class="settings-label"><span class="settings-icon">🎸</span><span>Scale Explorer</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
+                        <div class="settings-label"><span class="settings-icon">🎼</span><span>Chord Sheet</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openSheet('strum')">
+                        <div class="settings-label"><span class="settings-icon">🎵</span><span>Strumming Pattern</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
+                        <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-group-title">Learn &amp; Train</div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openSheet('learn')">
+                        <div class="settings-label"><span class="settings-icon">📚</span><span>Learn Songs</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
+                        <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
+                        <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
+                        <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
+                        <span style="color: var(--text-secondary);">›</span>
+                    </div>
+                </div>
+            </div>
+            <!-- STUDIO: produce and share what you wrote -->
+            <div class="mode-view" id="studioView">
+                <!-- Drum Pattern Toggle -->
+                <div class="drum-toggle-row">
+                    <button class="drum-toggle-btn" onclick="toggleDrums()" id="drumToggleBtn">🥁 Drums</button>
+                    <span class="drum-pattern-label" id="drumPatternLabel">Drums: OFF</span>
+                </div>
+                <!-- Arrangement Playback -->
+                <div class="arrangement-row">
+                    <button class="arrangement-btn" onclick="toggleArrangementPlay()" id="arrangementBtn">🎼 Play All Sections</button>
+                    <span class="arrangement-label" id="arrangementLabel">Play through all sections in order</span>
+                </div>
                 <!-- Share Buttons -->
                 <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
                     <button class="share-btn" onclick="shareProgression()" style="flex:1;margin-top:0;">🔗 Share Link</button>
@@ -1081,8 +1125,6 @@
                     <button class="share-btn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
                     <button class="share-btn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
                 </div>
-            </div>
-            <div class="mode-view" id="produceView">
                 <div class="produce-tabs">
                     <button class="produce-tab active" onclick="setProduceTab('mixer')">🎚️ Mixer</button>
                     <button class="produce-tab" onclick="setProduceTab('export')">📤 Export</button>
@@ -1207,6 +1249,20 @@
                 </div>
             </div>
         </main>
+        <!-- Primary navigation. Three destinations so every feature has one
+             obvious home; sits above the transport as a flex child, so no fixed
+             positioning or padding compensation is needed. -->
+        <nav class="tabbar" role="tablist">
+            <button class="tabbar-btn active" id="tabPlay" role="tab" aria-selected="true" onclick="setTab('play')">
+                <span class="tabbar-icon">🎸</span><span class="tabbar-label">Play</span>
+            </button>
+            <button class="tabbar-btn" id="tabPractice" role="tab" aria-selected="false" onclick="setTab('practice')">
+                <span class="tabbar-icon">🎯</span><span class="tabbar-label">Practice</span>
+            </button>
+            <button class="tabbar-btn" id="tabStudio" role="tab" aria-selected="false" onclick="setTab('studio')">
+                <span class="tabbar-icon">🎛️</span><span class="tabbar-label">Studio</span>
+            </button>
+        </nav>
         <div class="transport">
             <div class="transport-left">
                 <button class="transport-btn" onclick="openSheet('instrument')">🎹</button>
@@ -1256,15 +1312,8 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
-            <!-- Settings holds preferences only; everything you *do* lives in the
-                 Tools sheet. This signpost is the route there for Dual Mode, whose
-                 header has no room for the 🧰 button the other UI modes carry. -->
-            <div class="settings-group">
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tools')">
-                    <div class="settings-label"><span class="settings-icon">🧰</span><span>All Tools</span></div>
-                    <span style="color: var(--text-secondary);">Guitar, practice, quizzes ›</span>
-                </div>
-            </div>
+            <!-- Settings holds preferences only. Everything you *do* now lives
+                 behind the Play / Practice / Studio tabs, so no signpost is needed. -->
             <div class="settings-group">
                 <div class="settings-group-title">Account</div>
                 <div id="accountSection"></div>
@@ -1300,88 +1349,6 @@
         <div class="sheet-body" id="songsSheetBody"></div>
     </div>
 
-    <!-- Tools sheet: Learn & Practice, reachable from every UI mode -->
-    <div class="bottom-sheet" id="toolsSheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🧰 Tools</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
-        <div class="sheet-body">
-            <div class="settings-group">
-                <div class="settings-group-title">🎸 Guitar</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('chordSheet')">
-                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Guitar Chord Sheet</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('strum')">
-                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Strumming Pattern</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('tuner')">
-                    <div class="settings-label"><span class="settings-icon">🔧</span><span>Tuner</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Learn &amp; Practice</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('learn')">
-                    <div class="settings-label"><span class="settings-icon">📚</span><span>Learn Songs</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('practice')">
-                    <div class="settings-label"><span class="settings-icon">🎯</span><span>Practice Speed</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('scales')">
-                    <div class="settings-label"><span class="settings-icon">🎸</span><span>Scale Explorer</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Train Your Ear &amp; Eye</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('visual')">
-                    <div class="settings-label"><span class="settings-icon">👁️</span><span>Name That Chord</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('chord')">
-                    <div class="settings-label"><span class="settings-icon">🎵</span><span>Guess the Chord</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openEarTraining('interval')">
-                    <div class="settings-label"><span class="settings-icon">🎶</span><span>Interval Recognition</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Your Songs</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSaveModal()">
-                    <div class="settings-label"><span class="settings-icon">💾</span><span>Save Song</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openSheet('songs')">
-                    <div class="settings-label"><span class="settings-icon">📂</span><span>Load Saved Song</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-            <div class="settings-group">
-                <div class="settings-group-title">Create &amp; Discover</div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openPresets()">
-                    <div class="settings-label"><span class="settings-icon">📚</span><span>Chord Presets</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openTemplates()">
-                    <div class="settings-label"><span class="settings-icon">🎼</span><span>Song Templates</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="openCommunity()">
-                    <div class="settings-label"><span class="settings-icon">🌍</span><span>Community Hub</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-                <div class="settings-item" tabindex="0" role="button" onclick="shareQRCode()">
-                    <div class="settings-label"><span class="settings-icon">📱</span><span>Share QR Code</span></div>
-                    <span style="color: var(--text-secondary);">›</span>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Scale Explorer sheet (interactive scale fretboard with playback) -->
     <div class="bottom-sheet" id="scalesSheet">
@@ -1413,7 +1380,6 @@
             <div style="text-align:center; font-size:11px; color: var(--text-tertiary); margin-top:6px;">Tap any note on the neck to hear it • scroll sideways for the full neck</div>
         </div>
     </div>
-
     <!-- Learn Songs sheet (global; loads a public-domain song into the current progression) -->
     <div class="bottom-sheet" id="learnSheet">
         <div class="sheet-handle"></div>
@@ -2146,7 +2112,7 @@
         // State
         const state = {
             onboardingComplete: safeGetItem('chordflow-onboarding') === 'complete',
-            mode: 'create', produceTab: 'mixer',
+            tab: safeGetItem('chordflow-tab') || 'play', produceTab: 'mixer',
             key: 'C', genre: 'pop', instrument: 'piano',
             baseTempo: 120, tempo: 120, speedMultiplier: 1,
             isPlaying: false, isLooping: true, currentChordIndex: 0, currentBeat: 0,
@@ -3340,7 +3306,7 @@
             // nothing to choose between and no mode state to consult.
             const container = document.getElementById('dualModeUI');
             if (container) container.classList.add('active');
-            syncUIState(); renderAll(); renderSavedSongs(); renderLearnSongs();
+            syncUIState(); setTab(state.tab); renderAll(); renderSavedSongs(); renderLearnSongs();
             // v0.73: Initialize new features
             renderAccountSection();
             renderCloudSongsPrompt();
@@ -3456,16 +3422,23 @@
         }
 
         // Dual Mode
-        function setMode(mode) {
-            state.mode = mode;
-            const createBtn = document.getElementById('createModeBtn');
-            const produceBtn = document.getElementById('produceModeBtn');
-            const createView = document.getElementById('createView');
-            const produceView = document.getElementById('produceView');
-            if (createBtn) createBtn.classList.toggle('active', mode === 'create');
-            if (produceBtn) produceBtn.classList.toggle('active', mode === 'produce');
-            if (createView) createView.classList.toggle('active', mode === 'create');
-            if (produceView) produceView.classList.toggle('active', mode === 'produce');
+        // Primary navigation. Three destinations, each the single home for one
+        // kind of work; the chosen tab persists so the app reopens where you were.
+        const TABS = ['play', 'practice', 'studio'];
+        function setTab(tab) {
+            if (!TABS.includes(tab)) tab = 'play';
+            state.tab = tab;
+            safeSetItem('chordflow-tab', tab);
+            TABS.forEach(t => {
+                const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
+                if (btn) { btn.classList.toggle('active', t === tab); btn.setAttribute('aria-selected', t === tab ? 'true' : 'false'); }
+                const view = document.getElementById(t + 'View');
+                if (view) view.classList.toggle('active', t === tab);
+            });
+            // Each tab is its own scroll context; start at the top when switching.
+            const mc = document.querySelector('.main-content');
+            if (mc) mc.scrollTop = 0;
+            if (tab === 'practice') syncPracticeSheet();
         }
         function setProduceTab(tab) {
             state.produceTab = tab;
@@ -4022,7 +3995,7 @@
             if (!currentLearnSong) return;
             applyLearnSong(currentLearnSong);
             closeSongPlayer();
-            setMode('create');
+            setTab('play');
             setProduceTab('mixer');
             updateBeatDotContainers(); renderAll();
             showToast(`📚 Loaded "${currentLearnSong.title}" to editor`);
