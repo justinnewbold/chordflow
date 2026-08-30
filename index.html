@@ -176,6 +176,19 @@
         .section-delete { display: none; width: 20px; height: 20px; background: var(--accent-pink); border-radius: 50%; align-items: center; justify-content: center; font-size: 12px; margin-left: 4px; flex-shrink: 0; }
         .add-section-btn { padding: 10px 16px; background: var(--bg-tertiary); border: 2px dashed var(--separator); border-radius: var(--radius-full); color: var(--text-secondary); font-size: 14px; cursor: pointer; flex-shrink: 0; }
 
+        /* Guitar-first hero panel on the main screen */
+        .hero-fb { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-md); margin-bottom: var(--spacing-md); cursor: pointer; user-select: none; border: 1px solid var(--separator); }
+        .hero-fb:active { transform: scale(0.995); }
+        .hero-fb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-sm); }
+        .hero-fb-chord { font-size: 30px; font-weight: 800; line-height: 1.05; }
+        .hero-fb-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .hero-fb-hint { font-size: 10px; color: var(--text-tertiary); text-align: right; line-height: 1.25; flex-shrink: 0; }
+        .hero-fb-diagram { display: flex; justify-content: center; padding: var(--spacing-xs) 0 2px; min-height: 150px; }
+        .hero-fb-diagram svg { height: auto; }
+        /* Mini progression strip: which chord the playhead is on, at a glance */
+        .hero-fb-strip { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+        .hero-fb-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: var(--radius-full); background: var(--bg-tertiary); color: var(--text-secondary); }
+        .hero-fb-pill.on { background: var(--accent); color: #fff; }
         .chord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md); margin-bottom: var(--spacing-lg); }
         .chord-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); text-align: center; cursor: pointer; transition: all var(--transition-fast); position: relative; border: 2px solid transparent; }
         .chord-card:active { transform: scale(0.96); }
@@ -960,7 +973,7 @@
     <!-- Dual Mode UI -->
     <div id="dualModeUI" class="ui-container">
         <header class="header">
-            <div class="logo">🎵 ChordFlow</div>
+            <div class="logo">🎸 ChordFlow</div>
             <div class="header-actions">
                 <button class="header-btn" onclick="openHistory()" title="Progression History">🕐</button>
                 <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
@@ -976,6 +989,20 @@
         </div>
         <main class="main-content">
             <div class="mode-view active" id="createView">
+                <!-- Guitar-first hero: the shape for the chord under the playhead,
+                     visible the moment the app opens and tracking playback live. -->
+                <div class="hero-fb" id="heroFb" role="button" tabindex="0" onclick="openHeroChordDiagram()">
+                    <div class="hero-fb-head">
+                        <div>
+                            <div class="hero-fb-chord" id="heroFbChord">C</div>
+                            <div class="hero-fb-sub" id="heroFbSub">C major</div>
+                        </div>
+                        <div class="hero-fb-hint">tap for<br>all views</div>
+                    </div>
+                    <div class="hero-fb-diagram" id="heroFbDiagram"></div>
+                    <div class="hero-fb-strip" id="heroFbStrip"></div>
+                </div>
+
                 <div class="settings-row">
                     <button class="setting-chip" onclick="openSheet('key')">
                         <span class="label">Key</span>
@@ -1276,7 +1303,7 @@
     <!-- Sheet Flow UI -->
     <div id="sheetFlowUI" class="ui-container">
         <div class="sf-header">
-            <div class="sf-logo">🎵 ChordFlow</div>
+            <div class="sf-logo">🎸 ChordFlow</div>
             <div class="sf-header-actions">
                 <button class="sf-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="sf-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
@@ -1331,7 +1358,7 @@
     <!-- Card Deck UI -->
     <div id="cardDeckUI" class="ui-container">
         <div class="cd-header">
-            <div class="cd-logo">🎵 ChordFlow</div>
+            <div class="cd-logo">🎸 ChordFlow</div>
             <div class="cd-header-actions">
                 <button class="cd-header-btn" onclick="openHistory()" title="History">🕐</button>
                 <button class="cd-header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
@@ -3138,7 +3165,11 @@
             }
             // barre: the lowest repeated fret is a barre only when every string it
             // spans is pressed at or above it (no open/muted/lower notes inside the
-            // span) and it covers 3+ strings — this rejects e.g. open G (3 2 0 0 0 3).
+            // span, which rejects open G: 3 2 0 0 0 3), it covers 3+ strings, AND
+            // one finger holds them all. That last test is what separates a real
+            // barre from a shape that merely looks like one: open D (x x 0 2 3 2)
+            // has the same fret geometry as F (1 3 3 2 1 1), but its two fret-2
+            // strings are held by different fingers, so it is not barred.
             const fretCount = {};
             frets.forEach(v => { if (v > 0) fretCount[v] = (fretCount[v] || 0) + 1; });
             let barreFret = 0;
@@ -3148,7 +3179,9 @@
                 const lo = Math.min(...strs), hi = Math.max(...strs);
                 let contiguous = (hi - lo) >= 2;
                 for (let s = lo; s <= hi && contiguous; s++) if (frets[s] < v) contiguous = false;
-                if (contiguous) barreFret = v;
+                const finger = fingers[strs[0]];
+                const oneFinger = finger > 0 && strs.every(s => fingers[s] === finger);
+                if (contiguous && oneFinger) barreFret = v;
             });
             if (barreFret) {
                 const strs = frets.map((v, s) => v === barreFret ? s : -1).filter(s => s >= 0);
@@ -6136,6 +6169,7 @@
         function renderAll() {
             renderSections(); renderChords(); renderSheetFlowUI(); renderCardDeckUI(); updateProgress();
             renderTheoryHint(); updateMediaSession(); renderDiatonicHelper();
+            renderHeroFretboard();
             const keyDisplay = document.getElementById('keyDisplay');
             if (keyDisplay) keyDisplay.textContent = getKeyInfo().display;
             const genreDisplay = document.getElementById('genreDisplay');
@@ -6150,11 +6184,44 @@
         // whole UI to flash on every chord boundary during playback. Use this when
         // only state.currentChordIndex or state.isPlaying changed, not when the
         // chord list, section, key, or genre changed.
+        // ===== Guitar-first hero fretboard (main screen) =====
+        // Shows the shape for the chord under the playhead. Rendering the SVG is
+        // only worth doing when the chord actually changes, so the shape is cached
+        // — renderPlaybackTick runs on every chord advance.
+        let heroFbLastChord = null;
+        function renderHeroFretboard() {
+            const wrap = document.getElementById('heroFb');
+            if (!wrap) return;
+            const chords = getTransposedProgression();
+            const idx = state.currentChordIndex;
+            const chord = chords[idx] || 'C';
+            if (chord !== heroFbLastChord) {
+                heroFbLastChord = chord;
+                const nameEl = document.getElementById('heroFbChord');
+                if (nameEl) nameEl.textContent = chord;
+                const subEl = document.getElementById('heroFbSub');
+                if (subEl) subEl.textContent = getChordTypeLabel(chord);
+                const dgm = document.getElementById('heroFbDiagram');
+                if (dgm) dgm.innerHTML = mkGuitar(chord);
+            }
+            const strip = document.getElementById('heroFbStrip');
+            if (strip) {
+                strip.innerHTML = chords.map((c, i) =>
+                    `<span class="hero-fb-pill${i === idx ? ' on' : ''}">${escapeHtml(c)}</span>`).join('');
+            }
+        }
+        function openHeroChordDiagram() {
+            const chords = getTransposedProgression();
+            const idx = state.currentChordIndex;
+            if (chords[idx]) showChordDiagram(chords[idx], idx);
+        }
         function renderPlaybackTick() {
             const displayChords = getTransposedProgression();
             const idx = state.currentChordIndex;
             const chord = displayChords[idx] || 'C';
             const playing = state.isPlaying;
+
+            renderHeroFretboard();
 
             const grid = document.getElementById('chordGrid');
             if (grid) {
