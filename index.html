@@ -89,7 +89,7 @@
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .onboarding-title { font-size: 32px; font-weight: 800; margin-bottom: var(--spacing-sm); }
         .onboarding-subtitle { font-size: 17px; color: var(--text-secondary); max-width: 300px; margin: 0 auto; line-height: 1.4; }
-        .onboarding-modes { flex: 1; display: flex; flex-direction: column; gap: var(--spacing-md); padding: var(--spacing-lg) 0; max-width: 400px; margin: 0 auto; width: 100%; overflow-y: auto; }
+        .onboarding-modes { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--spacing-md); padding: var(--spacing-lg) 0; max-width: 400px; margin: 0 auto; width: 100%; overflow-y: auto; }
         .mode-option { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; display: flex; align-items: center; gap: var(--spacing-md); }
         .mode-option.selected { border-color: var(--accent); background: rgba(10, 132, 255, 0.1); }
         .mode-option-icon { font-size: 40px; flex-shrink: 0; }
@@ -104,7 +104,13 @@
 
         /* UI Container */
         .ui-container { display: none; min-height: 100vh; min-height: 100dvh; }
-        .ui-container.active { display: flex; flex-direction: column; }
+        /* The active UI must be exactly viewport-tall, not merely at-least. With
+           only min-height the column grows to fit its content, so .main-content's
+           flex:1 resolves to the full content height, nothing overflows *inside*
+           it, and its overflow-y:auto never engages — with html/body set to
+           overflow:hidden that left everything below the fold unreachable. A
+           definite height gives .main-content real leftover space to scroll in. */
+        .ui-container.active { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 
         /* DUAL MODE */
         #dualModeUI { padding-top: var(--safe-top); padding-bottom: calc(var(--safe-bottom) + 90px); }
@@ -126,7 +132,10 @@
         .mode-toggle { position: fixed; top: calc(var(--safe-top) + 70px); left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border-radius: var(--radius-full); padding: 4px; display: flex; z-index: 200; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
         .mode-btn { padding: 10px 24px; border: none; border-radius: var(--radius-full); background: transparent; color: var(--text-secondary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px; }
         .mode-btn.active { background: var(--accent); color: white; }
-        .main-content { flex: 1; overflow-y: auto; padding: var(--spacing-lg); padding-top: 80px; }
+        /* min-height:0 is required: a flex item defaults to min-height:auto, which
+           refuses to shrink below its content and defeats overflow-y on its own,
+           even once the container has a definite height. */
+        .main-content { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-lg); padding-top: 80px; }
 
         .mode-view { display: none; }
         .mode-view.active { display: block; }
@@ -304,7 +313,7 @@
         .sf-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .sf-header-actions { display: flex; gap: var(--spacing-sm); }
         .sf-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sf-canvas { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--spacing-lg); position: relative; }
+        .sf-canvas { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: var(--spacing-lg); position: relative; }
         .sf-chord-display { text-align: center; margin-bottom: var(--spacing-xl); }
         .sf-current-chord { font-size: 120px; font-weight: 900; line-height: 1; transition: all 0.2s ease; }
         .sf-current-chord.playing { animation: pulse 0.5s ease infinite; color: var(--accent); }
@@ -333,7 +342,7 @@
         .sf-panel-header { display: flex; align-items: center; justify-content: space-between; padding: calc(var(--safe-top) + var(--spacing-md)) var(--spacing-md) var(--spacing-md); border-bottom: 1px solid var(--separator); }
         .sf-panel-title { font-size: 18px; font-weight: 700; }
         .sf-panel-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sf-panel-body { flex: 1; overflow-y: auto; padding: var(--spacing-md); }
+        .sf-panel-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-md); }
         .sf-instrument-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: var(--spacing-sm); cursor: pointer; transition: all var(--transition-fast); }
         .sf-instrument-item.selected { background: rgba(10, 132, 255, 0.2); border: 2px solid var(--accent); }
         .sf-instrument-icon { font-size: 24px; }
@@ -349,7 +358,7 @@
         .cd-logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .cd-header-actions { display: flex; gap: var(--spacing-sm); }
         .cd-header-btn { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .cd-stack-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); perspective: 1000px; }
+        .cd-stack-container { flex: 1; min-height: 0; display: flex; justify-content: center; align-items: center; padding: var(--spacing-lg); perspective: 1000px; }
         .cd-card-stack { position: relative; width: 100%; max-width: 350px; height: 380px; }
         .cd-card { position: absolute; width: 100%; background: var(--bg-secondary); border-radius: var(--radius-xl); overflow: hidden; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
         .cd-card.active { z-index: 10; transform: translateY(0) scale(1); opacity: 1; }
@@ -401,7 +410,7 @@
         .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--separator); }
         .sheet-title { font-size: 18px; font-weight: 700; }
         .sheet-close { width: 32px; height: 32px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 16px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sheet-body { flex: 1; overflow-y: auto; padding: var(--spacing-lg); padding-bottom: calc(var(--safe-bottom) + var(--spacing-lg)); }
+        .sheet-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-lg); padding-bottom: calc(var(--safe-bottom) + var(--spacing-lg)); }
         .option-list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
         .option-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
         .option-item:active { background: var(--bg-elevated); }
@@ -790,7 +799,7 @@
         .community-close { width: 36px; height: 36px; background: var(--bg-tertiary); border: none; border-radius: 50%; font-size: 18px; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .community-filters { display: flex; gap: var(--spacing-sm); padding: var(--spacing-md) var(--spacing-lg); overflow-x: auto; scrollbar-width: none;  overscroll-behavior-x: contain; }
         .community-filters::-webkit-scrollbar { display: none; }
-        .community-body { flex: 1; overflow-y: auto; padding: var(--spacing-md) var(--spacing-lg); }
+        .community-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; padding: var(--spacing-md) var(--spacing-lg); }
         .community-grid { display: flex; flex-direction: column; gap: var(--spacing-md); }
         .community-song-card { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--spacing-lg); cursor: pointer; transition: all var(--transition-fast); border: 2px solid transparent; }
         .community-song-card:active { transform: scale(0.98); }
