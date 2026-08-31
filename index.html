@@ -2457,15 +2457,43 @@
         // survives app restarts — iOS evicts PWAs from memory aggressively, and
         // before this only an explicit Save kept your work. Reuses the undo
         // snapshot shape; restored in init(), flushed immediately on app-hide.
+        // The working song lives under its own key. It originally shared
+        // 'chordflow-session' with the auth session, and the two overwrote each
+        // other: every edit replaced the login token with a song snapshot (so
+        // cloud requests silently lost their access_token), while logging in or
+        // out destroyed the snapshot.
+        const WORK_KEY = 'chordflow-worksession';
+        const AUTH_KEY = 'chordflow-session';   // auth only — never write song data here
         let autosaveTimer = null;
+        let autosaveWarned = false;
+        // safeSetItem returns false when the store is full or blocked (Safari
+        // private browsing, storage pressure). Autosave runs every 400ms, so warn
+        // once per session rather than on every keystroke — but do warn: the app
+        // otherwise promises the work is kept while silently dropping it.
+        function writeWorkSession() {
+            if (safeSetItem(WORK_KEY, snapshotState())) return true;
+            if (!autosaveWarned) {
+                autosaveWarned = true;
+                showToast('⚠️ Storage full — your work is not being auto-saved');
+            }
+            return false;
+        }
         function scheduleAutosave() {
             clearTimeout(autosaveTimer);
-            autosaveTimer = setTimeout(() => safeSetItem('chordflow-session', snapshotState()), 400);
+            autosaveTimer = setTimeout(writeWorkSession, 400);
         }
-        function flushAutosave() { clearTimeout(autosaveTimer); safeSetItem('chordflow-session', snapshotState()); }
+        function flushAutosave() { clearTimeout(autosaveTimer); writeWorkSession(); }
+        function isSongSnapshot(o) { return !!o && Array.isArray(o.sections) && o.sections.length > 0; }
         function restoreSession() {
-            const saved = safeJsonParse('chordflow-session');
-            if (!saved || !Array.isArray(saved.sections) || saved.sections.length === 0) return false;
+            let saved = safeJsonParse(WORK_KEY);
+            // One-time rescue: a snapshot left under the old shared key is adopted
+            // only if it is actually song-shaped. Auth data there is left alone —
+            // it must never be mistaken for a song, nor a song for a token.
+            if (!isSongSnapshot(saved)) {
+                const legacy = safeJsonParse(AUTH_KEY);
+                if (isSongSnapshot(legacy)) { saved = legacy; safeSetItem(WORK_KEY, JSON.stringify(legacy)); }
+            }
+            if (!isSongSnapshot(saved)) return false;
             try {
                 Object.assign(state, saved);
                 state.tempo = Math.round(state.baseTempo * state.speedMultiplier);
@@ -3242,7 +3270,8 @@
             if (!entry) return;
             const name = entry.name;
             songs.splice(index, 1);
-            try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); } catch(e) {}
+            try { localStorage.setItem('chordflow-songs', JSON.stringify(songs)); }
+            catch (e) { showToast('⚠️ Storage error — delete failed'); return; }
             renderSavedSongs(); showToast(`🗑️ Deleted "${name || 'song'}"`);
         }
         function loadSongFile(event) {
@@ -4996,9 +5025,18 @@
             try { localStorage.setItem(key, value); return true; }
             catch (e) { console.warn('localStorage.setItem failed for', key, e); return false; }
         }
+        // Accept only auth-shaped data: builds that shared this key with the song
+        // auto-save may have left a song snapshot here, and treating that as a
+        // session yields an undefined access_token and silently unauthenticated
+        // cloud requests.
+        function readAuthSession() {
+            const s = safeJsonParse(AUTH_KEY);
+            if (!s || typeof s !== 'object' || Array.isArray(s.sections)) return null;
+            return (s.access_token || s.offline) ? s : null;
+        }
         const authState = {
             user: safeJsonParse('chordflow-user'),
-            session: safeJsonParse('chordflow-session'),
+            session: readAuthSession(),
             authTab: 'login'
         };
 
