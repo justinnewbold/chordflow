@@ -142,6 +142,9 @@
         .more-ways > summary::after { content: ' ▾'; }
         .more-ways[open] > summary::after { content: ' ▴'; }
         .more-ways[open] > summary { margin-bottom: var(--spacing-md); }
+        .capo-slider { -webkit-appearance: none; appearance: none; width: 110px; height: 8px; background: var(--bg-tertiary); border-radius: 4px; outline: none; }
+        .capo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; background: var(--accent-orange); border-radius: 50%; cursor: pointer; }
+        .capo-slider::-moz-range-thumb { width: 28px; height: 28px; background: var(--accent-orange); border-radius: 50%; cursor: pointer; border: none; }
         .tabbar { display: flex; flex-shrink: 0; background: var(--bg-secondary); border-top: 1px solid var(--separator); }
         .tabbar-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px 10px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; transition: color var(--transition-fast); }
         .tabbar-btn .tabbar-icon { font-size: 20px; line-height: 1; }
@@ -1084,6 +1087,17 @@
                 </div>
                 <div class="settings-group">
                     <div class="settings-group-title">🎸 Guitar</div>
+                    <div class="settings-item">
+                        <div class="settings-label"><span class="settings-icon">🎯</span><span>Capo</span></div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <input type="range" class="capo-slider" id="capoSlider" min="0" max="7" step="1" value="0" oninput="setCapo(this.value)" aria-label="Capo fret">
+                            <span id="capoLabel" style="color: var(--text-secondary); min-width:52px; text-align:right;">Off</span>
+                        </div>
+                    </div>
+                    <div class="settings-item" tabindex="0" role="button" onclick="toggleLefty()">
+                        <div class="settings-label"><span class="settings-icon">🪞</span><span>Left-handed</span></div>
+                        <div class="toggle-switch" id="leftyToggle" role="switch" aria-checked="false" aria-label="Left-handed diagrams"></div>
+                    </div>
                     <div class="settings-item" tabindex="0" role="button" onclick="openSheet('scales')">
                         <div class="settings-label"><span class="settings-icon">🎸</span><span>Scale Explorer</span></div>
                         <span style="color: var(--text-secondary);">›</span>
@@ -2110,6 +2124,8 @@
             reverbAmount: 30, delayAmount: 15, isRecording: false,
             playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
             strumId: safeGetItem('chordflow-strum') || 'off',
+            capo: parseInt(safeGetItem('chordflow-capo') || '0', 10) || 0,
+            lefty: safeGetItem('chordflow-lefty') === '1',
             theme: safeGetItem('chordflow-theme') || 'dark',
             abLoopStart: -1, abLoopEnd: -1,
             autoSpeedUp: false, autoSpeedIncrement: 5,
@@ -2923,7 +2939,10 @@
         }
         // Render a standard vertical chord-box diagram for any chord.
         function mkGuitar(chord) {
-            const shape = getGuitarChordShape(chord);
+            // A capo at fret N means fingering the shape N semitones lower: the
+            // chord still *sounds* as named, but the grip is the transposed one.
+            const capo = state.capo || 0;
+            const shape = getGuitarChordShape(capo ? transposeChord(chord, -capo) : chord);
             const frets = shape.frets, fingers = shape.fingers;
             const played = frets.filter(v => v > 0);
             const maxF = played.length ? Math.max(...played) : 0;
@@ -2933,10 +2952,17 @@
             const showNut = startFret === 1;
             const NF = 5, NS = 6, padL = 22, padR = 16, padT = 26, cw = 18, ch = 24;
             const w = padL + (NS - 1) * cw + padR, h = padT + NF * ch + 16;
+            // Left-handed players read the neck mirrored; every x-position for a
+            // string goes through here so the flip is one decision, not six.
+            const sx = s => padL + (state.lefty ? (NS - 1 - s) : s) * cw;
             let svg = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="display:block;margin:0 auto;">`;
             // nut (thick) when open position, else a position label
             if (showNut) {
                 svg += `<rect x="${padL}" y="${padT - 3}" width="${(NS - 1) * cw}" height="4" fill="var(--text-primary)" rx="1"/>`;
+                if (capo) {
+                    svg += `<rect x="${padL - 4}" y="${padT - 1}" width="${(NS - 1) * cw + 8}" height="7" rx="3.5" fill="var(--accent-orange)"/>`;
+                    svg += `<text x="${padL - 8}" y="${padT + 8}" text-anchor="end" font-size="9" font-weight="700" fill="var(--accent-orange)">${capo}</text>`;
+                }
             } else {
                 svg += `<text x="${padL - 8}" y="${padT + ch * 0.7}" text-anchor="end" font-size="11" font-weight="700" fill="var(--text-secondary)">${startFret}fr</text>`;
             }
@@ -2946,11 +2972,11 @@
             }
             // string lines (left = low E, right = high e)
             for (let s = 0; s < NS; s++) {
-                svg += `<line x1="${padL + s * cw}" y1="${padT}" x2="${padL + s * cw}" y2="${padT + NF * ch}" stroke="var(--text-secondary)" stroke-width="1"/>`;
+                svg += `<line x1="${sx(s)}" y1="${padT}" x2="${sx(s)}" y2="${padT + NF * ch}" stroke="var(--text-secondary)" stroke-width="1"/>`;
             }
             // open / muted markers above the nut
             for (let s = 0; s < NS; s++) {
-                const x = padL + s * cw, v = frets[s];
+                const x = sx(s), v = frets[s];
                 if (v === -1) {
                     svg += `<text x="${x}" y="${padT - 7}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text-tertiary)">×</text>`;
                 } else if (v === 0) {
@@ -2979,7 +3005,8 @@
             });
             if (barreFret) {
                 const strs = frets.map((v, s) => v === barreFret ? s : -1).filter(s => s >= 0);
-                const x1 = padL + Math.min(...strs) * cw, x2 = padL + Math.max(...strs) * cw;
+                const xs = strs.map(sx);
+                const x1 = Math.min(...xs), x2 = Math.max(...xs);
                 const cy = padT + (barreFret - startFret + 0.5) * ch;
                 svg += `<rect x="${x1 - 7}" y="${cy - 7}" width="${x2 - x1 + 14}" height="14" rx="7" fill="var(--accent)" opacity="0.85"/>`;
             }
@@ -2987,7 +3014,7 @@
             for (let s = 0; s < NS; s++) {
                 const v = frets[s];
                 if (v <= 0 || v === barreFret) continue;
-                const x = padL + s * cw, cy = padT + (v - startFret + 0.5) * ch;
+                const x = sx(s), cy = padT + (v - startFret + 0.5) * ch;
                 svg += `<circle cx="${x}" cy="${cy}" r="7.5" fill="var(--accent)"/>`;
                 const fg = fingers[s];
                 if (fg > 0) svg += `<text x="${x}" y="${cy + 3.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${fg}</text>`;
@@ -3324,7 +3351,7 @@
             // nothing to choose between and no mode state to consult.
             const container = document.getElementById('dualModeUI');
             if (container) container.classList.add('active');
-            syncUIState(); setTab(state.tab); renderAll(); renderSavedSongs(); renderLearnSongs();
+            syncUIState(); syncGuitarPrefs(); setTab(state.tab); renderAll(); renderSavedSongs(); renderLearnSongs();
             // v0.73: Initialize new features
             renderAccountSection();
             renderCloudSongsPrompt();
@@ -4115,6 +4142,26 @@
                     <div class="strum-option-head"><span class="strum-name">${p.name}</span>${strumArrows(p.slots)}</div>
                     <div class="strum-desc">${p.desc}</div>
                 </div>`).join('');
+        }
+        // Capo and handedness only change how shapes are drawn, so a redraw is all
+        // that is needed — no audio or progression state is touched.
+        function setCapo(n) {
+            state.capo = Math.max(0, Math.min(7, parseInt(n, 10) || 0));
+            safeSetItem('chordflow-capo', String(state.capo));
+            syncGuitarPrefs(); renderAll();
+        }
+        function toggleLefty() {
+            state.lefty = !state.lefty;
+            safeSetItem('chordflow-lefty', state.lefty ? '1' : '0');
+            syncGuitarPrefs(); renderAll();
+        }
+        function syncGuitarPrefs() {
+            const cs = document.getElementById('capoSlider');
+            if (cs && String(state.capo) !== cs.value) cs.value = String(state.capo);
+            const cl = document.getElementById('capoLabel');
+            if (cl) cl.textContent = state.capo ? `Fret ${state.capo}` : 'Off';
+            const lt = document.getElementById('leftyToggle');
+            if (lt) { lt.classList.toggle('active', state.lefty); lt.setAttribute('aria-checked', state.lefty ? 'true' : 'false'); }
         }
         function setStrumPattern(id) {
             state.strumId = id;
