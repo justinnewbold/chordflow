@@ -55,6 +55,12 @@ mapped. Guitar shapes are generated for any chord — open voicings where they
 exist, movable barre shapes everywhere else — with correct fingerings, barres,
 and open/muted markers.
 
+Diagrams follow your **tuning** (standard, Drop D, 7-string, bass, 5-string
+bass), your **capo**, and **left-handed** if you play that way. Shapes in
+alternate tunings are solved from the strings themselves, so a Drop D grip is a
+real Drop D grip, not a standard one relabelled. Tuning is one setting shared
+with the Scale Explorer, so the neck never means two different things at once.
+
 ## On your phone
 
 Installs as a PWA and behaves like a native app: works offline, keeps the screen
