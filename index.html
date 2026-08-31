@@ -2121,7 +2121,7 @@
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
             undoStack: [], redoStack: [], aiLoading: false,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
-            playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
+            timeSignature: '4/4', swing: 0,
             strumId: safeGetItem('chordflow-strum') || 'off',
             capo: parseInt(safeGetItem('chordflow-capo') || '0', 10) || 0,
             lefty: safeGetItem('chordflow-lefty') === '1',
@@ -2143,7 +2143,7 @@
 
         // Audio
         let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
-        let playInterval = null, beatInterval = null, arpeggioTimeouts = [];
+        let playInterval = null, beatInterval = null;
         let strumTimeouts = [];
 
         // ===== Strumming patterns =====
@@ -2341,26 +2341,7 @@
             await initAudio();
             const notes = getChordNotes(chord);
             try {
-                if (state.playMode === 'arpeggio') {
-                    // Arpeggio mode - play notes one at a time
-                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
-                    notes.forEach((note, i) => {
-                        arpeggioTimeouts.push(setTimeout(() => {
-                            synth.triggerAttackRelease(note, '8n');
-                        }, i * state.arpeggioSpeed));
-                    });
-                } else if (state.playMode === 'strum') {
-                    // Strum mode - quick cascade
-                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
-                    notes.forEach((note, i) => {
-                        arpeggioTimeouts.push(setTimeout(() => {
-                            synth.triggerAttackRelease(note, duration);
-                        }, i * 30));
-                    });
-                } else {
-                    // Block chord (default)
-                    synth.triggerAttackRelease(notes, duration);
-                }
+                synth.triggerAttackRelease(notes, duration);
                 if (state.bassEnabled && bassSynth) {
                     const root = notes[0].replace(/\d/, '') + '2';
                     bassSynth.triggerAttackRelease(root, '4n');
@@ -3411,7 +3392,6 @@
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-        function exportFile(format) { showToast(`📦 ${format.toUpperCase()} coming in v1.0!`); }
 
         // Songs
         function openSaveModal() { rememberFocusFor('save'); document.getElementById('saveModal').classList.add('active'); document.getElementById('songNameInput').value = ''; document.getElementById('songNameInput').focus(); }
@@ -3581,14 +3561,6 @@
                 toggle.setAttribute('aria-checked', state.bassEnabled ? 'true' : 'false');
             }
             showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF');
-        }
-        function setPlayMode(mode) {
-            state.playMode = mode;
-            document.querySelectorAll('.play-mode-btn').forEach(btn => btn.classList.remove('active'));
-            const btn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
-            if (btn) btn.classList.add('active');
-            const icons = { block: '🎹', strum: '🎸', arpeggio: '🎵' };
-            showToast(icons[mode] + ' ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode');
         }
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
@@ -3936,7 +3908,6 @@
         function stopPlaybackTimers() {
             if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
-            arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
             strumTimeouts.forEach(t => clearTimeout(t)); strumTimeouts = [];
         }
         function ensurePlaybackStopped() {
