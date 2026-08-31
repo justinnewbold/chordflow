@@ -1240,23 +1240,17 @@
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportPDFEnhanced()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportPDF()">
                             <div class="export-icon">📄</div>
-                            <div class="export-title">PDF+</div>
-                            <div class="export-desc">With Diagrams</div>
+                            <div class="export-title">PDF</div>
+                            <div class="export-desc">Lead Sheet</div>
                             <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportWAV()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportAudio()">
                             <div class="export-icon">🎵</div>
-                            <div class="export-title">WAV</div>
-                            <div class="export-desc">Audio File</div>
-                            <div class="export-badge">WORKS!</div>
-                        </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportMP3()">
-                            <div class="export-icon">📀</div>
                             <div class="export-title">Audio</div>
-                            <div class="export-desc">WebM Format</div>
-                            <div class="export-badge">NEW!</div>
+                            <div class="export-desc">Recording</div>
+                            <div class="export-badge">WORKS!</div>
                         </div>
                     </div>
                 </div>
@@ -1441,7 +1435,7 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
-            <div class="chord-sheet-hint">Standard tuning — tap a string to hear its reference pitch</div>
+            <div class="chord-sheet-hint" id="tunerHint">Standard tuning — tap a string to hear its reference pitch</div>
             <div class="tuner-strings" id="tunerStrings"></div>
         </div>
     </div>
@@ -2127,7 +2121,7 @@
             bassEnabled: true, metronomeEnabled: false, countInEnabled: false,
             undoStack: [], redoStack: [], aiLoading: false,
             reverbAmount: 30, delayAmount: 15, isRecording: false,
-            playMode: 'block', arpeggioSpeed: 100, timeSignature: '4/4', swing: 0,
+            timeSignature: '4/4', swing: 0,
             strumId: safeGetItem('chordflow-strum') || 'off',
             capo: parseInt(safeGetItem('chordflow-capo') || '0', 10) || 0,
             lefty: safeGetItem('chordflow-lefty') === '1',
@@ -2149,7 +2143,7 @@
 
         // Audio
         let synth, bassSynth, metronomeClick, kickDrum, snareDrum, hihatDrum, masterGain, reverb, delay, recorder, audioInit = false;
-        let playInterval = null, beatInterval = null, arpeggioTimeouts = [];
+        let playInterval = null, beatInterval = null;
         let strumTimeouts = [];
 
         // ===== Strumming patterns =====
@@ -2347,26 +2341,7 @@
             await initAudio();
             const notes = getChordNotes(chord);
             try {
-                if (state.playMode === 'arpeggio') {
-                    // Arpeggio mode - play notes one at a time
-                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
-                    notes.forEach((note, i) => {
-                        arpeggioTimeouts.push(setTimeout(() => {
-                            synth.triggerAttackRelease(note, '8n');
-                        }, i * state.arpeggioSpeed));
-                    });
-                } else if (state.playMode === 'strum') {
-                    // Strum mode - quick cascade
-                    arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
-                    notes.forEach((note, i) => {
-                        arpeggioTimeouts.push(setTimeout(() => {
-                            synth.triggerAttackRelease(note, duration);
-                        }, i * 30));
-                    });
-                } else {
-                    // Block chord (default)
-                    synth.triggerAttackRelease(notes, duration);
-                }
+                synth.triggerAttackRelease(notes, duration);
                 if (state.bassEnabled && bassSynth) {
                     const root = notes[0].replace(/\d/, '') + '2';
                     bassSynth.triggerAttackRelease(root, '4n');
@@ -3357,16 +3332,19 @@
             downloadFile(midi, 'chordflow.mid', 'audio/midi');
             showToast('🎹 MIDI exported!');
         }
-        function exportPDF() {
-            const chords = getTransposedProgression(), keyInfo = getKeyInfo();
-            // baseTempo, not state.tempo — see exportMIDI rationale.
-            const stream = `BT\n/F1 28 Tf 72 720 Td (ChordFlow Lead Sheet) Tj\n/F1 14 Tf 0 -35 Td (Key: ${escapePdf(keyInfo.display)} | Tempo: ${state.baseTempo} BPM) Tj\n/F1 36 Tf 0 -80 Td (${escapePdf(chords.join('  -  '))}) Tj\n/F1 12 Tf 0 -60 Td (Generated by ChordFlow v${VERSION}) Tj\nET`;
-            const pdfBody = `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n`;
-            const pdf = pdfBody + `xref\n0 6\ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n${pdfBody.length}\n%%EOF`;
-            downloadFile(new Blob([pdf], { type: 'application/pdf' }), 'chordflow.pdf', 'application/pdf');
-            showToast('📄 PDF exported!');
+        // Tone.Recorder wraps MediaRecorder, which produces whatever the browser
+        // supports — webm on Chrome and Firefox, mp4 on Safari. Never WAV. The old
+        // export saved those bytes as "chordflow.wav", which players that trust the
+        // extension refuse to open. Name the file for what it actually contains.
+        const RECORDING_EXTENSIONS = {
+            'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a',
+            'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav'
+        };
+        function recordingExtension(mimeType) {
+            const base = String(mimeType || '').split(';')[0].trim().toLowerCase();
+            return RECORDING_EXTENSIONS[base] || 'webm';
         }
-        async function exportWAV() {
+        async function exportAudio() {
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
             ensurePlaybackStopped();
             state.isRecording = true;
@@ -3378,7 +3356,9 @@
                 showToast('🎵 Recording started...');
                 recorder.start();
                 const chords = getTransposedProgression();
-                const beatMs = 60000 / state.tempo;
+                // baseTempo, not state.tempo — see exportMIDI. Recording while
+                // practising at 50% used to hand you a half-speed song.
+                const beatMs = 60000 / state.baseTempo;
 
                 for (let i = 0; i < chords.length; i++) {
                     if (!state.isRecording) break;
@@ -3388,21 +3368,22 @@
                 await new Promise(r => setTimeout(r, 1000));
 
                 const recording = await recorder.stop();
+                const ext = recordingExtension(recording && recording.type);
                 const url = URL.createObjectURL(recording);
                 const a = document.createElement('a');
-                a.href = url; a.download = 'chordflow.wav';
+                a.href = url; a.download = `chordflow.${ext}`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showToast('🎵 WAV exported!');
+                showToast(`🎵 Audio exported (.${ext})`);
             } catch (e) {
-                console.warn('WAV export error:', e);
+                console.warn('Audio export error:', e);
                 showToast('⚠️ Export failed');
             } finally {
                 state.isRecording = false;
                 document.getElementById('recordingOverlay').classList.remove('active');
             }
         }
-        
+
         function downloadFile(data, filename, mimeType) {
             const blob = data instanceof Blob ? data : new Blob([data], { type: mimeType });
             const url = URL.createObjectURL(blob);
@@ -3411,7 +3392,6 @@
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
-        function exportFile(format) { showToast(`📦 ${format.toUpperCase()} coming in v1.0!`); }
 
         // Songs
         function openSaveModal() { rememberFocusFor('save'); document.getElementById('saveModal').classList.add('active'); document.getElementById('songNameInput').value = ''; document.getElementById('songNameInput').focus(); }
@@ -3581,14 +3561,6 @@
                 toggle.setAttribute('aria-checked', state.bassEnabled ? 'true' : 'false');
             }
             showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF');
-        }
-        function setPlayMode(mode) {
-            state.playMode = mode;
-            document.querySelectorAll('.play-mode-btn').forEach(btn => btn.classList.remove('active'));
-            const btn = document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1));
-            if (btn) btn.classList.add('active');
-            const icons = { block: '🎹', strum: '🎸', arpeggio: '🎵' };
-            showToast(icons[mode] + ' ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode');
         }
         function toggleMetronome() {
             state.metronomeEnabled = !state.metronomeEnabled;
@@ -3936,7 +3908,6 @@
         function stopPlaybackTimers() {
             if (beatInterval) { clearTimeout(beatInterval); beatInterval = null; }
             if (playInterval) { clearInterval(playInterval); playInterval = null; }
-            arpeggioTimeouts.forEach(t => clearTimeout(t)); arpeggioTimeouts = [];
             strumTimeouts.forEach(t => clearTimeout(t)); strumTimeouts = [];
         }
         function ensurePlaybackStopped() {
@@ -4019,29 +3990,12 @@
             vv.addEventListener('scroll', sync);
             sync();
         })();
-        // Media Session: surface the playing progression on the lock screen /
-        // notification shade with working play-pause controls (Android Chrome now;
-        // iOS as WebAudio support lands). Feature-detected throughout.
-        function updateMediaSession() {
-            if (!('mediaSession' in navigator)) return;
-            try {
-                const section = state.sections[state.currentSection];
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: getTransposedProgression().join(' · '),
-                    artist: 'ChordFlow',
-                    album: section ? `${section.icon} ${section.name} — ${getKeyInfo().display}` : 'ChordFlow',
-                    artwork: [{ src: '/icon-180.png', sizes: '180x180', type: 'image/png' }]
-                });
-                navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
-            } catch (e) {}
-        }
-        if ('mediaSession' in navigator) {
-            try {
-                navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
-                navigator.mediaSession.setActionHandler('pause', () => { ensurePlaybackStopped(); updateMediaSession(); });
-                navigator.mediaSession.setActionHandler('stop', () => { stopPlayback(); updateMediaSession(); });
-            } catch (e) {}
-        }
+        // Media Session lives with the rest of the playback code — see
+        // initMediaSessionHandlers / updateMediaSession. There used to be a second
+        // copy of both here, which silently won over that one because a later
+        // function declaration replaces an earlier one; the artwork it set was the
+        // only reason /icon-180.png is precached, and it never reached the lock
+        // screen. The two are now one.
 
         // ============ LEARN SONGS ============
         let learnSongsFilter = 'all';
@@ -4273,21 +4227,30 @@
                 </div>`).join('');
         }
         // ===== Guitar Tuner: reference pitches for standard tuning =====
-        const TUNER_STRINGS = [
-            { note: 'E2', label: '6th string · Low E' },
-            { note: 'A2', label: '5th string · A' },
-            { note: 'D3', label: '4th string · D' },
-            { note: 'G3', label: '3rd string · G' },
-            { note: 'B3', label: '2nd string · B' },
-            { note: 'E4', label: '1st string · High E' }
-        ];
+        const TUNER_ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+        // The tuner was the last place in the app still assuming standard tuning
+        // while the diagrams and the Scale Explorer followed state.tuning — a Drop D
+        // player got Drop D everywhere except the strings they actually tune.
+        function tunerStrings() {
+            const strings = tuningStrings();
+            const n = strings.length;
+            return strings.map((note, i) => {
+                // Strings are stored low to high; players count them the other way.
+                const ordinal = TUNER_ORDINALS[n - 1 - i] || `${n - i}th`;
+                const name = note.replace(/-?\d/g, '');
+                const qualifier = i === 0 ? ' (lowest)' : (i === n - 1 ? ' (highest)' : '');
+                return { note, label: `${ordinal} string · ${name}${qualifier}` };
+            }).reverse(); // highest string first, matching how the neck is drawn
+        }
         function renderTuner() {
             const wrap = document.getElementById('tunerStrings');
             if (!wrap) return;
-            wrap.innerHTML = TUNER_STRINGS.map(s =>
+            wrap.innerHTML = tunerStrings().map(s =>
                 `<div class="tuner-string" role="button" tabindex="0" onclick="playTunerNote('${s.note}')">
-                    <span class="ts-note">${s.note.replace(/\d/, '')}</span><span class="ts-label">${s.label}</span>
+                    <span class="ts-note">${s.note.replace(/-?\d/g, '')}</span><span class="ts-label">${s.label}</span>
                 </div>`).join('');
+            const hint = document.getElementById('tunerHint');
+            if (hint) hint.textContent = `${SCALE_TUNINGS[tuningKey()].name} — tap a string to hear its reference pitch`;
         }
         async function playTunerNote(note) {
             await initAudio();
@@ -4333,6 +4296,7 @@
             syncGuitarPrefs();
             renderAll();
             if (document.getElementById('scalesSheet')?.classList.contains('active')) renderScaleExplorer();
+            if (document.getElementById('tunerSheet')?.classList.contains('active')) renderTuner();
             // Only redraw the diagram modal if it is already open — showChordDiagram
             // opens it, and changing tuning must not conjure a modal out of nowhere.
             if (currentDiagramChord && document.getElementById('chordDiagramModal')?.classList.contains('active')) {
@@ -5150,74 +5114,176 @@
         }
 
         // ============ EXPORT IMPROVEMENTS ============
-        async function exportMP3() {
-            // Use WAV export + convert
-            if (state.isRecording) { showToast('⚠️ Already recording'); return; }
-            state.isRecording = true;
-            await initAudio();
-            if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
-            document.getElementById('recordingOverlay').classList.add('active');
-            showToast('📀 Recording audio...');
+        // ============ PDF LEAD SHEET ============
+        // The file is assembled as *bytes*, not as a string handed to a Blob. Two
+        // things depend on that. A content stream's /Length is a byte count, and a
+        // JS string length counts UTF-16 units — every section icon is an emoji,
+        // two units but four UTF-8 bytes, so the old exporter under-declared the
+        // stream and a reader honouring /Length truncated the final text operator
+        // and the closing ET. And the xref table needs each object's real byte
+        // offset; the old one declared six objects and supplied no entries at all,
+        // so every reader had to fall back to repair mode.
 
-            try {
-                recorder.start();
-                const chords = getTransposedProgression();
-                const beatMs = 60000 / state.tempo;
-                for (let i = 0; i < chords.length; i++) {
-                    if (!state.isRecording) break;
-                    await playChord(chords[i], '2n');
-                    await new Promise(r => setTimeout(r, beatMs * getBeatsPerMeasure()));
-                }
-                await new Promise(r => setTimeout(r, 1000));
-                const recording = await recorder.stop();
-                // Tone.js records as webm/ogg - download as audio file
-                const url = URL.createObjectURL(recording);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'chordflow.webm';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast('📀 Audio exported! (WebM format)');
-            } catch (e) {
-                console.warn('MP3 export error:', e);
-                showToast('⚠️ Export failed');
-            } finally {
-                state.isRecording = false;
-                document.getElementById('recordingOverlay').classList.remove('active');
+        // Helvetica's advance widths in 1/1000 em, printable ASCII from 0x20.
+        // Exact metrics, so line wrapping is measured rather than guessed.
+        const PDF_HELVETICA_W = [
+            278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
+            556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+            1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,
+            667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+            333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,
+            556,556,333,500,278,556,500,722,500,500,500,334,260,334,584
+        ];
+        // Helvetica can only draw what its encoding covers, so transliterate the
+        // few non-Latin-1 characters the app actually produces (the flat sign from
+        // getScaleDegree, typographic dashes) and drop everything else — including
+        // the section emoji, which no reader could have rendered anyway.
+        const PDF_TRANSLITERATE = {
+            '\u266d': 'b', '\u266f': '#', '\u266e': '', '\u2014': '-', '\u2013': '-',
+            '\u00b7': '-', '\u2192': '->', '\u2018': "'", '\u2019': "'",
+            '\u201c': '"', '\u201d': '"', '\u2026': '...'
+        };
+        function pdfSanitize(str) {
+            let out = '';
+            for (const ch of String(str == null ? '' : str)) {
+                const t = PDF_TRANSLITERATE[ch];
+                if (t != null) { out += t; continue; }
+                const c = ch.codePointAt(0);
+                if (c >= 0x20 && c <= 0xFF) out += ch;   // WinAnsi, declared on the font
+                else if (c === 0x09) out += ' ';
             }
+            return out;
         }
-        function exportPDFEnhanced() {
+        function pdfWidth(text, size) {
+            let w = 0;
+            for (let i = 0; i < text.length; i++) {
+                const c = text.charCodeAt(i);
+                w += (c >= 32 && c <= 126) ? PDF_HELVETICA_W[c - 32] : 556;
+            }
+            return w * size / 1000;
+        }
+        // Greedy wrap on a separator, measured with the real font metrics. Falls
+        // back to breaking mid-token only when a single token is wider than the box.
+        function pdfWrap(text, size, maxWidth, sep) {
+            sep = sep == null ? ' ' : sep;
+            const out = [];
+            let line = '';
+            for (const token of text.split(sep)) {
+                const candidate = line ? line + sep + token : token;
+                if (!line || pdfWidth(candidate, size) <= maxWidth) { line = candidate; continue; }
+                out.push(line);
+                line = token;
+                while (pdfWidth(line, size) > maxWidth && line.length > 1) {
+                    let cut = line.length;
+                    while (cut > 1 && pdfWidth(line.slice(0, cut), size) > maxWidth) cut--;
+                    out.push(line.slice(0, cut));
+                    line = line.slice(cut);
+                }
+            }
+            if (line) out.push(line);
+            return out.length ? out : [''];
+        }
+        function exportPDF() {
             const chords = getTransposedProgression(), keyInfo = getKeyInfo();
-            const pdfKeyRoot = normalizeNote(state.key.replace('m', ''));
-            const pdfSemitones = ALL_NOTES.indexOf(pdfKeyRoot);
-            // Build chord diagram text
-            const diagrams = chords.map(c => {
+            const pdfSemitones = ALL_NOTES.indexOf(normalizeNote(state.key.replace('m', '')));
+            const PAGE_W = 612, PAGE_H = 792, MARGIN_X = 56, TOP = 750, BOTTOM = 56;
+            const MAX_W = PAGE_W - MARGIN_X * 2;
+
+            // Lay the document out as a flat list of {size, text} lines first, then
+            // flow it onto as many pages as it needs. baseTempo, not state.tempo —
+            // see exportMIDI: state.tempo carries the practice-speed multiplier.
+            const lines = [];
+            const add = (size, text, gap) => {
+                pdfWrap(pdfSanitize(text), size, MAX_W, ' ').forEach((l, i) =>
+                    lines.push({ size, text: l, gap: i === 0 ? (gap || 0) : 0 }));
+            };
+            add(28, 'ChordFlow Lead Sheet');
+            add(13, `Key: ${keyInfo.display}  |  Tempo: ${state.baseTempo} BPM  |  Genre: ${state.genre}`, 14);
+            add(15, 'Progression', 22);
+            pdfWrap(pdfSanitize(chords.join('   ')), 30, MAX_W, '   ').forEach((l, i) =>
+                lines.push({ size: 30, text: l, gap: i === 0 ? 10 : 4 }));
+            add(15, 'Scale degrees', 24);
+            chords.forEach((c, i) => {
                 const notes = getChordNotes(c).map(n => n.replace(/\d/, '')).join('-');
                 const degree = getScaleDegree(c, state.key);
-                return `${c} (${notes}) ${degree || ''}`;
-            }).join('  |  ');
-
-            const contentLines = [
-                'BT',
-                '/F1 28 Tf 72 750 Td (ChordFlow Lead Sheet) Tj',
-                `/F1 14 Tf 0 -30 Td (Key: ${escapePdf(keyInfo.display)}  |  Tempo: ${state.baseTempo} BPM  |  Genre: ${escapePdf(state.genre)}) Tj`,
-                '/F1 10 Tf 0 -25 Td (Scale Degrees:) Tj',
-                `/F1 12 Tf 0 -18 Td (${escapePdf(diagrams)}) Tj`,
-                '/F1 14 Tf 0 -35 Td (Sections:) Tj'
-            ];
-            let yOffset = -20;
-            state.sections.forEach(s => {
-                contentLines.push(`/F1 12 Tf 0 ${yOffset} Td (${escapePdf(s.icon + ' ' + s.name + ': ' + s.progression.map(c => transposeChord(c, pdfSemitones)).join('  -  '))}) Tj`);
-                yOffset = -18;
+                add(11, `${c}  (${notes})${degree ? '  ' + degree : ''}`, i === 0 ? 8 : 2);
             });
-            contentLines.push(`/F1 36 Tf 0 -50 Td (${escapePdf(chords.join('   '))}) Tj`);
-            contentLines.push(`/F1 10 Tf 0 -40 Td (Generated by ChordFlow v${VERSION} - chordflow.app) Tj`);
-            contentLines.push('ET');
-            const stream = contentLines.join('\n');
+            add(15, 'Sections', 24);
+            state.sections.forEach((s, i) => {
+                const prog = s.progression.map(c => transposeChord(c, pdfSemitones)).join('  -  ');
+                add(11, `${s.name}: ${prog}`, i === 0 ? 8 : 3);
+            });
+            add(9, `Generated by ChordFlow v${VERSION}`, 26);
 
-            const pdfBody2 = `%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj\n4 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream\nendobj\n5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n`;
-            const pdf = pdfBody2 + `xref\n0 6\ntrailer << /Size 6 /Root 1 0 R >>\nstartxref\n${pdfBody2.length}\n%%EOF`;
-            downloadFile(new Blob([pdf], { type: 'application/pdf' }), 'chordflow-enhanced.pdf', 'application/pdf');
-            showToast('📄 Enhanced PDF exported!');
+            // Flow onto pages.
+            const pages = [];
+            let page = [], y = TOP;
+            lines.forEach(l => {
+                const next = y - l.gap - l.size;
+                if (next < BOTTOM && page.length) { pages.push(page); page = []; y = TOP; }
+                y = y - l.gap - l.size;
+                page.push({ ...l, y });
+            });
+            if (page.length) pages.push(page);
+            if (!pages.length) pages.push([{ size: 12, text: 'ChordFlow Lead Sheet', y: TOP }]);
+
+            // Each page's content stream. Absolute positioning per line (Tm) rather
+            // than chained relative Td offsets, so a wrapped line can never drift.
+            const streams = pages.map(p => 'BT\n' + p.map(l =>
+                `/F1 ${l.size} Tf 1 0 0 1 ${MARGIN_X} ${l.y.toFixed(1)} Tm (${escapePdf(l.text)}) Tj`
+            ).join('\n') + '\nET');
+
+            downloadFile(buildPdf(streams, PAGE_W, PAGE_H), 'chordflow-leadsheet.pdf', 'application/pdf');
+            showToast('\ud83d\udcc4 Lead sheet exported!');
+        }
+        // Serialise objects with real byte offsets and a real cross-reference table.
+        // Object 1 catalog, 2 pages, 3 font, then a page + contents pair per page.
+        function buildPdf(streams, pageW, pageH) {
+            const enc = s => { const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 0xFF; return a; };
+            const parts = [];
+            let length = 0;
+            const push = bytes => { parts.push(bytes); length += bytes.length; };
+            const write = str => push(enc(str));
+
+            const n = streams.length;
+            const pageIds = streams.map((_, i) => 4 + i * 2);
+            const objects = [
+                `<< /Type /Catalog /Pages 2 0 R >>`,
+                `<< /Type /Pages /Kids [${pageIds.map(id => id + ' 0 R').join(' ')}] /Count ${n} >>`,
+                // WinAnsiEncoding is what pdfSanitize keeps the text inside.
+                `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>`
+            ];
+            streams.forEach((s, i) => {
+                objects.push(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Contents ${pageIds[i] + 1} 0 R /Resources << /Font << /F1 3 0 R >> >> >>`);
+                objects.push({ stream: s });
+            });
+
+            write('%PDF-1.4\n');
+            // A binary comment marks the file as binary for tools that sniff it.
+            push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+            const offsets = [];
+            objects.forEach((obj, i) => {
+                offsets.push(length);
+                if (typeof obj === 'string') {
+                    write(`${i + 1} 0 obj\n${obj}\nendobj\n`);
+                } else {
+                    const body = enc(obj.stream);
+                    write(`${i + 1} 0 obj\n<< /Length ${body.length} >>\nstream\n`);
+                    push(body);
+                    write('\nendstream\nendobj\n');
+                }
+            });
+            const xrefAt = length;
+            // Every entry is exactly 20 bytes, as the spec requires.
+            let xref = `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+            offsets.forEach(o => { xref += String(o).padStart(10, '0') + ' 00000 n \n'; });
+            write(xref);
+            write(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefAt}\n%%EOF\n`);
+
+            const out = new Uint8Array(length);
+            let at = 0;
+            parts.forEach(p => { out.set(p, at); at += p.length; });
+            return out;
         }
 
         // ============ v0.73: AUTH & CLOUD SYNC ============
@@ -6019,6 +6085,7 @@
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
                     advanceChord();
                 });
+                navigator.mediaSession.setActionHandler('stop', () => { stopPlayback(); updateMediaSession(); });
                 mediaSessionHandlersSet = true;
             } catch(e) {}
         }
@@ -6026,12 +6093,16 @@
             if (!('mediaSession' in navigator)) return;
             initMediaSessionHandlers();
             const chords = getTransposedProgression();
-            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+            const section = state.sections[state.currentSection];
+            const sectionName = section ? `${section.icon} ${section.name}` : 'ChordFlow';
             try {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: `${chords.join(' → ')}`,
                     artist: `${sectionName} | ${getKeyInfo().display}`,
                     album: `ChordFlow v${VERSION}`,
+                    // Without artwork the lock screen falls back to a blank tile.
+                    // This is what /icon-180.png is precached in sw.js for.
+                    artwork: [{ src: '/icon-180.png', sizes: '180x180', type: 'image/png' }]
                 });
                 navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
             } catch(e) {}
@@ -6127,6 +6198,9 @@
             const wasOpen = overlay && overlay.classList.contains('active');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            // Same reason as closeSheet: this clears the active classes directly, so
+            // whatever the previous sheet had playing would otherwise keep going.
+            stopSheetAudio();
             if (!wasOpen) rememberFocusFor('sheet');
             if (overlay) overlay.classList.add('active');
             const sheet = document.getElementById(`${type}Sheet`);
@@ -6145,9 +6219,16 @@
             const overlay = document.getElementById('sheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
-            // Don't let a scale keep playing after its sheet is dismissed.
-            if (typeof stopScaleRun === 'function') stopScaleRun();
+            stopSheetAudio();
             restoreFocusFor('sheet');
+        }
+        // Audio a sheet started belongs to that sheet. Dismissing it — or opening
+        // another one over it — has to stop the sound, or you are left with a phone
+        // playing chords and no visible control that stops them: the Learn Song
+        // play-along ran on its own interval until it reached the end of the lyrics.
+        function stopSheetAudio() {
+            if (typeof stopScaleRun === 'function') stopScaleRun();
+            if (typeof stopLearnSongPlay === 'function') stopLearnSongPlay();
         }
         // Swipe-down to dismiss bottom sheets: drag from the handle or header, the
         // sheet follows the finger (via --drag-y), and releasing past the threshold
@@ -6786,8 +6867,10 @@
             if (e.code === 'KeyG' && !e.ctrlKey && !e.metaKey) generateProgression();
             if (e.code === 'KeyA' && !e.ctrlKey && !e.metaKey) aiGenerate('smart');
             if (e.code === 'KeyM' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportMIDI(); }
-            if (e.code === 'KeyP' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportPDF(); }
-            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); exportWAV(); }
+            // Ctrl/Cmd+P is left to the browser: it means Print, and hijacking it
+            // for the PDF export surprised anyone who wanted to print the page.
+            // The export has a button in Studio.
+            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); exportAudio(); }
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
