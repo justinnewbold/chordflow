@@ -4019,29 +4019,12 @@
             vv.addEventListener('scroll', sync);
             sync();
         })();
-        // Media Session: surface the playing progression on the lock screen /
-        // notification shade with working play-pause controls (Android Chrome now;
-        // iOS as WebAudio support lands). Feature-detected throughout.
-        function updateMediaSession() {
-            if (!('mediaSession' in navigator)) return;
-            try {
-                const section = state.sections[state.currentSection];
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: getTransposedProgression().join(' · '),
-                    artist: 'ChordFlow',
-                    album: section ? `${section.icon} ${section.name} — ${getKeyInfo().display}` : 'ChordFlow',
-                    artwork: [{ src: '/icon-180.png', sizes: '180x180', type: 'image/png' }]
-                });
-                navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
-            } catch (e) {}
-        }
-        if ('mediaSession' in navigator) {
-            try {
-                navigator.mediaSession.setActionHandler('play', () => { if (!state.isPlaying) togglePlay(); });
-                navigator.mediaSession.setActionHandler('pause', () => { ensurePlaybackStopped(); updateMediaSession(); });
-                navigator.mediaSession.setActionHandler('stop', () => { stopPlayback(); updateMediaSession(); });
-            } catch (e) {}
-        }
+        // Media Session lives with the rest of the playback code — see
+        // initMediaSessionHandlers / updateMediaSession. There used to be a second
+        // copy of both here, which silently won over that one because a later
+        // function declaration replaces an earlier one; the artwork it set was the
+        // only reason /icon-180.png is precached, and it never reached the lock
+        // screen. The two are now one.
 
         // ============ LEARN SONGS ============
         let learnSongsFilter = 'all';
@@ -6019,6 +6002,7 @@
                 navigator.mediaSession.setActionHandler('nexttrack', () => {
                     advanceChord();
                 });
+                navigator.mediaSession.setActionHandler('stop', () => { stopPlayback(); updateMediaSession(); });
                 mediaSessionHandlersSet = true;
             } catch(e) {}
         }
@@ -6026,12 +6010,16 @@
             if (!('mediaSession' in navigator)) return;
             initMediaSessionHandlers();
             const chords = getTransposedProgression();
-            const sectionName = state.sections[state.currentSection]?.name || 'ChordFlow';
+            const section = state.sections[state.currentSection];
+            const sectionName = section ? `${section.icon} ${section.name}` : 'ChordFlow';
             try {
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: `${chords.join(' → ')}`,
                     artist: `${sectionName} | ${getKeyInfo().display}`,
                     album: `ChordFlow v${VERSION}`,
+                    // Without artwork the lock screen falls back to a blank tile.
+                    // This is what /icon-180.png is precached in sw.js for.
+                    artwork: [{ src: '/icon-180.png', sizes: '180x180', type: 'image/png' }]
                 });
                 navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
             } catch(e) {}
@@ -6127,6 +6115,9 @@
             const wasOpen = overlay && overlay.classList.contains('active');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            // Same reason as closeSheet: this clears the active classes directly, so
+            // whatever the previous sheet had playing would otherwise keep going.
+            stopSheetAudio();
             if (!wasOpen) rememberFocusFor('sheet');
             if (overlay) overlay.classList.add('active');
             const sheet = document.getElementById(`${type}Sheet`);
@@ -6145,9 +6136,16 @@
             const overlay = document.getElementById('sheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
-            // Don't let a scale keep playing after its sheet is dismissed.
-            if (typeof stopScaleRun === 'function') stopScaleRun();
+            stopSheetAudio();
             restoreFocusFor('sheet');
+        }
+        // Audio a sheet started belongs to that sheet. Dismissing it — or opening
+        // another one over it — has to stop the sound, or you are left with a phone
+        // playing chords and no visible control that stops them: the Learn Song
+        // play-along ran on its own interval until it reached the end of the lyrics.
+        function stopSheetAudio() {
+            if (typeof stopScaleRun === 'function') stopScaleRun();
+            if (typeof stopLearnSongPlay === 'function') stopLearnSongPlay();
         }
         // Swipe-down to dismiss bottom sheets: drag from the handle or header, the
         // sheet follows the finger (via --drag-y), and releasing past the threshold
