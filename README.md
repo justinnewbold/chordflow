@@ -32,7 +32,7 @@ progression plays.
   tap any note to hear it, or play the scale and watch it light up
 - **Chord Sheet** — every chord in your song as a guitar diagram
 - **Strumming patterns** — Basic, Pop, Folk, Rock, locked to the beat
-- **Tuner** — reference pitches for standard tuning
+- **Tuner** — reference pitches for whichever tuning you have selected
 - Practice speed (50–100%), count-in, auto speed-up, A-B loop
 - **Learn Songs** — public-domain songs with chords and lyrics
 - **Quizzes** — Name That Chord (see a shape), Guess the Chord and Interval
@@ -42,7 +42,7 @@ progression plays.
 - Mixer (chords / bass / master), reverb and delay presets
 - Drums, metronome, 14+ instruments
 - Arrangement playback through all sections
-- Export **MIDI · PDF · WAV · MP3**
+- Export **MIDI**, a **PDF** lead sheet, and an **audio** recording
 - Save locally or to the cloud; share a link, a QR code, or publish
 
 ---

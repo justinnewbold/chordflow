@@ -1246,17 +1246,11 @@
                             <div class="export-desc">Lead Sheet</div>
                             <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportWAV()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="exportAudio()">
                             <div class="export-icon">🎵</div>
-                            <div class="export-title">WAV</div>
-                            <div class="export-desc">Audio File</div>
-                            <div class="export-badge">WORKS!</div>
-                        </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportMP3()">
-                            <div class="export-icon">📀</div>
                             <div class="export-title">Audio</div>
-                            <div class="export-desc">WebM Format</div>
-                            <div class="export-badge">NEW!</div>
+                            <div class="export-desc">Recording</div>
+                            <div class="export-badge">WORKS!</div>
                         </div>
                     </div>
                 </div>
@@ -1441,7 +1435,7 @@
         <div class="sheet-handle"></div>
         <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
         <div class="sheet-body">
-            <div class="chord-sheet-hint">Standard tuning — tap a string to hear its reference pitch</div>
+            <div class="chord-sheet-hint" id="tunerHint">Standard tuning — tap a string to hear its reference pitch</div>
             <div class="tuner-strings" id="tunerStrings"></div>
         </div>
     </div>
@@ -3357,7 +3351,19 @@
             downloadFile(midi, 'chordflow.mid', 'audio/midi');
             showToast('🎹 MIDI exported!');
         }
-        async function exportWAV() {
+        // Tone.Recorder wraps MediaRecorder, which produces whatever the browser
+        // supports — webm on Chrome and Firefox, mp4 on Safari. Never WAV. The old
+        // export saved those bytes as "chordflow.wav", which players that trust the
+        // extension refuse to open. Name the file for what it actually contains.
+        const RECORDING_EXTENSIONS = {
+            'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a',
+            'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav'
+        };
+        function recordingExtension(mimeType) {
+            const base = String(mimeType || '').split(';')[0].trim().toLowerCase();
+            return RECORDING_EXTENSIONS[base] || 'webm';
+        }
+        async function exportAudio() {
             if (state.isRecording) { showToast('⚠️ Already recording'); return; }
             ensurePlaybackStopped();
             state.isRecording = true;
@@ -3369,7 +3375,9 @@
                 showToast('🎵 Recording started...');
                 recorder.start();
                 const chords = getTransposedProgression();
-                const beatMs = 60000 / state.tempo;
+                // baseTempo, not state.tempo — see exportMIDI. Recording while
+                // practising at 50% used to hand you a half-speed song.
+                const beatMs = 60000 / state.baseTempo;
 
                 for (let i = 0; i < chords.length; i++) {
                     if (!state.isRecording) break;
@@ -3379,21 +3387,22 @@
                 await new Promise(r => setTimeout(r, 1000));
 
                 const recording = await recorder.stop();
+                const ext = recordingExtension(recording && recording.type);
                 const url = URL.createObjectURL(recording);
                 const a = document.createElement('a');
-                a.href = url; a.download = 'chordflow.wav';
+                a.href = url; a.download = `chordflow.${ext}`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showToast('🎵 WAV exported!');
+                showToast(`🎵 Audio exported (.${ext})`);
             } catch (e) {
-                console.warn('WAV export error:', e);
+                console.warn('Audio export error:', e);
                 showToast('⚠️ Export failed');
             } finally {
                 state.isRecording = false;
                 document.getElementById('recordingOverlay').classList.remove('active');
             }
         }
-        
+
         function downloadFile(data, filename, mimeType) {
             const blob = data instanceof Blob ? data : new Blob([data], { type: mimeType });
             const url = URL.createObjectURL(blob);
@@ -4247,21 +4256,30 @@
                 </div>`).join('');
         }
         // ===== Guitar Tuner: reference pitches for standard tuning =====
-        const TUNER_STRINGS = [
-            { note: 'E2', label: '6th string · Low E' },
-            { note: 'A2', label: '5th string · A' },
-            { note: 'D3', label: '4th string · D' },
-            { note: 'G3', label: '3rd string · G' },
-            { note: 'B3', label: '2nd string · B' },
-            { note: 'E4', label: '1st string · High E' }
-        ];
+        const TUNER_ORDINALS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+        // The tuner was the last place in the app still assuming standard tuning
+        // while the diagrams and the Scale Explorer followed state.tuning — a Drop D
+        // player got Drop D everywhere except the strings they actually tune.
+        function tunerStrings() {
+            const strings = tuningStrings();
+            const n = strings.length;
+            return strings.map((note, i) => {
+                // Strings are stored low to high; players count them the other way.
+                const ordinal = TUNER_ORDINALS[n - 1 - i] || `${n - i}th`;
+                const name = note.replace(/-?\d/g, '');
+                const qualifier = i === 0 ? ' (lowest)' : (i === n - 1 ? ' (highest)' : '');
+                return { note, label: `${ordinal} string · ${name}${qualifier}` };
+            }).reverse(); // highest string first, matching how the neck is drawn
+        }
         function renderTuner() {
             const wrap = document.getElementById('tunerStrings');
             if (!wrap) return;
-            wrap.innerHTML = TUNER_STRINGS.map(s =>
+            wrap.innerHTML = tunerStrings().map(s =>
                 `<div class="tuner-string" role="button" tabindex="0" onclick="playTunerNote('${s.note}')">
-                    <span class="ts-note">${s.note.replace(/\d/, '')}</span><span class="ts-label">${s.label}</span>
+                    <span class="ts-note">${s.note.replace(/-?\d/g, '')}</span><span class="ts-label">${s.label}</span>
                 </div>`).join('');
+            const hint = document.getElementById('tunerHint');
+            if (hint) hint.textContent = `${SCALE_TUNINGS[tuningKey()].name} — tap a string to hear its reference pitch`;
         }
         async function playTunerNote(note) {
             await initAudio();
@@ -4307,6 +4325,7 @@
             syncGuitarPrefs();
             renderAll();
             if (document.getElementById('scalesSheet')?.classList.contains('active')) renderScaleExplorer();
+            if (document.getElementById('tunerSheet')?.classList.contains('active')) renderTuner();
             // Only redraw the diagram modal if it is already open — showChordDiagram
             // opens it, and changing tuning must not conjure a modal out of nowhere.
             if (currentDiagramChord && document.getElementById('chordDiagramModal')?.classList.contains('active')) {
@@ -5124,41 +5143,6 @@
         }
 
         // ============ EXPORT IMPROVEMENTS ============
-        async function exportMP3() {
-            // Use WAV export + convert
-            if (state.isRecording) { showToast('⚠️ Already recording'); return; }
-            state.isRecording = true;
-            await initAudio();
-            if (!recorder) { state.isRecording = false; showToast('⚠️ Recorder not available'); return; }
-            document.getElementById('recordingOverlay').classList.add('active');
-            showToast('📀 Recording audio...');
-
-            try {
-                recorder.start();
-                const chords = getTransposedProgression();
-                const beatMs = 60000 / state.tempo;
-                for (let i = 0; i < chords.length; i++) {
-                    if (!state.isRecording) break;
-                    await playChord(chords[i], '2n');
-                    await new Promise(r => setTimeout(r, beatMs * getBeatsPerMeasure()));
-                }
-                await new Promise(r => setTimeout(r, 1000));
-                const recording = await recorder.stop();
-                // Tone.js records as webm/ogg - download as audio file
-                const url = URL.createObjectURL(recording);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'chordflow.webm';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast('📀 Audio exported! (WebM format)');
-            } catch (e) {
-                console.warn('MP3 export error:', e);
-                showToast('⚠️ Export failed');
-            } finally {
-                state.isRecording = false;
-                document.getElementById('recordingOverlay').classList.remove('active');
-            }
-        }
         // ============ PDF LEAD SHEET ============
         // The file is assembled as *bytes*, not as a string handed to a Blob. Two
         // things depend on that. A content stream's /Length is a byte count, and a
@@ -6915,7 +6899,7 @@
             // Ctrl/Cmd+P is left to the browser: it means Print, and hijacking it
             // for the PDF export surprised anyone who wanted to print the page.
             // The export has a button in Studio.
-            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); exportWAV(); }
+            if (e.code === 'KeyW' && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); exportAudio(); }
             if (e.code === 'KeyS' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openSaveModal(); }
             if (e.code === 'KeyZ' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
             if (e.code === 'Slash' && e.shiftKey) showShortcuts();
