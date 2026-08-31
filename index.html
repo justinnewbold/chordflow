@@ -873,6 +873,7 @@
         .scale-fb-note.lit text { fill: #fff; }
         .scale-chip { padding: 7px 12px; background: var(--bg-tertiary); border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
         .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .dgm-tuning { text-align: center; margin-top: 6px; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--text-tertiary); }
         #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px;  overscroll-behavior-x: contain; }
     </style>
 </head>
@@ -1087,6 +1088,10 @@
                 </div>
                 <div class="settings-group">
                     <div class="settings-group-title">🎸 Guitar</div>
+                    <div class="settings-item" style="display:block;">
+                        <div class="settings-label" style="margin-bottom:8px;"><span class="settings-icon">🎚️</span><span>Tuning</span></div>
+                        <div class="scale-chip-row" id="tuningRow"></div>
+                    </div>
                     <div class="settings-item">
                         <div class="settings-label"><span class="settings-icon">🎯</span><span>Capo</span></div>
                         <div style="display:flex;align-items:center;gap:8px;">
@@ -2126,6 +2131,10 @@
             strumId: safeGetItem('chordflow-strum') || 'off',
             capo: parseInt(safeGetItem('chordflow-capo') || '0', 10) || 0,
             lefty: safeGetItem('chordflow-lefty') === '1',
+            // Tuning is shared by the chord diagrams and the Scale Explorer, so the
+            // two can never disagree about what the strings are. Validated lazily by
+            // tuningStrings() — SCALE_TUNINGS is declared further down the file.
+            tuning: safeGetItem('chordflow-tuning') || 'guitar6',
             theme: safeGetItem('chordflow-theme') || 'dark',
             abLoopStart: -1, abLoopEnd: -1,
             autoSpeedUp: false, autoSpeedIncrement: 5,
@@ -2614,24 +2623,26 @@
             const tones = getChordNotes(chord).map(n => norm(n.replace(/\d/, '')));
             const root = tones[0];
             const toneSet = new Set(tones);
-            // Display order top->bottom: high e, B, G, D, A, low E
-            const openStrings = ['E','B','G','D','A','E'];
+            // Display order top->bottom: highest string first, in the chosen tuning.
+            const openStrings = tuningStrings().slice().reverse().map(s => s.replace(/-?\d/g, ''));
+            const nStr = openStrings.length, lastStr = nStr - 1;
             const nFrets = 12, padL = 30, padR = 12, padT = 22, padB = 8;
             const fretW = 36, strGap = 26;
             const w = padL + nFrets * fretW + padR;
-            const h = padT + 5 * strGap + padB;
+            const h = padT + lastStr * strGap + padB;
             let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px;height:auto;">`;
             // fretboard background
-            svg += `<rect x="${padL}" y="${padT}" width="${nFrets*fretW}" height="${5*strGap}" fill="rgba(255,255,255,0.03)" rx="3"/>`;
+            svg += `<rect x="${padL}" y="${padT}" width="${nFrets*fretW}" height="${lastStr*strGap}" fill="rgba(255,255,255,0.03)" rx="3"/>`;
             // inlay position dots
-            [3,5,7,9].forEach(f => { svg += `<circle cx="${padL+(f-0.5)*fretW}" cy="${padT+2.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`; });
+            const midY = padT + lastStr * strGap / 2;
+            [3,5,7,9].forEach(f => { svg += `<circle cx="${padL+(f-0.5)*fretW}" cy="${midY}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`; });
             // double dot at 12
-            svg += `<circle cx="${padL+11.5*fretW}" cy="${padT+1.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
-            svg += `<circle cx="${padL+11.5*fretW}" cy="${padT+3.5*strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
+            svg += `<circle cx="${padL+11.5*fretW}" cy="${midY - strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
+            svg += `<circle cx="${padL+11.5*fretW}" cy="${midY + strGap}" r="4" fill="var(--text-tertiary)" opacity="0.5"/>`;
             // fret lines (nut thicker)
             for (let f = 0; f <= nFrets; f++) {
                 const x = padL + f * fretW;
-                svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+5*strGap}" stroke="var(--text-secondary)" stroke-width="${f===0?3:1}"/>`;
+                svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+lastStr*strGap}" stroke="var(--text-secondary)" stroke-width="${f===0?3:1}"/>`;
             }
             // fret numbers
             for (let f = 1; f <= nFrets; f++) {
@@ -2684,7 +2695,12 @@
             bass4:   { name: 'Bass',          strings: ['E1','A1','D2','G2'] },
             bass5:   { name: '5-String Bass', strings: ['B0','E1','A1','D2','G2'] }
         };
-        const scaleState = { root: 0, type: 'major', tuning: 'guitar6', label: 'degrees', synced: false };
+        // Tuning lives on `state` (shared with the chord diagrams), not here.
+        const scaleState = { root: 0, type: 'major', label: 'degrees', synced: false };
+        // Single source of truth for "what are the strings", used by the chord
+        // diagrams, the full-neck view and the Scale Explorer alike.
+        function tuningKey() { return SCALE_TUNINGS[state.tuning] ? state.tuning : 'guitar6'; }
+        function tuningStrings() { return SCALE_TUNINGS[tuningKey()].strings; }
 
         function scaleNoteIndex(n) { n = SCALE_ENH[n] || n; return SCALE_CHROMA.indexOf(n); }
         function scaleParseOpen(s) {
@@ -2716,7 +2732,7 @@
                 `<button class="scale-chip${k === scaleState.type ? ' active' : ''}" onclick="setScaleType('${k}')">${v.name}</button>`).join('');
             const tuneRow = document.getElementById('scaleTuningRow');
             if (tuneRow) tuneRow.innerHTML = Object.entries(SCALE_TUNINGS).map(([k, v]) =>
-                `<button class="scale-chip${k === scaleState.tuning ? ' active' : ''}" onclick="setScaleTuning('${k}')">${v.name}</button>`).join('');
+                `<button class="scale-chip${k === tuningKey() ? ' active' : ''}" onclick="setScaleTuning('${k}')">${v.name}</button>`).join('');
             const ln = document.getElementById('scaleLabelNotes'), ld = document.getElementById('scaleLabelDegrees');
             if (ln) ln.classList.toggle('active', scaleState.label === 'notes');
             if (ld) ld.classList.toggle('active', scaleState.label === 'degrees');
@@ -2739,7 +2755,9 @@
 
         function setScaleRoot(i) { scaleState.root = i; renderScaleExplorer(); }
         function setScaleType(t) { scaleState.type = t; renderScaleExplorer(); }
-        function setScaleTuning(t) { scaleState.tuning = t; renderScaleExplorer(); }
+        // The Scale Explorer chips and the Practice-tab tuning picker are two doors
+        // onto the same setting, so both land here.
+        function setScaleTuning(t) { setTuning(t); }
         function setScaleLabel(l) { scaleState.label = l; renderScaleExplorer(); }
 
         async function playScaleNote(noteOct) {
@@ -2791,7 +2809,7 @@
             const rootIdx = scaleState.root;
             const degByNote = new Map();
             def.ints.forEach(iv => degByNote.set((rootIdx + iv) % 12, SCALE_DEGREE_LABELS[iv]));
-            const display = SCALE_TUNINGS[scaleState.tuning].strings.slice().reverse(); // high string on top
+            const display = tuningStrings().slice().reverse(); // high string on top
             const nStr = display.length;
             const nFrets = 15, padL = 30, padR = 14, padT = 22, padB = 8;
             const fretW = 34, strGap = 26;
@@ -2895,7 +2913,10 @@
             maj7: { f: ['x',0,2,1,2,0], g: [0,1,3,2,4,1] },
             sus4: { f: ['x',0,2,2,3,0], g: [0,1,2,3,4,1] },
             sus2: { f: ['x',0,2,2,0,0], g: [0,1,3,4,1,1] },
-            aug:  { f: ['x',0,3,2,2,1], g: [0,1,4,2,3,1] },
+            // Four distinct frets, so four distinct fingers: index barres the root
+            // fret, ring covers the two strings a whole tone above it. The old
+            // fingering asked finger 1 to hold both the root fret and the one above.
+            aug:  { f: ['x',0,3,2,2,1], g: [0,1,4,3,3,2] },
             dim:  { f: ['x',0,1,2,1,'x'], g: [0,1,2,4,3,0] }
         };
         // Map a chord suffix to a barre-template quality. Extended chords reduce to
@@ -2937,12 +2958,154 @@
             const rootPc = GUITAR_PC[root] != null ? GUITAR_PC[root] : 0;
             return genBarreShape(rootPc, guitarQuality(suffix));
         }
+
+        // ============ SHAPES IN ALTERNATE TUNINGS ============
+        // Everything above is standard tuning only. Drop D, 7-string and bass
+        // players were being shown standard-tuning grips, which are silently wrong
+        // notes rather than merely unfamiliar ones. For those tunings the shape has
+        // to be derived from the tuning itself.
+        const GUITAR_STD6 = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'];
+        function sameStrings(a, b) { return a.length === b.length && a.every((s, i) => s === b[i]); }
+        // Chord tones as pitch classes, root first. These come from the same
+        // quality reduction the barre templates use (guitarQuality), not from
+        // getChordNotes, so an extended chord resolves to exactly one shape family
+        // no matter which tuning is drawing it — a C9 is a C7 grip everywhere.
+        const GUITAR_QUALITY_TONES = {
+            maj:  [0, 4, 7],  min: [0, 3, 7],  dom7: [0, 4, 7, 10], m7: [0, 3, 7, 10],
+            maj7: [0, 4, 7, 11], sus4: [0, 5, 7], sus2: [0, 2, 7], aug: [0, 4, 8], dim: [0, 3, 6]
+        };
+        function guitarChordTones(chord) {
+            const m = String(chord || '').match(/^([A-G][#b]?)(.*)$/);
+            const rootPc = (m && GUITAR_PC[m[1]] != null) ? GUITAR_PC[m[1]] : 0;
+            const ivs = GUITAR_QUALITY_TONES[guitarQuality(m ? m[2] : '')] || GUITAR_QUALITY_TONES.maj;
+            return ivs.map(iv => (rootPc + iv) % 12);
+        }
+        // Fingers for a solved shape. Neighbouring strings stopped at the same fret
+        // are one finger lying flat — that is what a barre is, and what keeps the
+        // count inside the four a hand actually has. Everything else is numbered
+        // low fret first, the order a hand naturally falls into.
+        function assignFingers(frets) {
+            const fingers = frets.map(() => 0);
+            const pressed = frets.map((v, s) => ({ v, s })).filter(o => o.v > 0);
+            if (!pressed.length) return fingers;
+            const byFret = new Map();
+            pressed.forEach(o => { if (!byFret.has(o.v)) byFret.set(o.v, []); byFret.get(o.v).push(o.s); });
+            // Split each fret into runs of adjacent strings; each run is one finger.
+            const runs = [];
+            [...byFret.keys()].sort((a, b) => a - b).forEach(f => {
+                let run = [];
+                byFret.get(f).sort((a, b) => a - b).forEach(s => {
+                    if (run.length && s === run[run.length - 1] + 1) run.push(s);
+                    else { if (run.length) runs.push(run); run = [s]; }
+                });
+                if (run.length) runs.push(run);
+            });
+            // More positions than fingers means no honest numbering exists; draw the
+            // dots without numbers rather than print a fingering nobody can play.
+            if (runs.length > 4) return fingers;
+            runs.forEach((run, i) => run.forEach(s => { fingers[s] = i + 1; }));
+            return fingers;
+        }
+        // Search the neck for the best voicing of `chord` on `strings` (low to high,
+        // e.g. ['D2','A2','D3','G3','B3','E4']). For each starting fret, take the
+        // lowest chord tone available on each string within a four-fret hand span,
+        // put the root in the bass, and keep the cheapest result.
+        function solveTuningShape(chord, strings) {
+            const pcs = guitarChordTones(chord);
+            if (!pcs.length) return null;
+            const rootPc = pcs[0];
+            const toneSet = new Set(pcs);
+            const open = strings.map(s => scaleParseOpen(s).idx);
+            const n = open.length;
+            const SPAN = 3; // base .. base+3 — four frets, one hand position
+            let best = null, bestScore = Infinity;
+            const consider = (base, useOpen) => {
+                const raw = [];
+                for (let s = 0; s < n; s++) {
+                    let pick = -1;
+                    if (useOpen && toneSet.has(open[s] % 12)) pick = 0;
+                    else {
+                        for (let f = Math.max(base, 1); f <= base + SPAN; f++) {
+                            if (toneSet.has((open[s] + f) % 12)) { pick = f; break; }
+                        }
+                    }
+                    raw.push(pick);
+                }
+                // Root in the bass: mute everything below the lowest string that
+                // sounds the root. Without this the solver happily voices a D chord
+                // over an A in the bass, which is a different chord.
+                let rootStr = -1;
+                for (let s = 0; s < n; s++) {
+                    if (raw[s] >= 0 && (open[s] + raw[s]) % 12 === rootPc) { rootStr = s; break; }
+                }
+                if (rootStr < 0) return;
+                const frets = raw.map((v, s) => s < rootStr ? -1 : v);
+                const voiced = frets.filter(v => v >= 0).length;
+                if (voiced < 3) return;
+                const heard = new Set();
+                frets.forEach((v, s) => { if (v >= 0) heard.add((open[s] + v) % 12); });
+                if (heard.size < Math.min(3, toneSet.size)) return;
+                const pressedF = frets.filter(v => v > 0);
+                const span = pressedF.length ? Math.max(...pressedF) - Math.min(...pressedF) : 0;
+                // Holes: a muted string sandwiched between two voiced ones, which is
+                // awkward to strum cleanly.
+                let holes = 0;
+                for (let s = rootStr + 1; s < n - 1; s++) {
+                    if (frets[s] === -1 && frets[s - 1] >= 0 && frets.slice(s + 1).some(v => v >= 0)) holes++;
+                }
+                const missing = toneSet.size - heard.size;
+                const score = missing * 100 + holes * 25 + span * 6 + (n - voiced) * 4 + base;
+                if (score < bestScore) { bestScore = score; best = frets; }
+            };
+            for (let base = 0; base <= 12; base++) {
+                // Open strings ring beautifully but they are not free: taking every
+                // available open string can strand the root high up the neck and
+                // gut the voicing. So near the nut both readings are costed — the
+                // one with open strings and the one that frets everything — and the
+                // score decides. Higher up, reaching back to an open string is a
+                // different voicing altogether, so it is not offered.
+                if (base <= 3) consider(base, true);
+                consider(base, false);
+            }
+            if (!best) return null;
+            return { frets: best, fingers: assignFingers(best) };
+        }
+        // The shape for a chord on a given set of strings.
+        function getShapeForStrings(chord, strings) {
+            // Standard tuning keeps the curated open voicings and barre templates —
+            // they are idiomatic in a way a search is not, and must not regress.
+            if (sameStrings(strings, GUITAR_STD6)) return getGuitarChordShape(chord);
+            // A tuning that only *adds* strings below standard (the 7-string) keeps
+            // the familiar six-string grip. The extra low string joins in only when
+            // it is an open root — reaching it at a fret would demand a finger the
+            // hand does not have spare, which is why 7-string players mute it on
+            // everything but the chords it happens to root.
+            const extra = strings.length - 6;
+            if (extra > 0 && sameStrings(strings.slice(extra), GUITAR_STD6)) {
+                const base = getGuitarChordShape(chord);
+                const rootPc = guitarChordTones(chord)[0];
+                const lowF = [], lowG = [];
+                for (let s = 0; s < extra; s++) {
+                    lowF.push(scaleParseOpen(strings[s]).idx % 12 === rootPc ? 0 : -1);
+                    lowG.push(0);
+                }
+                return { frets: lowF.concat(base.frets), fingers: lowG.concat(base.fingers) };
+            }
+            const solved = solveTuningShape(chord, strings);
+            if (solved) return solved;
+            // Nothing playable in this tuning (a chord whose root never appears in
+            // the bass). Show an honest all-muted diagram rather than a wrong one.
+            return { frets: strings.map(() => -1), fingers: strings.map(() => 0) };
+        }
+
         // Render a standard vertical chord-box diagram for any chord.
-        function mkGuitar(chord) {
+        function mkGuitar(chord, tuning) {
+            const tKey = (tuning && SCALE_TUNINGS[tuning]) ? tuning : tuningKey();
+            const strings = SCALE_TUNINGS[tKey].strings;
             // A capo at fret N means fingering the shape N semitones lower: the
             // chord still *sounds* as named, but the grip is the transposed one.
             const capo = state.capo || 0;
-            const shape = getGuitarChordShape(capo ? transposeChord(chord, -capo) : chord);
+            const shape = getShapeForStrings(capo ? transposeChord(chord, -capo) : chord, strings);
             const frets = shape.frets, fingers = shape.fingers;
             const played = frets.filter(v => v > 0);
             const maxF = played.length ? Math.max(...played) : 0;
@@ -2950,7 +3113,7 @@
             // Show frets 1-5 from the nut unless the shape sits higher up the neck.
             const startFret = (maxF <= 5) ? 1 : minF;
             const showNut = startFret === 1;
-            const NF = 5, NS = 6, padL = 22, padR = 16, padT = 26, cw = 18, ch = 24;
+            const NF = 5, NS = strings.length, padL = 22, padR = 16, padT = 26, cw = 18, ch = 24;
             const w = padL + (NS - 1) * cw + padR, h = padT + NF * ch + 16;
             // Left-handed players read the neck mirrored; every x-position for a
             // string goes through here so the flip is one decision, not six.
@@ -3020,6 +3183,12 @@
                 if (fg > 0) svg += `<text x="${x}" y="${cy + 3.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${fg}</text>`;
             }
             svg += `</svg>`;
+            // Name the neck whenever it is not the standard six, so a Drop D grip
+            // can never be mistaken for a standard-tuning one.
+            if (tKey !== 'guitar6') {
+                const names = (state.lefty ? strings.slice().reverse() : strings).map(s => s.replace(/-?\d/g, ''));
+                svg += `<div class="dgm-tuning">${SCALE_TUNINGS[tKey].name} · ${names.join(' ')}</div>`;
+            }
             return svg;
         }
 
@@ -4155,7 +4324,26 @@
             safeSetItem('chordflow-lefty', state.lefty ? '1' : '0');
             syncGuitarPrefs(); renderAll();
         }
+        // Tuning drives both the chord diagrams and the Scale Explorer, so a change
+        // has to redraw whichever of the two is on screen.
+        function setTuning(t) {
+            if (!SCALE_TUNINGS[t] || t === state.tuning) { syncGuitarPrefs(); return; }
+            state.tuning = t;
+            safeSetItem('chordflow-tuning', t);
+            syncGuitarPrefs();
+            renderAll();
+            if (document.getElementById('scalesSheet')?.classList.contains('active')) renderScaleExplorer();
+            // Only redraw the diagram modal if it is already open — showChordDiagram
+            // opens it, and changing tuning must not conjure a modal out of nowhere.
+            if (currentDiagramChord && document.getElementById('chordDiagramModal')?.classList.contains('active')) {
+                showChordDiagram(currentDiagramChord, currentDiagramIndex);
+            }
+            haptic(8);
+        }
         function syncGuitarPrefs() {
+            const tr = document.getElementById('tuningRow');
+            if (tr) tr.innerHTML = Object.entries(SCALE_TUNINGS).map(([k, v]) =>
+                `<button class="scale-chip${k === tuningKey() ? ' active' : ''}" onclick="setTuning('${k}')">${v.name}</button>`).join('');
             const cs = document.getElementById('capoSlider');
             if (cs && String(state.capo) !== cs.value) cs.value = String(state.capo);
             const cl = document.getElementById('capoLabel');
@@ -4464,39 +4652,9 @@
         }
 
         // ============ 7-STRING GUITAR DIAGRAMS ============
-        const GUITAR7_DIAGRAMS = {
-            'C': [[1,0,0],[2,1,0],[3,2,3],[4,3,0],[5,2,1]], 'Am': [[1,0,0],[2,1,0],[3,2,2],[4,2,3]], 'G': [[0,3,0],[1,2,0],[5,3,0],[6,2,0]],
-            'D': [[1,2,0],[2,3,0],[3,2,0]], 'Dm': [[1,1,0],[2,3,0],[3,2,0]], 'E': [[1,2,2],[2,2,3],[3,1,1]], 'Em': [[1,2,2],[2,2,3]],
-            'F': [[0,1,1],[1,1,2],[2,2,3],[3,3,0]], 'Fm': [[0,1,1],[1,1,2],[2,1,3],[3,3,0]], 'B': [[1,4,0],[2,4,0],[3,4,0],[4,2,0]],
-            'Bm': [[1,3,0],[2,4,0],[3,4,0],[4,2,0]], 'A': [[1,2,0],[2,2,0],[3,2,0]], 'Bb': [[0,1,0],[1,3,0],[2,3,0],[3,3,0]]
-        };
-        function mk7String(chord) {
-            const strings = 7, frets = 5;
-            const sw = 14, fh = 22, padL = 15, padT = 15;
-            const w = padL + strings * sw + 10, h = padT + frets * fh + 10;
-            let svg = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;margin:0 auto;">`;
-            // Nut
-            svg += `<rect x="${padL}" y="${padT}" width="${(strings-1)*sw}" height="3" fill="var(--text-primary)"/>`;
-            // Frets
-            for (let f = 0; f <= frets; f++) svg += `<line x1="${padL}" y1="${padT+f*fh}" x2="${padL+(strings-1)*sw}" y2="${padT+f*fh}" stroke="var(--text-tertiary)" stroke-width="1"/>`;
-            // Strings
-            for (let s = 0; s < strings; s++) svg += `<line x1="${padL+s*sw}" y1="${padT}" x2="${padL+s*sw}" y2="${padT+frets*fh}" stroke="var(--text-secondary)" stroke-width="1"/>`;
-            // String labels
-            const labels = ['B', 'E', 'A', 'D', 'G', 'B', 'e'];
-            for (let s = 0; s < strings; s++) svg += `<text x="${padL+s*sw}" y="${padT-5}" text-anchor="middle" fill="var(--text-tertiary)" font-size="9">${labels[s]}</text>`;
-            // Dots
-            const stripped7 = chord.replace(/maj7|dim7|dim|aug|7|sus[24]/g, '');
-            const dots = GUITAR7_DIAGRAMS[stripped7] || GUITAR7_DIAGRAMS[stripped7.replace(/m$/, '')] || GUITAR7_DIAGRAMS['C'];
-            dots.forEach(([str, fret]) => {
-                if (fret === 0) {
-                    svg += `<circle cx="${padL+str*sw}" cy="${padT-1}" r="3" fill="none" stroke="var(--text-secondary)" stroke-width="1.5"/>`;
-                } else {
-                    svg += `<circle cx="${padL+str*sw}" cy="${padT+(fret-0.5)*fh}" r="5" fill="var(--accent)"/>`;
-                }
-            });
-            svg += '</svg>';
-            return svg;
-        }
+        // The dedicated 7-string tab draws through the same engine as every other
+        // diagram, so it stays correct for chords no hand-written table covers.
+        function mk7String(chord) { return mkGuitar(chord, 'guitar7'); }
 
         // ============ EAR TRAINING ============
         let earTrainingMode = 'chord';
