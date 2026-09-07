@@ -996,6 +996,270 @@
         .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .dgm-tuning { text-align: center; margin-top: 6px; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--text-tertiary); }
         #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px;  overscroll-behavior-x: contain; }
+        /* ===== iOS-style app chrome: one persistent tab bar + compact playback dock ===== */
+        #dualModeUI {
+            padding-bottom: 0;
+        }
+
+        .header {
+            min-height: 52px;
+            padding: 10px var(--spacing-lg);
+            background: rgba(0, 0, 0, 0.82);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
+        }
+        .header .logo {
+            font-size: 22px;
+            font-weight: 750;
+            letter-spacing: -0.35px;
+        }
+        .header-actions {
+            display: none !important;
+        }
+
+        .tabbar {
+            position: relative;
+            z-index: 160;
+            flex-shrink: 0;
+            gap: 2px;
+            padding: 5px 8px calc(5px + var(--safe-bottom));
+            border-top: 0.5px solid var(--separator);
+            background: rgba(28, 28, 30, 0.94);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            backdrop-filter: saturate(180%) blur(24px);
+        }
+        .tabbar-btn {
+            min-height: 46px;
+            padding: 5px 2px 4px;
+            border-radius: 10px;
+            gap: 3px;
+            color: var(--text-secondary);
+        }
+        .tabbar-btn .tabbar-icon {
+            height: 22px;
+            min-width: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .tabbar-btn .tabbar-label {
+            font-size: 10.5px;
+            line-height: 1;
+            font-weight: 650;
+            letter-spacing: -0.1px;
+        }
+        .tabbar-btn.active {
+            color: var(--accent);
+            background: transparent;
+        }
+        .tabbar-btn.more-active {
+            color: var(--accent);
+        }
+
+        /* Progression transport is an accessory, not navigation. It floats like
+           an iOS mini-player above the tab bar and disappears on Practice unless
+           a progression is currently playing. */
+        .transport {
+            position: fixed;
+            left: 50%;
+            right: auto;
+            bottom: calc(var(--safe-bottom) + 58px);
+            width: min(calc(100% - 24px), 520px);
+            height: 58px;
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: 44px 52px minmax(70px, 1fr) 44px;
+            align-items: center;
+            justify-content: initial;
+            gap: 6px;
+            padding: 6px 8px;
+            border: 0.5px solid rgba(255,255,255,0.13);
+            border-radius: 18px;
+            background: rgba(35, 35, 37, 0.94);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            backdrop-filter: saturate(180%) blur(24px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.34);
+            z-index: 150;
+            opacity: 1;
+            transition: opacity var(--transition-fast), transform var(--transition-fast);
+        }
+        .transport.is-hidden {
+            opacity: 0;
+            transform: translate(-50%, 10px);
+            pointer-events: none;
+        }
+        .transport-left, .transport-right, .transport-center {
+            display: contents;
+        }
+        .transport-btn {
+            width: 40px;
+            height: 40px;
+            justify-self: center;
+            font-size: 17px;
+            background: var(--bg-tertiary);
+        }
+        .play-btn {
+            width: 48px;
+            height: 48px;
+            justify-self: center;
+            font-size: 20px;
+            box-shadow: 0 4px 16px rgba(10,132,255,0.34);
+        }
+        .tempo-tap {
+            width: 100%;
+            min-width: 0;
+            min-height: 44px;
+            display: flex;
+            flex-direction: row;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+        }
+        .tempo-tap span { display: inline; }
+        .tempo-tap #tempoValue { font-size: 17px; }
+        .tempo-tap .bpm-label { font-size: 9px; }
+
+        .ui-container.has-transport .main-content {
+            padding-bottom: 88px;
+        }
+
+        /* More uses an iOS grouped-list pattern inside the existing draggable sheet. */
+        .more-menu-section {
+            margin-bottom: var(--spacing-lg);
+        }
+        .more-menu-title {
+            padding: 0 12px 7px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 650;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+        }
+        .more-menu-group {
+            overflow: hidden;
+            border-radius: 14px;
+            background: var(--bg-tertiary);
+        }
+        .more-menu-row {
+            width: 100%;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            border: 0;
+            border-bottom: 0.5px solid var(--separator);
+            background: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            cursor: pointer;
+        }
+        .more-menu-row:last-child {
+            border-bottom: 0;
+        }
+        .more-menu-row:active {
+            background: rgba(255,255,255,0.06);
+        }
+        .more-menu-icon {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(10,132,255,0.18);
+            font-size: 17px;
+        }
+        .more-menu-copy {
+            flex: 1;
+            min-width: 0;
+        }
+        .more-menu-name {
+            display: block;
+            font-size: 16px;
+            font-weight: 550;
+            letter-spacing: -0.2px;
+        }
+        .more-menu-detail {
+            display: block;
+            margin-top: 2px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            line-height: 1.2;
+        }
+        .more-menu-chevron {
+            color: var(--text-tertiary);
+            font-size: 22px;
+            font-weight: 300;
+        }
+        .more-menu-row-static {
+            cursor: default;
+        }
+        .more-menu-row-static:active {
+            background: transparent;
+        }
+
+        @media (max-width: 430px) {
+            .header {
+                min-height: 48px;
+                padding: 8px 16px;
+            }
+            .header .logo {
+                font-size: 21px;
+            }
+            .tabbar {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+            .tabbar-btn {
+                min-width: 0;
+            }
+            .transport {
+                bottom: calc(var(--safe-bottom) + 56px);
+                width: calc(100% - 20px);
+                height: 56px;
+                grid-template-columns: 42px 50px minmax(64px, 1fr) 42px;
+                gap: 4px;
+                padding: 5px 7px;
+                border-radius: 17px;
+            }
+            .transport-btn {
+                width: 38px;
+                height: 38px;
+                flex: initial;
+            }
+            .play-btn {
+                width: 46px;
+                height: 46px;
+                flex: initial;
+            }
+            .tempo-tap {
+                min-width: 0;
+                padding: 4px 6px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            #dualModeUI { padding-bottom: 0; }
+            .tabbar {
+                padding-top: 3px;
+                padding-bottom: calc(3px + var(--safe-bottom));
+            }
+            .tabbar-btn {
+                min-height: 40px;
+                flex-direction: row;
+                gap: 5px;
+            }
+            .transport {
+                bottom: calc(var(--safe-bottom) + 46px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1040,13 +1304,6 @@
     <div id="dualModeUI" class="ui-container">
         <header class="header">
             <div class="logo">🎸 ChordFlow</div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="openHistory()" title="Progression History" aria-label="Progression History">🕐</button>
-                <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths" aria-label="Circle of Fifths">🎡</button>
-                <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome" aria-label="Metronome">🥁</button>
-                <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn" aria-label="Instrument">🎹</button>
-                <button class="header-btn" onclick="openSheet('settings')" aria-label="Settings">⚙️</button>
-            </div>
         </header>
         <div class="audio-status" id="audioStatus" role="alert" aria-live="assertive" hidden>
             <span class="audio-status-text" id="audioStatusText">Sound is blocked. Tap to enable sound.</span>
@@ -1407,35 +1664,29 @@
                 </div>
             </div>
         </main>
-        <!-- Primary navigation. Three destinations so every feature has one
-             obvious home; sits above the transport as a flex child, so no fixed
-             positioning or padding compensation is needed. -->
-        <nav class="tabbar" role="tablist">
-            <button class="tabbar-btn active" id="tabPlay" role="tab" aria-selected="true" onclick="setTab('play')">
+        <!-- One persistent iOS-style destination bar. Secondary utilities live in More. -->
+        <nav class="tabbar" aria-label="Primary">
+            <button class="tabbar-btn active" id="tabPlay" aria-current="page" onclick="setTab('play')">
                 <span class="tabbar-icon">🎸</span><span class="tabbar-label">Play</span>
             </button>
-            <button class="tabbar-btn" id="tabPractice" role="tab" aria-selected="false" onclick="setTab('practice')">
+            <button class="tabbar-btn" id="tabPractice" onclick="setTab('practice')">
                 <span class="tabbar-icon">🎯</span><span class="tabbar-label">Practice</span>
             </button>
-            <button class="tabbar-btn" id="tabStudio" role="tab" aria-selected="false" onclick="setTab('studio')">
+            <button class="tabbar-btn" id="tabStudio" onclick="setTab('studio')">
                 <span class="tabbar-icon">🎛️</span><span class="tabbar-label">Studio</span>
             </button>
+            <button class="tabbar-btn" id="tabMore" aria-haspopup="dialog" aria-expanded="false" onclick="openMoreSheet()">
+                <span class="tabbar-icon" aria-hidden="true">•••</span><span class="tabbar-label">More</span>
+            </button>
         </nav>
-        <div class="transport">
-            <div class="transport-left">
-                <button class="transport-btn" onclick="openSheet('instrument')" aria-label="Instrument">🎹</button>
+        <div class="transport" id="transportDock" aria-label="Playback controls">
+            <button class="transport-btn" onclick="stopPlayback()" aria-label="Stop">⏹️</button>
+            <button class="play-btn" onclick="togglePlay()" id="playBtn" aria-label="Play">▶️</button>
+            <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
+                <span id="tempoValue">120</span>
+                <span class="bpm-label">BPM</span>
             </div>
-            <div class="transport-center">
-                <button class="transport-btn" onclick="stopPlayback()" aria-label="Stop">⏹️</button>
-                <button class="play-btn" onclick="togglePlay()" id="playBtn" aria-label="Play">▶️</button>
-                <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
-                    <span id="tempoValue">120</span>
-                    <span class="bpm-label">BPM</span>
-                </div>
-            </div>
-            <div class="transport-right">
-                <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn" aria-label="Loop">🔁</button>
-            </div>
+            <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn" aria-label="Loop">🔁</button>
         </div>
     </div>
 
@@ -1495,6 +1746,66 @@
                 <div class="settings-item">
                     <div class="settings-label"><span class="settings-icon">📱</span><span>Version</span></div>
                     <span id="versionDisplay" style="color: var(--text-secondary);">0.73</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-sheet" id="moreSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <div class="sheet-title">More</div>
+            <button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button>
+        </div>
+        <div class="sheet-body">
+            <div class="more-menu-section">
+                <div class="more-menu-title">Tools</div>
+                <div class="more-menu-group">
+                    <button class="more-menu-row" onclick="openHistory()">
+                        <span class="more-menu-icon" aria-hidden="true">🕐</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Progression History</span>
+                            <span class="more-menu-detail">Recent progressions and favorites</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <button class="more-menu-row" onclick="openCircleOfFifths()">
+                        <span class="more-menu-icon" aria-hidden="true">🎡</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Circle of Fifths</span>
+                            <span class="more-menu-detail">Keys, relationships, and current chords</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <button class="more-menu-row" onclick="openSheet('instrument')">
+                        <span class="more-menu-icon" aria-hidden="true">🎹</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Instrument</span>
+                            <span class="more-menu-detail" id="moreInstrumentValue">Piano</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <div class="more-menu-row more-menu-row-static">
+                        <span class="more-menu-icon" aria-hidden="true">🥁</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Metronome</span>
+                            <span class="more-menu-detail">Click on every beat</span>
+                        </span>
+                        <div class="toggle-switch" id="moreMetronomeToggle" tabindex="0" role="switch" aria-checked="false" aria-label="Metronome" onclick="toggleMetronome()"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="more-menu-section">
+                <div class="more-menu-title">App</div>
+                <div class="more-menu-group">
+                    <button class="more-menu-row" onclick="openSheet('settings')">
+                        <span class="more-menu-icon" aria-hidden="true">⚙️</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Settings</span>
+                            <span class="more-menu-detail">Account, appearance, shortcuts, and about</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -3776,8 +4087,11 @@
             if (bassToggle) bassToggle.classList.toggle('active', state.bassEnabled);
             const metronomeToggle = document.getElementById('metronomeToggle');
             if (metronomeToggle) metronomeToggle.classList.toggle('active', state.metronomeEnabled);
-            const metronomeHeaderBtn = document.getElementById('metronomeHeaderBtn');
-            if (metronomeHeaderBtn) metronomeHeaderBtn.classList.toggle('active', state.metronomeEnabled);
+            const moreMetronomeToggle = document.getElementById('moreMetronomeToggle');
+            if (moreMetronomeToggle) {
+                moreMetronomeToggle.classList.toggle('active', state.metronomeEnabled);
+                moreMetronomeToggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
             const loopBtn = document.getElementById('loopBtn');
             if (loopBtn) loopBtn.classList.toggle('active', state.isLooping);
             const cdLoopBtn = document.getElementById('cdLoopBtn');
@@ -3834,8 +4148,11 @@
                 toggle.classList.toggle('active', state.metronomeEnabled);
                 toggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
             }
-            const headerBtn = document.getElementById('metronomeHeaderBtn');
-            if (headerBtn) headerBtn.classList.toggle('active', state.metronomeEnabled);
+            const moreToggle = document.getElementById('moreMetronomeToggle');
+            if (moreToggle) {
+                moreToggle.classList.toggle('active', state.metronomeEnabled);
+                moreToggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
         }
         function getBeatsPerMeasure() {
@@ -3875,23 +4192,63 @@
         }
 
         // Dual Mode
-        // Primary navigation. Three destinations, each the single home for one
-        // kind of work; the chosen tab persists so the app reopens where you were.
+        // Three destinations + a More sheet, matching an iOS tab bar hierarchy.
         const TABS = ['play', 'practice', 'studio'];
+        function syncPrimaryTabbar() {
+            TABS.forEach(t => {
+                const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
+                if (!btn) return;
+                const active = t === state.tab;
+                btn.classList.toggle('active', active);
+                if (active) btn.setAttribute('aria-current', 'page');
+                else btn.removeAttribute('aria-current');
+            });
+        }
+        function syncTransportVisibility() {
+            const dock = document.getElementById('transportDock');
+            const container = document.getElementById('dualModeUI');
+            const show = state.tab !== 'practice' || state.isPlaying;
+            if (dock) dock.classList.toggle('is-hidden', !show);
+            if (container) container.classList.toggle('has-transport', show);
+        }
         function setTab(tab) {
             if (!TABS.includes(tab)) tab = 'play';
             state.tab = tab;
             safeSetItem('chordflow-tab', tab);
             TABS.forEach(t => {
-                const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
-                if (btn) { btn.classList.toggle('active', t === tab); btn.setAttribute('aria-selected', t === tab ? 'true' : 'false'); }
                 const view = document.getElementById(t + 'View');
                 if (view) view.classList.toggle('active', t === tab);
             });
-            // Each tab is its own scroll context; start at the top when switching.
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.remove('more-active');
+                more.setAttribute('aria-expanded', 'false');
+            }
+            syncPrimaryTabbar();
+            syncTransportVisibility();
+            // Each destination gets its own fresh scroll position on entry.
             const mc = document.querySelector('.main-content');
             if (mc) mc.scrollTop = 0;
             haptic(8);
+        }
+        function openMoreSheet() {
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.add('more-active');
+                more.setAttribute('aria-expanded', 'true');
+            }
+            renderMoreSheet();
+            openSheet('more');
+        }
+        function renderMoreSheet() {
+            const inst = instruments.find(i => i.id === state.instrument) || instruments[0];
+            const instValue = document.getElementById('moreInstrumentValue');
+            if (instValue) instValue.textContent = inst ? inst.name : 'Instrument';
+            const metro = document.getElementById('moreMetronomeToggle');
+            if (metro) {
+                metro.classList.toggle('active', state.metronomeEnabled);
+                metro.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
         }
         let studioRetryAction = null;
         function showStudioStatus(message, retryAction, retryLabel = 'Retry') {
@@ -4124,6 +4481,7 @@
             if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); sfBtn.setAttribute('aria-label', label); }
             const cdBtn = document.getElementById('cdPlayBtn');
             if (cdBtn) { cdBtn.textContent = icon; cdBtn.classList.toggle('playing', state.isPlaying); cdBtn.setAttribute('aria-label', label); }
+            syncTransportVisibility();
         }
         async function doCountIn() {
             const overlay = document.getElementById('countInOverlay'), numEl = document.getElementById('countInNumber');
@@ -6550,12 +6908,19 @@
             if (type === 'chordSheet') renderChordSheet();
             if (type === 'tuner') renderTuner();
             if (type === 'strum') renderStrumSheet();
+            if (type === 'more') renderMoreSheet();
             setTimeout(() => focusDialog(sheet), 0);
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.remove('more-active');
+                more.setAttribute('aria-expanded', 'false');
+            }
+            syncPrimaryTabbar();
             stopSheetAudio();
             restoreFocusFor('sheet');
         }
@@ -6731,8 +7096,8 @@
             state.instrument = id;
             if (audioInit) createSynth();
             const inst = instruments.find(i => i.id === id);
-            const btn = document.getElementById('instrumentBtn');
-            if (btn) { btn.textContent = inst?.icon || '🎵'; btn.setAttribute('aria-label', 'Instrument'); }
+            const moreValue = document.getElementById('moreInstrumentValue');
+            if (moreValue) moreValue.textContent = inst?.name || 'Instrument';
             closeSheet();
             showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`);
         }
