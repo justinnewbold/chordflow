@@ -2397,33 +2397,60 @@
             }
         }
 
-        async function initAudio() {
-            if (audioInit) {
-                // Already built — but iOS suspends the AudioContext on interruptions
-                // (calls, Siri), on backgrounding, and sometimes before it is ever
-                // unlocked. Resume it here rather than returning blind: every play
-                // path funnels through initAudio, so nothing else has to remember to.
-                try {
-                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
-                        await Tone.context.resume();
-                    }
-                } catch (e) {}
-                return;
+        function showAudioStatus(message) {
+            const wrap = document.getElementById('audioStatus');
+            const text = document.getElementById('audioStatusText');
+            if (text) text.textContent = message || 'Sound is blocked. Tap to enable sound.';
+            if (wrap) wrap.hidden = false;
+        }
+        function clearAudioStatus() {
+            const wrap = document.getElementById('audioStatus');
+            if (wrap) wrap.hidden = true;
+        }
+        async function unlockAudioContext() {
+            if (typeof Tone === 'undefined' || typeof Tone.start !== 'function') {
+                showAudioStatus('Sound engine could not load. Check your connection, then tap to retry.');
+                return false;
             }
             try {
                 await Tone.start();
+                if (Tone.context && Tone.context.state !== 'running') await Tone.context.resume();
+                if (!Tone.context || Tone.context.state !== 'running') {
+                    showAudioStatus('Sound is blocked by the browser. Tap to enable sound.');
+                    return false;
+                }
+                clearAudioStatus();
+                return true;
+            } catch (e) {
+                console.warn('Audio unlock failed:', e);
+                showAudioStatus('Sound is blocked by the browser. Tap to enable sound.');
+                return false;
+            }
+        }
+        async function retryAudio() {
+            const btn = document.getElementById('audioRetryBtn');
+            if (btn) btn.disabled = true;
+            const ok = await initAudio();
+            if (btn) btn.disabled = false;
+            if (ok) {
+                clearAudioStatus();
+                showToast('🔊 Sound enabled');
+            }
+            return ok;
+        }
+        async function initAudio() {
+            if (!await unlockAudioContext()) return false;
+            if (audioInit) return true;
+            try {
                 reverb = new Tone.Reverb({ decay: 2.5, wet: state.reverbAmount / 100 }).toDestination();
                 delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.3, wet: state.delayAmount / 100 }).connect(reverb);
                 masterGain = new Tone.Gain(1).connect(delay);
                 recorder = new Tone.Recorder();
-                // Capture the post-effects (reverb/delay) signal so exported WAVs match
-                // what users actually hear, not the dry pre-effects bus.
                 reverb.connect(recorder);
                 await reverb.ready;
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
                 metronomeClick = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).connect(masterGain);
-                // Drum kit
                 kickDrum = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 6, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).connect(masterGain);
                 snareDrum = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).connect(masterGain);
                 hihatDrum = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.03 } }).connect(masterGain);
@@ -2432,7 +2459,13 @@
                 if (hihatDrum) hihatDrum.volume.value = -16;
                 audioInit = true;
                 updateVolumes();
-            } catch (e) { console.warn('Audio init failed:', e); }
+                clearAudioStatus();
+                return true;
+            } catch (e) {
+                console.warn('Audio init failed:', e);
+                showAudioStatus('Sound could not start. Tap to retry.');
+                return false;
+            }
         }
         function createSynth() {
             if (synth) { try { synth.dispose(); } catch(e) {} }
@@ -2546,7 +2579,7 @@
             return CHORD_NOTES['C'];
         }
         async function playChord(chord, duration = '2n') {
-            await initAudio();
+            if (!await initAudio()) return false;
             const notes = getChordNotes(chord);
             try {
                 synth.triggerAttackRelease(notes, duration);
@@ -2554,7 +2587,12 @@
                     const root = notes[0].replace(/\d/, '') + '2';
                     bassSynth.triggerAttackRelease(root, '4n');
                 }
-            } catch (e) { console.warn('Chord play error:', e); }
+                return true;
+            } catch (e) {
+                console.warn('Chord play error:', e);
+                showAudioStatus('Sound stopped unexpectedly. Tap to enable sound.');
+                return false;
+            }
         }
         // Short vibration where the platform supports it (Android; iOS ignores
         // navigator.vibrate). Wrapped once so call sites stay one-liners.
@@ -2945,7 +2983,9 @@
         function setScaleLabel(l) { scaleState.label = l; renderScaleExplorer(); }
 
         async function playScaleNote(noteOct) {
-            try { await initAudio(); if (synth) synth.triggerAttackRelease(noteOct, '8n'); } catch (e) {}
+            if (!await initAudio()) return;
+            try { if (synth) synth.triggerAttackRelease(noteOct, '8n'); }
+            catch (e) { showAudioStatus('Sound stopped unexpectedly. Tap to enable sound.'); }
         }
         let scaleRunTimeouts = [];
         // Light up every position of the pitch class currently sounding, so the run
@@ -2964,7 +3004,7 @@
             // Re-tapping restarts the run rather than layering a second sequence
             // of overlapping notes on top of the first.
             stopScaleRun();
-            try { await initAudio(); } catch (e) { return; }
+            if (!await initAudio()) return;
             const def = SCALE_DEFS[scaleState.type];
             const base = 4;
             const STEP = 220;
@@ -3771,8 +3811,14 @@
             }
             showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF');
         }
-        function toggleMetronome() {
-            state.metronomeEnabled = !state.metronomeEnabled;
+        async function toggleMetronome() {
+            const next = !state.metronomeEnabled;
+            if (next && !await initAudio()) {
+                state.metronomeEnabled = false;
+                syncUIState();
+                return;
+            }
+            state.metronomeEnabled = next;
             haptic(10);
             const toggle = document.getElementById('metronomeToggle');
             if (toggle) {
@@ -3996,7 +4042,11 @@
             if (playTogglePending) return;
             playTogglePending = true;
             try {
-                await initAudio();
+                if (!await initAudio()) {
+                    state.isPlaying = false;
+                    updatePlayButtons();
+                    return;
+                }
                 if (!state.isPlaying && state.countInEnabled) await doCountIn();
                 state.isPlaying = !state.isPlaying;
                 updatePlayButtons();
@@ -4008,11 +4058,12 @@
         function updatePlayButtons() {
             const icon = state.isPlaying ? '⏸️' : '▶️';
             const playBtn = document.getElementById('playBtn');
-            if (playBtn) { playBtn.textContent = icon; playBtn.classList.toggle('playing', state.isPlaying); }
+            const label = state.isPlaying ? 'Pause' : 'Play';
+            if (playBtn) { playBtn.textContent = icon; playBtn.classList.toggle('playing', state.isPlaying); playBtn.setAttribute('aria-label', label); }
             const sfBtn = document.getElementById('sfPlayBtn');
-            if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); }
+            if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); sfBtn.setAttribute('aria-label', label); }
             const cdBtn = document.getElementById('cdPlayBtn');
-            if (cdBtn) { cdBtn.textContent = icon; cdBtn.classList.toggle('playing', state.isPlaying); }
+            if (cdBtn) { cdBtn.textContent = icon; cdBtn.classList.toggle('playing', state.isPlaying); cdBtn.setAttribute('aria-label', label); }
         }
         async function doCountIn() {
             const overlay = document.getElementById('countInOverlay'), numEl = document.getElementById('countInNumber');
@@ -4168,12 +4219,16 @@
         // iOS suspends the AudioContext after interruptions (phone call, Siri,
         // backgrounding). Without an explicit resume, sound stays dead until the
         // page is reloaded — the classic "PWA went silent" bug.
-        function resumeAudioContext() {
+        async function resumeAudioContext() {
             try {
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state === 'suspended') {
-                    Tone.context.resume();
+                    await Tone.context.resume();
+                    if (Tone.context.state === 'running') clearAudioStatus();
+                    else if (audioInit) showAudioStatus('Sound was paused by the browser. Tap to enable sound.');
                 }
-            } catch (e) {}
+            } catch (e) {
+                if (audioInit) showAudioStatus('Sound was paused by the browser. Tap to enable sound.');
+            }
         }
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) handleAppHidden();
