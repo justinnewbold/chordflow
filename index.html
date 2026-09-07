@@ -1691,7 +1691,7 @@
                 <div class="et-score-item"><div class="et-score-num" id="etBest">0</div><div class="et-score-label">Best 🔥</div></div>
             </div>
             <div class="et-visual" id="etVisual" style="display:none;"></div>
-            <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
+            <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn" aria-label="Play ear-training chord">🔊</button>
             <div class="et-feedback" id="etFeedback"></div>
             <div class="et-options" id="etOptions"></div>
             <button class="et-close" onclick="closeEarTraining()">Close</button>
@@ -4053,7 +4053,7 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')}, ${i})">🎸</button>
+                    <button class="chord-diagram-btn" aria-label="Chord details" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')}, ${i})">🎸</button>
                     <div class="chord-name">${escapeHtml(chord)}</div>
                     <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
