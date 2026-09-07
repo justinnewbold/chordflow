@@ -1366,19 +1366,19 @@
                 </div>
                 <div class="produce-panel" id="exportPanel">
                     <div class="export-grid">
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportMIDI()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('midi')">
                             <div class="export-icon">🎹</div>
                             <div class="export-title">MIDI</div>
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportPDF()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('pdf')">
                             <div class="export-icon">📄</div>
                             <div class="export-title">PDF</div>
                             <div class="export-desc">Lead Sheet</div>
                             <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportAudio()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('audio')">
                             <div class="export-icon">🎵</div>
                             <div class="export-title">Audio</div>
                             <div class="export-desc">Recording</div>
@@ -3599,8 +3599,15 @@
             state.isRecording = true;
 
             try {
-                await initAudio();
-                if (!recorder) { showToast('⚠️ Recorder not available'); return; }
+                if (!await initAudio()) {
+                    showStudioStatus('Audio export needs sound permission. Enable sound, then retry the export.', () => runStudioExport('audio'), 'Retry Audio Export');
+                    return;
+                }
+                if (!recorder) {
+                    showToast('⚠️ Recorder not available');
+                    showStudioStatus('Audio recording is unavailable in this browser. You can still export MIDI or PDF.', null);
+                    return;
+                }
                 document.getElementById('recordingOverlay').classList.add('active');
                 showToast('🎵 Recording started...');
                 recorder.start();
@@ -3627,6 +3634,7 @@
             } catch (e) {
                 console.warn('Audio export error:', e);
                 showToast('⚠️ Export failed');
+                showStudioStatus('Audio export failed. Your progression is unchanged.', () => runStudioExport('audio'), 'Retry Audio Export');
             } finally {
                 state.isRecording = false;
                 document.getElementById('recordingOverlay').classList.remove('active');
@@ -3718,8 +3726,8 @@
         }
         function renderSavedSongs() {
             const songs = safeJsonParse('chordflow-songs') || [];
-            const html = songs.length === 0 ? '<p style="color:var(--text-secondary);text-align:center;">No saved songs yet</p>' :
-                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
+            const html = songs.length === 0 ? '<div class="studio-state">No local songs yet. Save a song here and it will remain available in guest mode.</div>' :
+                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" aria-label="Delete song" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
             const savedList = document.getElementById('savedSongsList');
             if (savedList) savedList.innerHTML = html;
             const songsBody = document.getElementById('songsSheetBody');
@@ -3753,6 +3761,7 @@
             // v0.73: Initialize new features
             renderAccountSection();
             renderCloudSongsPrompt();
+            renderStudioAccess();
             if (authState.user) loadCloudSongs();
             // Load locally published community songs
             const localCommunity = safeJsonParse('chordflow-community') || [];
@@ -3884,6 +3893,57 @@
             if (mc) mc.scrollTop = 0;
             haptic(8);
         }
+        let studioRetryAction = null;
+        function showStudioStatus(message, retryAction, retryLabel = 'Retry') {
+            const box = document.getElementById('studioStatus');
+            const text = document.getElementById('studioStatusText');
+            const btn = document.getElementById('studioRetryBtn');
+            studioRetryAction = typeof retryAction === 'function' ? retryAction : null;
+            if (text) text.textContent = message;
+            if (btn) { btn.textContent = retryLabel; btn.hidden = !studioRetryAction; }
+            if (box) box.hidden = false;
+        }
+        function clearStudioStatus() {
+            studioRetryAction = null;
+            const box = document.getElementById('studioStatus');
+            if (box) box.hidden = true;
+        }
+        async function retryStudioAction() {
+            const action = studioRetryAction;
+            if (!action) return;
+            clearStudioStatus();
+            try { await action(); }
+            catch (e) { showStudioStatus('That action failed again. Check your connection and retry.', action); }
+        }
+        async function runStudioExport(type) {
+            const labels = { midi: 'MIDI', pdf: 'PDF', audio: 'Audio' };
+            const again = () => runStudioExport(type);
+            clearStudioStatus();
+            try {
+                if (type === 'midi') exportMIDI();
+                else if (type === 'pdf') exportPDF();
+                else if (type === 'audio') await exportAudio();
+            } catch (e) {
+                console.warn(type + ' export failed:', e);
+                showStudioStatus((labels[type] || 'File') + ' export failed. Your progression is unchanged.', again);
+            }
+        }
+        function renderStudioAccess() {
+            const box = document.getElementById('studioAccess');
+            const publish = document.getElementById('publishBtn');
+            if (!box) return;
+            if (authState.user && !authState.session?.offline) {
+                box.innerHTML = '<span class="studio-access-text">Signed in: cloud sync and Publish are available. Export, Share and local songs still work locally.</span>';
+                if (publish) publish.textContent = '🌍 Publish';
+            } else if (authState.user && authState.session?.offline) {
+                box.innerHTML = '<span class="studio-access-text"><strong>Local mode:</strong> Export, Share, local Songs, Learn and Discover browsing work. Cloud sync and Publish need an online sign-in.</span><button class="studio-state-btn" onclick="openAuthModal()">Sign In</button>';
+                if (publish) publish.textContent = '🌍 Publish · Online sign-in';
+            } else {
+                box.innerHTML = '<span class="studio-access-text"><strong>Guest mode:</strong> Export, Share, local Songs, Learn and Discover browsing work without an account. Sign in only to sync songs or publish.</span><button class="studio-state-btn" onclick="openAuthModal()">Sign In</button>';
+                if (publish) publish.textContent = '🌍 Publish · Sign in';
+            }
+        }
+
         function setProduceTab(tab) {
             state.produceTab = tab;
             document.querySelectorAll('.produce-tab').forEach(t => t.classList.remove('active'));
@@ -3910,7 +3970,7 @@
             strip.innerHTML = state.sections.map((s, i) => `
                 <button class="section-pill ${state.currentSection === i ? 'active' : ''} ${state.editingSections ? 'editing' : ''}" onclick="selectSection(${i})" oncontextmenu="event.preventDefault(); toggleSectionEdit()">
                     <span class="section-icon">${escapeHtml(s.icon)}</span>${escapeHtml(s.name)}
-                    <span class="section-delete" onclick="event.stopPropagation(); deleteSection(${i})">✕</span>
+                    <span class="section-delete" aria-hidden="true" onclick="event.stopPropagation(); deleteSection(${i})">✕</span>
                 </button>
             `).join('') + `<button class="add-section-btn" onclick="addSection()">+ Add</button>`;
         }
@@ -4271,7 +4331,7 @@
                 ? publicDomainSongs
                 : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSongsFilter);
             if (filtered.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                list.innerHTML = '<div class="studio-state">No songs match this filter.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="filterSongs(\'all\')">Show all songs</button></div>';
                 return;
             }
             list.innerHTML = filtered.map(song => {
@@ -4320,7 +4380,7 @@
                 <div class="song-player">
                     <div class="song-player-header">
                         <div class="song-player-title">${escapeHtml(song.title)}</div>
-                        <button class="song-player-close" onclick="closeSongPlayer()">✕</button>
+                        <button class="song-player-close" onclick="closeSongPlayer()" aria-label="Close song">✕</button>
                     </div>
                     <div class="song-info-row">
                         <span class="song-info-chip">🎵 ${song.key}</span>
@@ -4451,7 +4511,7 @@
                 ? publicDomainSongs
                 : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSheetFilter);
             if (filtered.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                list.innerHTML = '<div class="studio-state">No songs match this filter.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="filterLearnSheet(\'all\', this)">Show all songs</button></div>';
                 return;
             }
             list.innerHTML = filtered.map(song => {
@@ -5704,14 +5764,15 @@
                         <span style="color: var(--accent);">Sync songs ›</span>
                     </div>`;
             }
+            renderStudioAccess();
         }
         function renderCloudSongsPrompt() {
             const prompt = document.getElementById('songsPanelCloudPrompt');
             if (!prompt) return;
-            if (!authState.user) {
+            if (!authState.user || authState.session?.offline) {
                 prompt.innerHTML = `
                     <div class="cloud-prompt">
-                        <div class="cloud-prompt-text">Sign in to save songs to the cloud and access them anywhere</div>
+                        <div class="cloud-prompt-text">Local songs work in guest mode. Sign in online only for cloud sync.</div>
                         <button class="cloud-prompt-btn" onclick="openAuthModal()">Sign In</button>
                     </div>`;
             } else {
@@ -5722,14 +5783,13 @@
             if (!authState.user) return;
             const cloudList = document.getElementById('cloudSongsList');
             if (!cloudList) return;
+            if (authState.session?.offline) {
+                cloudList.innerHTML = '<div class="studio-state">Cloud songs need an online sign-in.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="openAuthModal()">Sign In</button></div>';
+                return;
+            }
+            cloudList.innerHTML = '<div class="studio-state">Loading cloud songs…</div>';
             try {
-                const res = await fetch(`/api/songs?action=load`, { headers: authHeaders() });
-                // 401 => the Supabase JWT has expired. Without this branch the
-                // user looked signed in but every cloud action silently failed
-                // and the songs list just stayed empty. Drop the stale session
-                // so the UI re-renders the "Sign in" prompt, prompting them
-                // explicitly instead of leaving cloud features mysteriously
-                // broken.
+                const res = await fetch('/api/songs?action=load', { headers: authHeaders() });
                 if (res.status === 401) {
                     authState.user = null;
                     authState.session = null;
@@ -5741,27 +5801,29 @@
                     showToast('🔒 Session expired — please sign in again');
                     return;
                 }
+                if (!res.ok) throw new Error('Cloud songs request failed: ' + res.status);
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
                         <div class="cloud-songs-header">
                             <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
                         </div>
-                        ${data.songs.map((s, i) => `
+                        ${data.songs.map(s => `
                             <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
                                     <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})" title="Delete">🗑️</button>
+                                <button class="saved-song-delete" aria-label="Delete cloud song" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})" title="Delete">🗑️</button>
                             </div>
                         `).join('')}`;
+                    applyAccessibleNames(cloudList);
                 } else {
-                    cloudList.innerHTML = '';
+                    cloudList.innerHTML = '<div class="studio-state">No cloud songs yet. Local guest songs remain available below.</div>';
                 }
             } catch (e) {
-                // Offline - no cloud songs available
-                cloudList.innerHTML = '';
+                console.warn('Cloud songs unavailable:', e);
+                cloudList.innerHTML = '<div class="studio-state">Cloud songs are unavailable right now.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="loadCloudSongs()">Retry</button></div>';
             }
         }
         async function loadCloudSong(id) {
@@ -5887,6 +5949,7 @@
             });
             renderCommunitySongs();
         }
+        let communityLoadState = 'idle';
         async function loadCommunitySongs() {
             const grid = document.getElementById('communityGrid');
             if (!grid) return;
@@ -5894,16 +5957,19 @@
             try {
                 const genreParam = communityFilter !== 'all' ? `&genre=${communityFilter}` : '';
                 const res = await fetch(`/api/songs?action=community${genreParam}&limit=20`);
+                if (!res.ok) throw new Error('Discover request failed: ' + res.status);
                 const data = await res.json();
-                if (data.songs && data.songs.length > 0) {
-                    communitySongs = data.songs;
-                } else {
-                    communitySongs = DEMO_COMMUNITY_SONGS;
-                }
+                communitySongs = Array.isArray(data.songs) ? data.songs : [];
+                communityLoadState = communitySongs.length ? 'ok' : 'empty';
             } catch (e) {
+                console.warn('Discover unavailable:', e);
                 communitySongs = DEMO_COMMUNITY_SONGS;
+                communityLoadState = 'offline';
             }
             renderCommunitySongs();
+            if (communityLoadState === 'offline') {
+                grid.insertAdjacentHTML('afterbegin', '<div class="community-state">Discover is offline, so starter songs are shown instead.<br><button class="studio-state-btn" onclick="loadCommunitySongs()">Retry</button></div>');
+            }
         }
         // The filtered slice currently displayed in the grid. We index into this
         // from the click handlers instead of inlining each song into the onclick
@@ -5924,7 +5990,8 @@
                     <div class="community-empty">
                         <div class="community-empty-icon">🔍</div>
                         <div>No songs found for this genre</div>
-                        <div style="font-size:13px;margin-top:8px;">Be the first to publish one!</div>
+                        <div style="font-size:13px;margin-top:8px;">Browsing remains available to guests; there is simply nothing in this filter.</div>
+                        <button class="studio-state-btn" style="margin-top:10px;" onclick="loadCommunitySongs()">Retry</button>
                     </div>`;
                 return;
             }
@@ -6006,6 +6073,11 @@
                 showToast('Sign in to publish songs');
                 return;
             }
+            if (authState.session?.offline) {
+                showStudioStatus('Publish needs an online account session. Local editing and export still work.', () => openAuthModal(), 'Sign In');
+                showToast('Sign in online to publish');
+                return;
+            }
             rememberFocusFor('publish');
             document.getElementById('publishModal').classList.add('active');
             const titleInput = document.getElementById('publishTitle');
@@ -6064,28 +6136,18 @@
                     shareOk = shareRes.ok;
                 } catch (e) { /* shareOk stays false */ }
                 closePublishModal();
-                showToast(shareOk ? '🌍 Published to Community!' : '⚠️ Saved but not published — try again');
+                if (shareOk) {
+                    clearStudioStatus();
+                    showToast('🌍 Published to Community!');
+                } else {
+                    showToast('⚠️ Saved but not published — retry');
+                    showStudioStatus('The song was saved, but making it public failed. Retry Publish to finish.', () => openPublishModal(), 'Retry Publish');
+                }
                 return;
             }
-            // Fallback: save locally and add to demo community
-            const localSong = {
-                id: 'local_' + Date.now(),
-                title,
-                genre: state.genre,
-                key_signature: state.key,
-                tempo: state.baseTempo,
-                chords: getTransposedProgression(),
-                user_name: authState.user?.email?.split('@')[0] || 'You',
-                likes: 0,
-                created_at: new Date().toISOString()
-            };
-            // Add to local community cache
-            const localCommunity = safeJsonParse('chordflow-community') || [];
-            localCommunity.unshift(localSong);
-            try { localStorage.setItem('chordflow-community', JSON.stringify(localCommunity)); } catch(e) {}
-            DEMO_COMMUNITY_SONGS.unshift(localSong);
             closePublishModal();
-            showToast('🌍 Published locally! (Will sync when online)');
+            showToast('⚠️ Publish failed — retry when online');
+            showStudioStatus('Publish could not reach the server. Your local progression is unchanged.', () => openPublishModal(), 'Retry Publish');
         }
 
         // ============ v0.73: SONG TEMPLATES ============
@@ -6670,7 +6732,7 @@
             if (audioInit) createSynth();
             const inst = instruments.find(i => i.id === id);
             const btn = document.getElementById('instrumentBtn');
-            if (btn) btn.textContent = inst?.icon || '🎵';
+            if (btn) { btn.textContent = inst?.icon || '🎵'; btn.setAttribute('aria-label', 'Instrument'); }
             closeSheet();
             showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`);
         }
