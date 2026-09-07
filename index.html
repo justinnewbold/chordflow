@@ -85,6 +85,127 @@
         html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: 100dvh; overflow: hidden; overscroll-behavior: none; }
         button { font-family: var(--font); }
 
+        :where(button, a, input, select, textarea, [role="button"], [role="switch"], [role="radio"], [tabindex]):focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        /* Keep viewport-bound flex/grid children shrinkable. Intentional sideways
+           scrolling stays local to strips such as sections and the scale neck. */
+        .ui-container, .main-content, .mode-view, .produce-panel,
+        .settings-row, .tempo-control-row, .custom-chord-row, .diatonic-section,
+        .diatonic-header, .arrangement-row, .drum-toggle-row, .produce-tabs {
+            min-width: 0;
+            max-width: 100%;
+        }
+        .main-content { width: 100%; overflow-x: hidden; overflow-x: clip; }
+        .settings-row > *, .tempo-control-row > *, .custom-chord-row > *,
+        .diatonic-header > *, .arrangement-row > *, .drum-toggle-row > *,
+        .produce-tabs > * { min-width: 0; }
+        .custom-chord-input { min-width: 0; width: 100%; }
+        #scaleFretboard { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+        .audio-status {
+            margin: 0 var(--spacing-lg) var(--spacing-sm);
+            padding: 10px 12px;
+            border: 1px solid var(--accent-orange);
+            border-radius: var(--radius-md);
+            background: rgba(255,159,10,0.12);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+            flex-shrink: 0;
+        }
+        .audio-status[hidden] { display: none; }
+        .audio-status-text { flex: 1; min-width: 0; line-height: 1.35; }
+        .audio-retry-btn, .studio-state-btn {
+            border: 1px solid currentColor;
+            border-radius: var(--radius-full);
+            background: transparent;
+            color: var(--accent);
+            padding: 8px 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .audio-retry-btn { color: var(--accent-orange); }
+
+        .mobile-scroll-cue {
+            display: none;
+            width: 100%;
+            margin: 0 0 var(--spacing-md);
+            padding: 9px 12px;
+            border: 1px solid var(--separator);
+            border-radius: var(--radius-md);
+            background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .studio-access, .studio-status, .studio-state, .community-state {
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .studio-access {
+            margin: var(--spacing-sm) 0 var(--spacing-md);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .studio-access-text, .studio-status-text { flex: 1; min-width: 0; }
+        .studio-status {
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--accent-orange);
+            background: rgba(255,159,10,0.1);
+            color: var(--text-primary);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .studio-status[hidden] { display: none; }
+        .studio-state { margin: var(--spacing-sm) 0; text-align: center; background: var(--bg-secondary); color: var(--text-secondary); }
+        .community-state { margin-bottom: var(--spacing-md); border: 1px solid var(--accent-orange); background: rgba(255,159,10,0.1); color: var(--text-primary); }
+        .community-state .studio-state-btn { margin-top: 8px; }
+
+        @media (max-width: 430px) {
+            .main-content { padding: var(--spacing-md); }
+            .audio-status { margin-left: var(--spacing-md); margin-right: var(--spacing-md); flex-wrap: wrap; }
+            .audio-retry-btn { width: 100%; }
+            .mobile-scroll-cue { display: block; }
+
+            .custom-chord-row { flex-wrap: wrap; }
+            .custom-chord-input { flex: 1 1 100%; }
+            .custom-chord-add-btn, .custom-chord-replace-btn { flex: 1 1 0; padding-left: 12px; padding-right: 12px; }
+
+            .diatonic-header { flex-wrap: wrap; gap: 6px; }
+            .diatonic-header > div { width: 100%; min-width: 0; flex-wrap: wrap; justify-content: space-between; }
+
+            .arrangement-row { flex-wrap: wrap; }
+            .arrangement-btn { max-width: 100%; white-space: normal; }
+            .arrangement-label { flex: 1 1 100%; min-width: 0; }
+
+            .produce-tabs { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+            .produce-tabs::-webkit-scrollbar { display: none; }
+            .produce-tab { flex: 0 0 auto; padding: 10px 12px; }
+
+            .studio-access, .studio-status { flex-wrap: wrap; }
+            .studio-access .studio-state-btn, .studio-status .studio-state-btn { width: 100%; }
+
+            .transport { padding: 12px; }
+            .transport-left, .transport-right { width: 44px; flex: 0 0 44px; }
+            .transport-center { min-width: 0; gap: 8px; }
+            .transport-btn { width: 40px; height: 40px; flex: 0 0 40px; }
+            .play-btn { width: 52px; height: 52px; flex: 0 0 52px; }
+            .tempo-tap { min-width: 36px; padding: 2px 4px; }
+        }
+
         /* Onboarding */
         .onboarding { position: fixed; inset: 0; background: var(--bg-primary); z-index: 1000; display: flex; flex-direction: column; padding: var(--safe-top) var(--spacing-lg) var(--safe-bottom); }
         .onboarding.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -920,13 +1041,17 @@
         <header class="header">
             <div class="logo">🎸 ChordFlow</div>
             <div class="header-actions">
-                <button class="header-btn" onclick="openHistory()" title="Progression History">🕐</button>
-                <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
-                <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome">🥁</button>
-                <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
-                <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
+                <button class="header-btn" onclick="openHistory()" title="Progression History" aria-label="Progression History">🕐</button>
+                <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths" aria-label="Circle of Fifths">🎡</button>
+                <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome" aria-label="Metronome">🥁</button>
+                <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn" aria-label="Instrument">🎹</button>
+                <button class="header-btn" onclick="openSheet('settings')" aria-label="Settings">⚙️</button>
             </div>
         </header>
+        <div class="audio-status" id="audioStatus" role="alert" aria-live="assertive" hidden>
+            <span class="audio-status-text" id="audioStatusText">Sound is blocked. Tap to enable sound.</span>
+            <button class="audio-retry-btn" id="audioRetryBtn" onclick="retryAudio()">Tap to enable sound</button>
+        </div>
         <main class="main-content">
             <div class="mode-view active" id="playView">
                 <!-- Guitar-first hero: the shape for the chord under the playhead,
@@ -980,6 +1105,8 @@
 
 
 
+
+                <button class="mobile-scroll-cue" type="button" onclick="scrollToProgressionEditor()" aria-label="Jump to progression editor">↓ Progression editor &amp; lower controls</button>
 
                 <div class="undo-redo-row">
                     <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
@@ -1158,8 +1285,13 @@
                     <button class="share-btn" onclick="shareQRCode()" style="flex:1;margin-top:0;">📱 QR Code</button>
                 </div>
                 <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
-                    <button class="share-btn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
-                    <button class="share-btn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
+                    <button class="share-btn" id="publishBtn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
+                    <button class="share-btn" id="discoverBtn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
+                </div>
+                <div class="studio-access" id="studioAccess"></div>
+                <div class="studio-status" id="studioStatus" role="status" aria-live="polite" hidden>
+                    <span class="studio-status-text" id="studioStatusText"></span>
+                    <button class="studio-state-btn" id="studioRetryBtn" onclick="retryStudioAction()">Retry</button>
                 </div>
                 <div class="produce-tabs">
                     <button class="produce-tab active" onclick="setProduceTab('mixer')">🎚️ Mixer</button>
@@ -1291,18 +1423,18 @@
         </nav>
         <div class="transport">
             <div class="transport-left">
-                <button class="transport-btn" onclick="openSheet('instrument')">🎹</button>
+                <button class="transport-btn" onclick="openSheet('instrument')" aria-label="Instrument">🎹</button>
             </div>
             <div class="transport-center">
-                <button class="transport-btn" onclick="stopPlayback()">⏹️</button>
-                <button class="play-btn" onclick="togglePlay()" id="playBtn">▶️</button>
+                <button class="transport-btn" onclick="stopPlayback()" aria-label="Stop">⏹️</button>
+                <button class="play-btn" onclick="togglePlay()" id="playBtn" aria-label="Play">▶️</button>
                 <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
                     <span id="tempoValue">120</span>
                     <span class="bpm-label">BPM</span>
                 </div>
             </div>
             <div class="transport-right">
-                <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn">🔁</button>
+                <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn" aria-label="Loop">🔁</button>
             </div>
         </div>
     </div>
@@ -1313,13 +1445,13 @@
     
     <div class="bottom-sheet" id="instrumentSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body"><div class="option-list" id="instrumentList"></div></div>
     </div>
     
     <div class="bottom-sheet" id="keySheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎵 Key</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Key</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group-title">Major Keys</div>
             <div class="option-list" id="majorKeyList"></div>
@@ -1330,13 +1462,13 @@
     
     <div class="bottom-sheet" id="genreSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎨 Genre</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎨 Genre</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body"><div class="option-list" id="genreList"></div></div>
     </div>
     
     <div class="bottom-sheet" id="settingsSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <!-- Settings holds preferences only. Everything you *do* now lives
                  behind the Play / Practice / Studio tabs, so no signpost is needed. -->
@@ -1371,7 +1503,7 @@
     
     <div class="bottom-sheet" id="songsSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body" id="songsSheetBody"></div>
     </div>
 
@@ -1379,7 +1511,7 @@
     <!-- Scale Explorer sheet (interactive scale fretboard with playback) -->
     <div class="bottom-sheet" id="scalesSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎸 Scale Explorer</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Scale Explorer</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group">
                 <div class="settings-group-title">Root Note</div>
@@ -1409,7 +1541,7 @@
     <!-- Learn Songs sheet (global; loads a public-domain song into the current progression) -->
     <div class="bottom-sheet" id="learnSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="song-filters">
                 <button class="filter-chip active" onclick="filterLearnSheet('all', this)">All</button>
@@ -1423,7 +1555,7 @@
     <!-- Guitar Chord Sheet (all chords in the current progression as guitar diagrams) -->
     <div class="bottom-sheet" id="chordSheetSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎸 Chord Sheet</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Chord Sheet</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint" id="chordSheetHint">Every chord in your progression — tap any shape to hear it</div>
             <div class="chord-sheet-grid" id="chordSheetGrid"></div>
@@ -1433,7 +1565,7 @@
     <!-- Guitar Tuner (reference pitches for standard tuning) -->
     <div class="bottom-sheet" id="tunerSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint" id="tunerHint">Standard tuning — tap a string to hear its reference pitch</div>
             <div class="tuner-strings" id="tunerStrings"></div>
@@ -1443,7 +1575,7 @@
     <!-- Strumming pattern picker (applies during playback) -->
     <div class="bottom-sheet" id="strumSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎵 Strumming Pattern</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Strumming Pattern</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint">Pick a rhythm — it plays while the progression is running</div>
             <div id="strumList"></div>
@@ -1605,7 +1737,7 @@
     <!-- Auth Modal -->
     <div class="auth-modal" id="authModal">
         <div class="auth-card" style="position:relative;">
-            <button class="auth-close" onclick="closeAuthModal()">✕</button>
+            <button class="auth-close" onclick="closeAuthModal()" aria-label="Close sign in">✕</button>
             <div class="auth-title" id="authTitle">Sign In</div>
             <div class="auth-subtitle">Sync your songs across all your devices</div>
             <div class="auth-tabs">
@@ -1627,7 +1759,7 @@
     <div class="community-modal" id="communityModal">
         <div class="community-header">
             <div class="community-title">🌍 Community Hub</div>
-            <button class="community-close" onclick="closeCommunity()">✕</button>
+            <button class="community-close" onclick="closeCommunity()" aria-label="Close Discover">✕</button>
         </div>
         <div class="community-filters" id="communityFilters">
             <button class="filter-chip active" onclick="filterCommunity('all')">All</button>
@@ -1713,6 +1845,82 @@
                 try { prev.focus(); } catch (e) {}
             }
         }
+
+        const DIALOG_SELECTOR = '.bottom-sheet, .modal, [class*="-modal"]';
+        const FOCUSABLE_SELECTOR = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        function visibleFocusable(dialog) {
+            return [...dialog.querySelectorAll(FOCUSABLE_SELECTOR)].filter(el => {
+                const style = window.getComputedStyle(el);
+                return style.display !== 'none' && style.visibility !== 'hidden' && !el.hidden;
+            });
+        }
+        function focusDialog(dialog) {
+            if (!dialog) return;
+            const items = visibleFocusable(dialog);
+            const target = items[0] || dialog;
+            if (target === dialog && !dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
+            try { target.focus({ preventScroll: true }); } catch (e) { try { target.focus(); } catch (_) {} }
+        }
+        function activeDialog() {
+            const active = [...document.querySelectorAll(DIALOG_SELECTOR)].filter(el => el.classList.contains('active'));
+            return active.length ? active[active.length - 1] : null;
+        }
+        function enhanceDialogs() {
+            document.querySelectorAll(DIALOG_SELECTOR).forEach((dialog, i) => {
+                if (!dialog.hasAttribute('role')) dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                if (!dialog.hasAttribute('aria-label') && !dialog.hasAttribute('aria-labelledby')) {
+                    const title = dialog.querySelector('.sheet-title, .modal-title, .auth-title, .publish-title, .community-title, .templates-title, .qr-title, .presets-title, .history-title, .cof-title');
+                    if (title) {
+                        if (!title.id) title.id = 'dialogTitle' + i;
+                        dialog.setAttribute('aria-labelledby', title.id);
+                    } else {
+                        dialog.setAttribute('aria-label', 'Dialog');
+                    }
+                }
+            });
+        }
+        function applyAccessibleNames(root = document) {
+            const rules = [
+                ['.sheet-close', 'Close'],
+                ['.saved-song-delete', 'Delete song'],
+                ['.chord-diagram-btn', 'Chord details'],
+                ['.auth-close', 'Close sign in'],
+                ['.community-close', 'Close Discover'],
+                ['.song-player-close', 'Close song']
+            ];
+            rules.forEach(([selector, label]) => root.querySelectorAll(selector).forEach(el => {
+                if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', label);
+            }));
+            root.querySelectorAll('button:not([aria-label])').forEach(btn => {
+                const text = (btn.textContent || '').trim();
+                const title = btn.getAttribute('title');
+                if (!/[A-Za-z0-9]/.test(text) && title) btn.setAttribute('aria-label', title);
+            });
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Tab') return;
+            const dialog = activeDialog();
+            if (!dialog) return;
+            const items = visibleFocusable(dialog);
+            if (!items.length) {
+                e.preventDefault();
+                focusDialog(dialog);
+                return;
+            }
+            const first = items[0], last = items[items.length - 1];
+            if (!dialog.contains(document.activeElement)) {
+                e.preventDefault();
+                (e.shiftKey ? last : first).focus();
+            } else if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+
         // Keyboard activation for custom role-annotated widgets. Without this, divs with
         // role="button"/"switch"/"radio" are focusable via tabindex but Enter/Space does nothing.
         // Capture phase + stopPropagation keeps the global Space-to-play handler from also firing.
@@ -2545,6 +2753,7 @@
             document.getElementById('diagramNotes').textContent = getChordNotes(chord).map(n => n.replace(/\d/, '')).join(' - ');
             document.getElementById('guitarDgm').innerHTML = mkGuitar(chord);
             document.getElementById('chordDiagramModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('chordDiagramModal')), 0);
             document.getElementById('pianoDgm').innerHTML = mkPiano(chord);
             document.getElementById('bassDgm').innerHTML = mkBass(chord);
             const g7El = document.getElementById('guitar7Dgm');
@@ -5080,6 +5289,7 @@
             container.appendChild(canvas);
             generateQR(canvas, url);
             document.getElementById('qrModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('qrModal')), 0);
         }
         function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); restoreFocusFor('qr'); }
         function generateQR(canvas, text) {
@@ -5607,6 +5817,7 @@
             rememberFocusFor('community');
             closeSheet();
             document.getElementById('communityModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('communityModal')), 0);
             loadCommunitySongs();
         }
         function closeCommunity() {
@@ -6117,6 +6328,7 @@
             const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+            applyAccessibleNames();
             scheduleAutosave();
         }
 
@@ -6157,6 +6369,13 @@
             const idx = state.currentChordIndex;
             if (chords[idx]) showChordDiagram(chords[idx], idx);
         }
+        function scrollToProgressionEditor() {
+            const target = document.getElementById('sectionsStrip') || document.getElementById('chordGrid');
+            if (!target) return;
+            try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            catch (e) { target.scrollIntoView(); }
+        }
+
         function renderPlaybackTick() {
             const displayChords = getTransposedProgression();
             const idx = state.currentChordIndex;
@@ -6214,6 +6433,7 @@
             if (type === 'chordSheet') renderChordSheet();
             if (type === 'tuner') renderTuner();
             if (type === 'strum') renderStrumSheet();
+            setTimeout(() => focusDialog(sheet), 0);
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
@@ -6892,6 +7112,8 @@
 
         // Init
         function init() {
+            enhanceDialogs();
+            applyAccessibleNames();
             // Load shared progression from URL
             const loaded = loadSharedProgression();
             if (loaded) showToast('🔗 Loaded shared progression!');
