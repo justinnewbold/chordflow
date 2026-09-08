@@ -85,6 +85,127 @@
         html, body { font-family: var(--font); background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; min-height: 100dvh; overflow: hidden; overscroll-behavior: none; }
         button { font-family: var(--font); }
 
+        :where(button, a, input, select, textarea, [role="button"], [role="switch"], [role="radio"], [tabindex]):focus-visible {
+            outline: 3px solid var(--accent);
+            outline-offset: 3px;
+        }
+
+        /* Keep viewport-bound flex/grid children shrinkable. Intentional sideways
+           scrolling stays local to strips such as sections and the scale neck. */
+        .ui-container, .main-content, .mode-view, .produce-panel,
+        .settings-row, .tempo-control-row, .custom-chord-row, .diatonic-section,
+        .diatonic-header, .arrangement-row, .drum-toggle-row, .produce-tabs {
+            min-width: 0;
+            max-width: 100%;
+        }
+        .main-content { width: 100%; overflow-x: hidden; overflow-x: clip; }
+        .settings-row > *, .tempo-control-row > *, .custom-chord-row > *,
+        .diatonic-header > *, .arrangement-row > *, .drum-toggle-row > *,
+        .produce-tabs > * { min-width: 0; }
+        .custom-chord-input { min-width: 0; width: 100%; }
+        #scaleFretboard { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+
+        .audio-status {
+            margin: 0 var(--spacing-lg) var(--spacing-sm);
+            padding: 10px 12px;
+            border: 1px solid var(--accent-orange);
+            border-radius: var(--radius-md);
+            background: rgba(255,159,10,0.12);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+            color: var(--text-primary);
+            flex-shrink: 0;
+        }
+        .audio-status[hidden] { display: none; }
+        .audio-status-text { flex: 1; min-width: 0; line-height: 1.35; }
+        .audio-retry-btn, .studio-state-btn {
+            border: 1px solid currentColor;
+            border-radius: var(--radius-full);
+            background: transparent;
+            color: var(--accent);
+            padding: 8px 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .audio-retry-btn { color: var(--accent-orange); }
+
+        .mobile-scroll-cue {
+            display: none;
+            width: 100%;
+            margin: 0 0 var(--spacing-md);
+            padding: 9px 12px;
+            border: 1px solid var(--separator);
+            border-radius: var(--radius-md);
+            background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .studio-access, .studio-status, .studio-state, .community-state {
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .studio-access {
+            margin: var(--spacing-sm) 0 var(--spacing-md);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .studio-access-text, .studio-status-text { flex: 1; min-width: 0; }
+        .studio-status {
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--accent-orange);
+            background: rgba(255,159,10,0.1);
+            color: var(--text-primary);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: center;
+        }
+        .studio-status[hidden] { display: none; }
+        .studio-state { margin: var(--spacing-sm) 0; text-align: center; background: var(--bg-secondary); color: var(--text-secondary); }
+        .community-state { margin-bottom: var(--spacing-md); border: 1px solid var(--accent-orange); background: rgba(255,159,10,0.1); color: var(--text-primary); }
+        .community-state .studio-state-btn { margin-top: 8px; }
+
+        @media (max-width: 430px) {
+            .main-content { padding: var(--spacing-md); }
+            .audio-status { margin-left: var(--spacing-md); margin-right: var(--spacing-md); flex-wrap: wrap; }
+            .audio-retry-btn { width: 100%; }
+            .mobile-scroll-cue { display: block; }
+
+            .custom-chord-row { flex-wrap: wrap; }
+            .custom-chord-input { flex: 1 1 100%; }
+            .custom-chord-add-btn, .custom-chord-replace-btn { flex: 1 1 0; padding-left: 12px; padding-right: 12px; }
+
+            .diatonic-header { flex-wrap: wrap; gap: 6px; }
+            .diatonic-header > div { width: 100%; min-width: 0; flex-wrap: wrap; justify-content: space-between; }
+
+            .arrangement-row { flex-wrap: wrap; }
+            .arrangement-btn { max-width: 100%; white-space: normal; }
+            .arrangement-label { flex: 1 1 100%; min-width: 0; }
+
+            .produce-tabs { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+            .produce-tabs::-webkit-scrollbar { display: none; }
+            .produce-tab { flex: 0 0 auto; padding: 10px 12px; }
+
+            .studio-access, .studio-status { flex-wrap: wrap; }
+            .studio-access .studio-state-btn, .studio-status .studio-state-btn { width: 100%; }
+
+            .transport { padding: 12px; }
+            .transport-left, .transport-right { width: 44px; flex: 0 0 44px; }
+            .transport-center { min-width: 0; gap: 8px; }
+            .transport-btn { width: 40px; height: 40px; flex: 0 0 40px; }
+            .play-btn { width: 52px; height: 52px; flex: 0 0 52px; }
+            .tempo-tap { min-width: 36px; padding: 2px 4px; }
+        }
+
         /* Onboarding */
         .onboarding { position: fixed; inset: 0; background: var(--bg-primary); z-index: 1000; display: flex; flex-direction: column; padding: var(--safe-top) var(--spacing-lg) var(--safe-bottom); }
         .onboarding.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
@@ -875,6 +996,270 @@
         .scale-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .dgm-tuning { text-align: center; margin-top: 6px; font-size: 10px; font-weight: 600; letter-spacing: .04em; color: var(--text-tertiary); }
         #scaleFretboard { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 4px 0 2px;  overscroll-behavior-x: contain; }
+        /* ===== iOS-style app chrome: one persistent tab bar + compact playback dock ===== */
+        #dualModeUI {
+            padding-bottom: 0;
+        }
+
+        .header {
+            min-height: 52px;
+            padding: 10px var(--spacing-lg);
+            background: rgba(0, 0, 0, 0.82);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            backdrop-filter: saturate(180%) blur(20px);
+        }
+        .header .logo {
+            font-size: 22px;
+            font-weight: 750;
+            letter-spacing: -0.35px;
+        }
+        .header-actions {
+            display: none !important;
+        }
+
+        .tabbar {
+            position: relative;
+            z-index: 160;
+            flex-shrink: 0;
+            gap: 2px;
+            padding: 5px 8px calc(5px + var(--safe-bottom));
+            border-top: 0.5px solid var(--separator);
+            background: rgba(28, 28, 30, 0.94);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            backdrop-filter: saturate(180%) blur(24px);
+        }
+        .tabbar-btn {
+            min-height: 46px;
+            padding: 5px 2px 4px;
+            border-radius: 10px;
+            gap: 3px;
+            color: var(--text-secondary);
+        }
+        .tabbar-btn .tabbar-icon {
+            height: 22px;
+            min-width: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            line-height: 1;
+        }
+        .tabbar-btn .tabbar-label {
+            font-size: 10.5px;
+            line-height: 1;
+            font-weight: 650;
+            letter-spacing: -0.1px;
+        }
+        .tabbar-btn.active {
+            color: var(--accent);
+            background: transparent;
+        }
+        .tabbar-btn.more-active {
+            color: var(--accent);
+        }
+
+        /* Progression transport is an accessory, not navigation. It floats like
+           an iOS mini-player above the tab bar and disappears on Practice unless
+           a progression is currently playing. */
+        .transport {
+            position: fixed;
+            left: 50%;
+            right: auto;
+            bottom: calc(var(--safe-bottom) + 58px);
+            width: min(calc(100% - 24px), 520px);
+            height: 58px;
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: 44px 52px minmax(70px, 1fr) 44px;
+            align-items: center;
+            justify-content: initial;
+            gap: 6px;
+            padding: 6px 8px;
+            border: 0.5px solid rgba(255,255,255,0.13);
+            border-radius: 18px;
+            background: rgba(35, 35, 37, 0.94);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            backdrop-filter: saturate(180%) blur(24px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.34);
+            z-index: 150;
+            opacity: 1;
+            transition: opacity var(--transition-fast), transform var(--transition-fast);
+        }
+        .transport.is-hidden {
+            opacity: 0;
+            transform: translate(-50%, 10px);
+            pointer-events: none;
+        }
+        .transport-left, .transport-right, .transport-center {
+            display: contents;
+        }
+        .transport-btn {
+            width: 40px;
+            height: 40px;
+            justify-self: center;
+            font-size: 17px;
+            background: var(--bg-tertiary);
+        }
+        .play-btn {
+            width: 48px;
+            height: 48px;
+            justify-self: center;
+            font-size: 20px;
+            box-shadow: 0 4px 16px rgba(10,132,255,0.34);
+        }
+        .tempo-tap {
+            width: 100%;
+            min-width: 0;
+            min-height: 44px;
+            display: flex;
+            flex-direction: row;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+            padding: 6px 8px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+        }
+        .tempo-tap span { display: inline; }
+        .tempo-tap #tempoValue { font-size: 17px; }
+        .tempo-tap .bpm-label { font-size: 9px; }
+
+        .ui-container.has-transport .main-content {
+            padding-bottom: 88px;
+        }
+
+        /* More uses an iOS grouped-list pattern inside the existing draggable sheet. */
+        .more-menu-section {
+            margin-bottom: var(--spacing-lg);
+        }
+        .more-menu-title {
+            padding: 0 12px 7px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 650;
+            text-transform: uppercase;
+            letter-spacing: 0.45px;
+        }
+        .more-menu-group {
+            overflow: hidden;
+            border-radius: 14px;
+            background: var(--bg-tertiary);
+        }
+        .more-menu-row {
+            width: 100%;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 12px;
+            border: 0;
+            border-bottom: 0.5px solid var(--separator);
+            background: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            cursor: pointer;
+        }
+        .more-menu-row:last-child {
+            border-bottom: 0;
+        }
+        .more-menu-row:active {
+            background: rgba(255,255,255,0.06);
+        }
+        .more-menu-icon {
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(10,132,255,0.18);
+            font-size: 17px;
+        }
+        .more-menu-copy {
+            flex: 1;
+            min-width: 0;
+        }
+        .more-menu-name {
+            display: block;
+            font-size: 16px;
+            font-weight: 550;
+            letter-spacing: -0.2px;
+        }
+        .more-menu-detail {
+            display: block;
+            margin-top: 2px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            line-height: 1.2;
+        }
+        .more-menu-chevron {
+            color: var(--text-tertiary);
+            font-size: 22px;
+            font-weight: 300;
+        }
+        .more-menu-row-static {
+            cursor: default;
+        }
+        .more-menu-row-static:active {
+            background: transparent;
+        }
+
+        @media (max-width: 430px) {
+            .header {
+                min-height: 48px;
+                padding: 8px 16px;
+            }
+            .header .logo {
+                font-size: 21px;
+            }
+            .tabbar {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+            .tabbar-btn {
+                min-width: 0;
+            }
+            .transport {
+                bottom: calc(var(--safe-bottom) + 56px);
+                width: calc(100% - 20px);
+                height: 56px;
+                grid-template-columns: 42px 50px minmax(64px, 1fr) 42px;
+                gap: 4px;
+                padding: 5px 7px;
+                border-radius: 17px;
+            }
+            .transport-btn {
+                width: 38px;
+                height: 38px;
+                flex: initial;
+            }
+            .play-btn {
+                width: 46px;
+                height: 46px;
+                flex: initial;
+            }
+            .tempo-tap {
+                min-width: 0;
+                padding: 4px 6px;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            #dualModeUI { padding-bottom: 0; }
+            .tabbar {
+                padding-top: 3px;
+                padding-bottom: calc(3px + var(--safe-bottom));
+            }
+            .tabbar-btn {
+                min-height: 40px;
+                flex-direction: row;
+                gap: 5px;
+            }
+            .transport {
+                bottom: calc(var(--safe-bottom) + 46px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -919,14 +1304,11 @@
     <div id="dualModeUI" class="ui-container">
         <header class="header">
             <div class="logo">🎸 ChordFlow</div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="openHistory()" title="Progression History">🕐</button>
-                <button class="header-btn" onclick="openCircleOfFifths()" title="Circle of Fifths">🎡</button>
-                <button class="header-btn" onclick="toggleMetronome()" id="metronomeHeaderBtn" title="Metronome">🥁</button>
-                <button class="header-btn" onclick="openSheet('instrument')" id="instrumentBtn">🎹</button>
-                <button class="header-btn" onclick="openSheet('settings')">⚙️</button>
-            </div>
         </header>
+        <div class="audio-status" id="audioStatus" role="alert" aria-live="assertive" hidden>
+            <span class="audio-status-text" id="audioStatusText">Sound is blocked. Tap to enable sound.</span>
+            <button class="audio-retry-btn" id="audioRetryBtn" onclick="retryAudio()">Tap to enable sound</button>
+        </div>
         <main class="main-content">
             <div class="mode-view active" id="playView">
                 <!-- Guitar-first hero: the shape for the chord under the playhead,
@@ -980,6 +1362,8 @@
 
 
 
+
+                <button class="mobile-scroll-cue" type="button" onclick="scrollToProgressionEditor()" aria-label="Jump to progression editor">↓ Progression editor &amp; lower controls</button>
 
                 <div class="undo-redo-row">
                     <button class="undo-btn" onclick="undo()" id="undoBtn" disabled>↩️ Undo</button>
@@ -1158,8 +1542,13 @@
                     <button class="share-btn" onclick="shareQRCode()" style="flex:1;margin-top:0;">📱 QR Code</button>
                 </div>
                 <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-sm);">
-                    <button class="share-btn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
-                    <button class="share-btn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
+                    <button class="share-btn" id="publishBtn" onclick="openPublishModal()" style="flex:1;margin-top:0;border-color:var(--accent-green);color:var(--accent-green);">🌍 Publish</button>
+                    <button class="share-btn" id="discoverBtn" onclick="openCommunity()" style="flex:1;margin-top:0;border-color:var(--accent-purple);color:var(--accent-purple);">🔍 Discover</button>
+                </div>
+                <div class="studio-access" id="studioAccess"></div>
+                <div class="studio-status" id="studioStatus" role="status" aria-live="polite" hidden>
+                    <span class="studio-status-text" id="studioStatusText"></span>
+                    <button class="studio-state-btn" id="studioRetryBtn" onclick="retryStudioAction()">Retry</button>
                 </div>
                 <div class="produce-tabs">
                     <button class="produce-tab active" onclick="setProduceTab('mixer')">🎚️ Mixer</button>
@@ -1234,19 +1623,19 @@
                 </div>
                 <div class="produce-panel" id="exportPanel">
                     <div class="export-grid">
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportMIDI()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('midi')">
                             <div class="export-icon">🎹</div>
                             <div class="export-title">MIDI</div>
                             <div class="export-desc">Universal</div>
                             <div class="export-badge">WORKS!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportPDF()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('pdf')">
                             <div class="export-icon">📄</div>
                             <div class="export-title">PDF</div>
                             <div class="export-desc">Lead Sheet</div>
                             <div class="export-badge">NEW!</div>
                         </div>
-                        <div class="export-card new" tabindex="0" role="button" onclick="exportAudio()">
+                        <div class="export-card new" tabindex="0" role="button" onclick="runStudioExport('audio')">
                             <div class="export-icon">🎵</div>
                             <div class="export-title">Audio</div>
                             <div class="export-desc">Recording</div>
@@ -1275,35 +1664,29 @@
                 </div>
             </div>
         </main>
-        <!-- Primary navigation. Three destinations so every feature has one
-             obvious home; sits above the transport as a flex child, so no fixed
-             positioning or padding compensation is needed. -->
-        <nav class="tabbar" role="tablist">
-            <button class="tabbar-btn active" id="tabPlay" role="tab" aria-selected="true" onclick="setTab('play')">
+        <!-- One persistent iOS-style destination bar. Secondary utilities live in More. -->
+        <nav class="tabbar" aria-label="Primary">
+            <button class="tabbar-btn active" id="tabPlay" aria-current="page" onclick="setTab('play')">
                 <span class="tabbar-icon">🎸</span><span class="tabbar-label">Play</span>
             </button>
-            <button class="tabbar-btn" id="tabPractice" role="tab" aria-selected="false" onclick="setTab('practice')">
+            <button class="tabbar-btn" id="tabPractice" onclick="setTab('practice')">
                 <span class="tabbar-icon">🎯</span><span class="tabbar-label">Practice</span>
             </button>
-            <button class="tabbar-btn" id="tabStudio" role="tab" aria-selected="false" onclick="setTab('studio')">
+            <button class="tabbar-btn" id="tabStudio" onclick="setTab('studio')">
                 <span class="tabbar-icon">🎛️</span><span class="tabbar-label">Studio</span>
             </button>
+            <button class="tabbar-btn" id="tabMore" aria-haspopup="dialog" aria-expanded="false" onclick="openMoreSheet()">
+                <span class="tabbar-icon" aria-hidden="true">•••</span><span class="tabbar-label">More</span>
+            </button>
         </nav>
-        <div class="transport">
-            <div class="transport-left">
-                <button class="transport-btn" onclick="openSheet('instrument')">🎹</button>
+        <div class="transport" id="transportDock" aria-label="Playback controls">
+            <button class="transport-btn" onclick="stopPlayback()" aria-label="Stop">⏹️</button>
+            <button class="play-btn" onclick="togglePlay()" id="playBtn" aria-label="Play">▶️</button>
+            <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
+                <span id="tempoValue">120</span>
+                <span class="bpm-label">BPM</span>
             </div>
-            <div class="transport-center">
-                <button class="transport-btn" onclick="stopPlayback()">⏹️</button>
-                <button class="play-btn" onclick="togglePlay()" id="playBtn">▶️</button>
-                <div class="tempo-tap" id="tempoTap" tabindex="0" role="button" aria-label="Tap tempo" onclick="handleTempoTap()">
-                    <span id="tempoValue">120</span>
-                    <span class="bpm-label">BPM</span>
-                </div>
-            </div>
-            <div class="transport-right">
-                <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn">🔁</button>
-            </div>
+            <button class="transport-btn active" onclick="toggleLoop()" id="loopBtn" aria-label="Loop">🔁</button>
         </div>
     </div>
 
@@ -1313,13 +1696,13 @@
     
     <div class="bottom-sheet" id="instrumentSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎹 Instrument</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body"><div class="option-list" id="instrumentList"></div></div>
     </div>
     
     <div class="bottom-sheet" id="keySheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎵 Key</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Key</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group-title">Major Keys</div>
             <div class="option-list" id="majorKeyList"></div>
@@ -1330,13 +1713,13 @@
     
     <div class="bottom-sheet" id="genreSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎨 Genre</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎨 Genre</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body"><div class="option-list" id="genreList"></div></div>
     </div>
     
     <div class="bottom-sheet" id="settingsSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">⚙️ Settings</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <!-- Settings holds preferences only. Everything you *do* now lives
                  behind the Play / Practice / Studio tabs, so no signpost is needed. -->
@@ -1367,11 +1750,71 @@
             </div>
         </div>
     </div>
+
+    <div class="bottom-sheet" id="moreSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+            <div class="sheet-title">More</div>
+            <button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button>
+        </div>
+        <div class="sheet-body">
+            <div class="more-menu-section">
+                <div class="more-menu-title">Tools</div>
+                <div class="more-menu-group">
+                    <button class="more-menu-row" onclick="openHistory()">
+                        <span class="more-menu-icon" aria-hidden="true">🕐</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Progression History</span>
+                            <span class="more-menu-detail">Recent progressions and favorites</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <button class="more-menu-row" onclick="openCircleOfFifths()">
+                        <span class="more-menu-icon" aria-hidden="true">🎡</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Circle of Fifths</span>
+                            <span class="more-menu-detail">Keys, relationships, and current chords</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <button class="more-menu-row" onclick="openSheet('instrument')">
+                        <span class="more-menu-icon" aria-hidden="true">🎹</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Instrument</span>
+                            <span class="more-menu-detail" id="moreInstrumentValue">Piano</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                    <div class="more-menu-row more-menu-row-static">
+                        <span class="more-menu-icon" aria-hidden="true">🥁</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Metronome</span>
+                            <span class="more-menu-detail">Click on every beat</span>
+                        </span>
+                        <div class="toggle-switch" id="moreMetronomeToggle" tabindex="0" role="switch" aria-checked="false" aria-label="Metronome" onclick="toggleMetronome()"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="more-menu-section">
+                <div class="more-menu-title">App</div>
+                <div class="more-menu-group">
+                    <button class="more-menu-row" onclick="openSheet('settings')">
+                        <span class="more-menu-icon" aria-hidden="true">⚙️</span>
+                        <span class="more-menu-copy">
+                            <span class="more-menu-name">Settings</span>
+                            <span class="more-menu-detail">Account, appearance, shortcuts, and about</span>
+                        </span>
+                        <span class="more-menu-chevron" aria-hidden="true">›</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     
     <div class="bottom-sheet" id="songsSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">📁 Saved Songs</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body" id="songsSheetBody"></div>
     </div>
 
@@ -1379,7 +1822,7 @@
     <!-- Scale Explorer sheet (interactive scale fretboard with playback) -->
     <div class="bottom-sheet" id="scalesSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎸 Scale Explorer</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Scale Explorer</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="settings-group">
                 <div class="settings-group-title">Root Note</div>
@@ -1409,7 +1852,7 @@
     <!-- Learn Songs sheet (global; loads a public-domain song into the current progression) -->
     <div class="bottom-sheet" id="learnSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">📚 Learn Songs</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="song-filters">
                 <button class="filter-chip active" onclick="filterLearnSheet('all', this)">All</button>
@@ -1423,7 +1866,7 @@
     <!-- Guitar Chord Sheet (all chords in the current progression as guitar diagrams) -->
     <div class="bottom-sheet" id="chordSheetSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎸 Chord Sheet</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎸 Chord Sheet</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint" id="chordSheetHint">Every chord in your progression — tap any shape to hear it</div>
             <div class="chord-sheet-grid" id="chordSheetGrid"></div>
@@ -1433,7 +1876,7 @@
     <!-- Guitar Tuner (reference pitches for standard tuning) -->
     <div class="bottom-sheet" id="tunerSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🔧 Guitar Tuner</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint" id="tunerHint">Standard tuning — tap a string to hear its reference pitch</div>
             <div class="tuner-strings" id="tunerStrings"></div>
@@ -1443,7 +1886,7 @@
     <!-- Strumming pattern picker (applies during playback) -->
     <div class="bottom-sheet" id="strumSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-header"><div class="sheet-title">🎵 Strumming Pattern</div><button class="sheet-close" onclick="closeSheet()">✕</button></div>
+        <div class="sheet-header"><div class="sheet-title">🎵 Strumming Pattern</div><button class="sheet-close" onclick="closeSheet()" aria-label="Close">✕</button></div>
         <div class="sheet-body">
             <div class="chord-sheet-hint">Pick a rhythm — it plays while the progression is running</div>
             <div id="strumList"></div>
@@ -1559,7 +2002,7 @@
                 <div class="et-score-item"><div class="et-score-num" id="etBest">0</div><div class="et-score-label">Best 🔥</div></div>
             </div>
             <div class="et-visual" id="etVisual" style="display:none;"></div>
-            <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn">🔊</button>
+            <button class="et-play-btn" onclick="playEarTrainingChord()" id="etPlayBtn" aria-label="Play ear-training chord">🔊</button>
             <div class="et-feedback" id="etFeedback"></div>
             <div class="et-options" id="etOptions"></div>
             <button class="et-close" onclick="closeEarTraining()">Close</button>
@@ -1605,7 +2048,7 @@
     <!-- Auth Modal -->
     <div class="auth-modal" id="authModal">
         <div class="auth-card" style="position:relative;">
-            <button class="auth-close" onclick="closeAuthModal()">✕</button>
+            <button class="auth-close" onclick="closeAuthModal()" aria-label="Close sign in">✕</button>
             <div class="auth-title" id="authTitle">Sign In</div>
             <div class="auth-subtitle">Sync your songs across all your devices</div>
             <div class="auth-tabs">
@@ -1627,7 +2070,7 @@
     <div class="community-modal" id="communityModal">
         <div class="community-header">
             <div class="community-title">🌍 Community Hub</div>
-            <button class="community-close" onclick="closeCommunity()">✕</button>
+            <button class="community-close" onclick="closeCommunity()" aria-label="Close Discover">✕</button>
         </div>
         <div class="community-filters" id="communityFilters">
             <button class="filter-chip active" onclick="filterCommunity('all')">All</button>
@@ -1713,6 +2156,82 @@
                 try { prev.focus(); } catch (e) {}
             }
         }
+
+        const DIALOG_SELECTOR = '.bottom-sheet, .modal, [class*="-modal"]';
+        const FOCUSABLE_SELECTOR = 'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        function visibleFocusable(dialog) {
+            return [...dialog.querySelectorAll(FOCUSABLE_SELECTOR)].filter(el => {
+                const style = window.getComputedStyle(el);
+                return style.display !== 'none' && style.visibility !== 'hidden' && !el.hidden;
+            });
+        }
+        function focusDialog(dialog) {
+            if (!dialog) return;
+            const items = visibleFocusable(dialog);
+            const target = items[0] || dialog;
+            if (target === dialog && !dialog.hasAttribute('tabindex')) dialog.setAttribute('tabindex', '-1');
+            try { target.focus({ preventScroll: true }); } catch (e) { try { target.focus(); } catch (_) {} }
+        }
+        function activeDialog() {
+            const active = [...document.querySelectorAll(DIALOG_SELECTOR)].filter(el => el.classList.contains('active'));
+            return active.length ? active[active.length - 1] : null;
+        }
+        function enhanceDialogs() {
+            document.querySelectorAll(DIALOG_SELECTOR).forEach((dialog, i) => {
+                if (!dialog.hasAttribute('role')) dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                if (!dialog.hasAttribute('aria-label') && !dialog.hasAttribute('aria-labelledby')) {
+                    const title = dialog.querySelector('.sheet-title, .modal-title, .auth-title, .publish-title, .community-title, .templates-title, .qr-title, .presets-title, .history-title, .cof-title');
+                    if (title) {
+                        if (!title.id) title.id = 'dialogTitle' + i;
+                        dialog.setAttribute('aria-labelledby', title.id);
+                    } else {
+                        dialog.setAttribute('aria-label', 'Dialog');
+                    }
+                }
+            });
+        }
+        function applyAccessibleNames(root = document) {
+            const rules = [
+                ['.sheet-close', 'Close'],
+                ['.saved-song-delete', 'Delete song'],
+                ['.chord-diagram-btn', 'Chord details'],
+                ['.auth-close', 'Close sign in'],
+                ['.community-close', 'Close Discover'],
+                ['.song-player-close', 'Close song']
+            ];
+            rules.forEach(([selector, label]) => root.querySelectorAll(selector).forEach(el => {
+                if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', label);
+            }));
+            root.querySelectorAll('button:not([aria-label])').forEach(btn => {
+                const text = (btn.textContent || '').trim();
+                const title = btn.getAttribute('title');
+                if (!/[A-Za-z0-9]/.test(text) && title) btn.setAttribute('aria-label', title);
+            });
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Tab') return;
+            const dialog = activeDialog();
+            if (!dialog) return;
+            const items = visibleFocusable(dialog);
+            if (!items.length) {
+                e.preventDefault();
+                focusDialog(dialog);
+                return;
+            }
+            const first = items[0], last = items[items.length - 1];
+            if (!dialog.contains(document.activeElement)) {
+                e.preventDefault();
+                (e.shiftKey ? last : first).focus();
+            } else if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+
         // Keyboard activation for custom role-annotated widgets. Without this, divs with
         // role="button"/"switch"/"radio" are focusable via tabindex but Enter/Space does nothing.
         // Capture phase + stopPropagation keeps the global Space-to-play handler from also firing.
@@ -2189,33 +2708,60 @@
             }
         }
 
-        async function initAudio() {
-            if (audioInit) {
-                // Already built — but iOS suspends the AudioContext on interruptions
-                // (calls, Siri), on backgrounding, and sometimes before it is ever
-                // unlocked. Resume it here rather than returning blind: every play
-                // path funnels through initAudio, so nothing else has to remember to.
-                try {
-                    if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state !== 'running') {
-                        await Tone.context.resume();
-                    }
-                } catch (e) {}
-                return;
+        function showAudioStatus(message) {
+            const wrap = document.getElementById('audioStatus');
+            const text = document.getElementById('audioStatusText');
+            if (text) text.textContent = message || 'Sound is blocked. Tap to enable sound.';
+            if (wrap) wrap.hidden = false;
+        }
+        function clearAudioStatus() {
+            const wrap = document.getElementById('audioStatus');
+            if (wrap) wrap.hidden = true;
+        }
+        async function unlockAudioContext() {
+            if (typeof Tone === 'undefined' || typeof Tone.start !== 'function') {
+                showAudioStatus('Sound engine could not load. Check your connection, then tap to retry.');
+                return false;
             }
             try {
                 await Tone.start();
+                if (Tone.context && Tone.context.state !== 'running') await Tone.context.resume();
+                if (!Tone.context || Tone.context.state !== 'running') {
+                    showAudioStatus('Sound is blocked by the browser. Tap to enable sound.');
+                    return false;
+                }
+                clearAudioStatus();
+                return true;
+            } catch (e) {
+                console.warn('Audio unlock failed:', e);
+                showAudioStatus('Sound is blocked by the browser. Tap to enable sound.');
+                return false;
+            }
+        }
+        async function retryAudio() {
+            const btn = document.getElementById('audioRetryBtn');
+            if (btn) btn.disabled = true;
+            const ok = await initAudio();
+            if (btn) btn.disabled = false;
+            if (ok) {
+                clearAudioStatus();
+                showToast('🔊 Sound enabled');
+            }
+            return ok;
+        }
+        async function initAudio() {
+            if (!await unlockAudioContext()) return false;
+            if (audioInit) return true;
+            try {
                 reverb = new Tone.Reverb({ decay: 2.5, wet: state.reverbAmount / 100 }).toDestination();
                 delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.3, wet: state.delayAmount / 100 }).connect(reverb);
                 masterGain = new Tone.Gain(1).connect(delay);
                 recorder = new Tone.Recorder();
-                // Capture the post-effects (reverb/delay) signal so exported WAVs match
-                // what users actually hear, not the dry pre-effects bus.
                 reverb.connect(recorder);
                 await reverb.ready;
                 createSynth();
                 bassSynth = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.4, release: 0.8 } }).connect(masterGain);
                 metronomeClick = new Tone.MembraneSynth({ pitchDecay: 0.02, octaves: 4, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).connect(masterGain);
-                // Drum kit
                 kickDrum = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 6, envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.2 } }).connect(masterGain);
                 snareDrum = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).connect(masterGain);
                 hihatDrum = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.03 } }).connect(masterGain);
@@ -2224,7 +2770,13 @@
                 if (hihatDrum) hihatDrum.volume.value = -16;
                 audioInit = true;
                 updateVolumes();
-            } catch (e) { console.warn('Audio init failed:', e); }
+                clearAudioStatus();
+                return true;
+            } catch (e) {
+                console.warn('Audio init failed:', e);
+                showAudioStatus('Sound could not start. Tap to retry.');
+                return false;
+            }
         }
         function createSynth() {
             if (synth) { try { synth.dispose(); } catch(e) {} }
@@ -2338,7 +2890,7 @@
             return CHORD_NOTES['C'];
         }
         async function playChord(chord, duration = '2n') {
-            await initAudio();
+            if (!await initAudio()) return false;
             const notes = getChordNotes(chord);
             try {
                 synth.triggerAttackRelease(notes, duration);
@@ -2346,7 +2898,12 @@
                     const root = notes[0].replace(/\d/, '') + '2';
                     bassSynth.triggerAttackRelease(root, '4n');
                 }
-            } catch (e) { console.warn('Chord play error:', e); }
+                return true;
+            } catch (e) {
+                console.warn('Chord play error:', e);
+                showAudioStatus('Sound stopped unexpectedly. Tap to enable sound.');
+                return false;
+            }
         }
         // Short vibration where the platform supports it (Android; iOS ignores
         // navigator.vibrate). Wrapped once so call sites stay one-liners.
@@ -2545,6 +3102,7 @@
             document.getElementById('diagramNotes').textContent = getChordNotes(chord).map(n => n.replace(/\d/, '')).join(' - ');
             document.getElementById('guitarDgm').innerHTML = mkGuitar(chord);
             document.getElementById('chordDiagramModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('chordDiagramModal')), 0);
             document.getElementById('pianoDgm').innerHTML = mkPiano(chord);
             document.getElementById('bassDgm').innerHTML = mkBass(chord);
             const g7El = document.getElementById('guitar7Dgm');
@@ -2736,7 +3294,9 @@
         function setScaleLabel(l) { scaleState.label = l; renderScaleExplorer(); }
 
         async function playScaleNote(noteOct) {
-            try { await initAudio(); if (synth) synth.triggerAttackRelease(noteOct, '8n'); } catch (e) {}
+            if (!await initAudio()) return;
+            try { if (synth) synth.triggerAttackRelease(noteOct, '8n'); }
+            catch (e) { showAudioStatus('Sound stopped unexpectedly. Tap to enable sound.'); }
         }
         let scaleRunTimeouts = [];
         // Light up every position of the pitch class currently sounding, so the run
@@ -2755,7 +3315,7 @@
             // Re-tapping restarts the run rather than layering a second sequence
             // of overlapping notes on top of the first.
             stopScaleRun();
-            try { await initAudio(); } catch (e) { return; }
+            if (!await initAudio()) return;
             const def = SCALE_DEFS[scaleState.type];
             const base = 4;
             const STEP = 220;
@@ -3350,8 +3910,15 @@
             state.isRecording = true;
 
             try {
-                await initAudio();
-                if (!recorder) { showToast('⚠️ Recorder not available'); return; }
+                if (!await initAudio()) {
+                    showStudioStatus('Audio export needs sound permission. Enable sound, then retry the export.', () => runStudioExport('audio'), 'Retry Audio Export');
+                    return;
+                }
+                if (!recorder) {
+                    showToast('⚠️ Recorder not available');
+                    showStudioStatus('Audio recording is unavailable in this browser. You can still export MIDI or PDF.', null);
+                    return;
+                }
                 document.getElementById('recordingOverlay').classList.add('active');
                 showToast('🎵 Recording started...');
                 recorder.start();
@@ -3378,6 +3945,7 @@
             } catch (e) {
                 console.warn('Audio export error:', e);
                 showToast('⚠️ Export failed');
+                showStudioStatus('Audio export failed. Your progression is unchanged.', () => runStudioExport('audio'), 'Retry Audio Export');
             } finally {
                 state.isRecording = false;
                 document.getElementById('recordingOverlay').classList.remove('active');
@@ -3469,8 +4037,8 @@
         }
         function renderSavedSongs() {
             const songs = safeJsonParse('chordflow-songs') || [];
-            const html = songs.length === 0 ? '<p style="color:var(--text-secondary);text-align:center;">No saved songs yet</p>' :
-                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
+            const html = songs.length === 0 ? '<div class="studio-state">No local songs yet. Save a song here and it will remain available in guest mode.</div>' :
+                songs.map((s, i) => `<div class="saved-song-item" onclick="loadSong(${i})"><div><div class="saved-song-name">${escapeHtml(s.name)}</div><div class="saved-song-meta">${new Date(s.date).toLocaleDateString()}</div></div><button class="saved-song-delete" aria-label="Delete song" onclick="event.stopPropagation(); deleteSong(${i})">🗑️</button></div>`).join('');
             const savedList = document.getElementById('savedSongsList');
             if (savedList) savedList.innerHTML = html;
             const songsBody = document.getElementById('songsSheetBody');
@@ -3504,6 +4072,7 @@
             // v0.73: Initialize new features
             renderAccountSection();
             renderCloudSongsPrompt();
+            renderStudioAccess();
             if (authState.user) loadCloudSongs();
             // Load locally published community songs
             const localCommunity = safeJsonParse('chordflow-community') || [];
@@ -3518,8 +4087,11 @@
             if (bassToggle) bassToggle.classList.toggle('active', state.bassEnabled);
             const metronomeToggle = document.getElementById('metronomeToggle');
             if (metronomeToggle) metronomeToggle.classList.toggle('active', state.metronomeEnabled);
-            const metronomeHeaderBtn = document.getElementById('metronomeHeaderBtn');
-            if (metronomeHeaderBtn) metronomeHeaderBtn.classList.toggle('active', state.metronomeEnabled);
+            const moreMetronomeToggle = document.getElementById('moreMetronomeToggle');
+            if (moreMetronomeToggle) {
+                moreMetronomeToggle.classList.toggle('active', state.metronomeEnabled);
+                moreMetronomeToggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
             const loopBtn = document.getElementById('loopBtn');
             if (loopBtn) loopBtn.classList.toggle('active', state.isLooping);
             const cdLoopBtn = document.getElementById('cdLoopBtn');
@@ -3562,16 +4134,25 @@
             }
             showToast(state.bassEnabled ? '🎸 Bass ON' : '🎸 Bass OFF');
         }
-        function toggleMetronome() {
-            state.metronomeEnabled = !state.metronomeEnabled;
+        async function toggleMetronome() {
+            const next = !state.metronomeEnabled;
+            if (next && !await initAudio()) {
+                state.metronomeEnabled = false;
+                syncUIState();
+                return;
+            }
+            state.metronomeEnabled = next;
             haptic(10);
             const toggle = document.getElementById('metronomeToggle');
             if (toggle) {
                 toggle.classList.toggle('active', state.metronomeEnabled);
                 toggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
             }
-            const headerBtn = document.getElementById('metronomeHeaderBtn');
-            if (headerBtn) headerBtn.classList.toggle('active', state.metronomeEnabled);
+            const moreToggle = document.getElementById('moreMetronomeToggle');
+            if (moreToggle) {
+                moreToggle.classList.toggle('active', state.metronomeEnabled);
+                moreToggle.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
             showToast(state.metronomeEnabled ? '🥁 Metronome ON' : '🥁 Metronome OFF');
         }
         function getBeatsPerMeasure() {
@@ -3611,24 +4192,115 @@
         }
 
         // Dual Mode
-        // Primary navigation. Three destinations, each the single home for one
-        // kind of work; the chosen tab persists so the app reopens where you were.
+        // Three destinations + a More sheet, matching an iOS tab bar hierarchy.
         const TABS = ['play', 'practice', 'studio'];
+        function syncPrimaryTabbar() {
+            TABS.forEach(t => {
+                const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
+                if (!btn) return;
+                const active = t === state.tab;
+                btn.classList.toggle('active', active);
+                if (active) btn.setAttribute('aria-current', 'page');
+                else btn.removeAttribute('aria-current');
+            });
+        }
+        function syncTransportVisibility() {
+            const dock = document.getElementById('transportDock');
+            const container = document.getElementById('dualModeUI');
+            const show = state.tab !== 'practice' || state.isPlaying;
+            if (dock) dock.classList.toggle('is-hidden', !show);
+            if (container) container.classList.toggle('has-transport', show);
+        }
         function setTab(tab) {
             if (!TABS.includes(tab)) tab = 'play';
             state.tab = tab;
             safeSetItem('chordflow-tab', tab);
             TABS.forEach(t => {
-                const btn = document.getElementById('tab' + t[0].toUpperCase() + t.slice(1));
-                if (btn) { btn.classList.toggle('active', t === tab); btn.setAttribute('aria-selected', t === tab ? 'true' : 'false'); }
                 const view = document.getElementById(t + 'View');
                 if (view) view.classList.toggle('active', t === tab);
             });
-            // Each tab is its own scroll context; start at the top when switching.
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.remove('more-active');
+                more.setAttribute('aria-expanded', 'false');
+            }
+            syncPrimaryTabbar();
+            syncTransportVisibility();
+            // Each destination gets its own fresh scroll position on entry.
             const mc = document.querySelector('.main-content');
             if (mc) mc.scrollTop = 0;
             haptic(8);
         }
+        function openMoreSheet() {
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.add('more-active');
+                more.setAttribute('aria-expanded', 'true');
+            }
+            renderMoreSheet();
+            openSheet('more');
+        }
+        function renderMoreSheet() {
+            const inst = instruments.find(i => i.id === state.instrument) || instruments[0];
+            const instValue = document.getElementById('moreInstrumentValue');
+            if (instValue) instValue.textContent = inst ? inst.name : 'Instrument';
+            const metro = document.getElementById('moreMetronomeToggle');
+            if (metro) {
+                metro.classList.toggle('active', state.metronomeEnabled);
+                metro.setAttribute('aria-checked', state.metronomeEnabled ? 'true' : 'false');
+            }
+        }
+        let studioRetryAction = null;
+        function showStudioStatus(message, retryAction, retryLabel = 'Retry') {
+            const box = document.getElementById('studioStatus');
+            const text = document.getElementById('studioStatusText');
+            const btn = document.getElementById('studioRetryBtn');
+            studioRetryAction = typeof retryAction === 'function' ? retryAction : null;
+            if (text) text.textContent = message;
+            if (btn) { btn.textContent = retryLabel; btn.hidden = !studioRetryAction; }
+            if (box) box.hidden = false;
+        }
+        function clearStudioStatus() {
+            studioRetryAction = null;
+            const box = document.getElementById('studioStatus');
+            if (box) box.hidden = true;
+        }
+        async function retryStudioAction() {
+            const action = studioRetryAction;
+            if (!action) return;
+            clearStudioStatus();
+            try { await action(); }
+            catch (e) { showStudioStatus('That action failed again. Check your connection and retry.', action); }
+        }
+        async function runStudioExport(type) {
+            const labels = { midi: 'MIDI', pdf: 'PDF', audio: 'Audio' };
+            const again = () => runStudioExport(type);
+            clearStudioStatus();
+            try {
+                if (type === 'midi') exportMIDI();
+                else if (type === 'pdf') exportPDF();
+                else if (type === 'audio') await exportAudio();
+            } catch (e) {
+                console.warn(type + ' export failed:', e);
+                showStudioStatus((labels[type] || 'File') + ' export failed. Your progression is unchanged.', again);
+            }
+        }
+        function renderStudioAccess() {
+            const box = document.getElementById('studioAccess');
+            const publish = document.getElementById('publishBtn');
+            if (!box) return;
+            if (authState.user && !authState.session?.offline) {
+                box.innerHTML = '<span class="studio-access-text">Signed in: cloud sync and Publish are available. Export, Share and local songs still work locally.</span>';
+                if (publish) publish.textContent = '🌍 Publish';
+            } else if (authState.user && authState.session?.offline) {
+                box.innerHTML = '<span class="studio-access-text"><strong>Local mode:</strong> Export, Share, local Songs, Learn and Discover browsing work. Cloud sync and Publish need an online sign-in.</span><button class="studio-state-btn" onclick="openAuthModal()">Sign In</button>';
+                if (publish) publish.textContent = '🌍 Publish · Online sign-in';
+            } else {
+                box.innerHTML = '<span class="studio-access-text"><strong>Guest mode:</strong> Export, Share, local Songs, Learn and Discover browsing work without an account. Sign in only to sync songs or publish.</span><button class="studio-state-btn" onclick="openAuthModal()">Sign In</button>';
+                if (publish) publish.textContent = '🌍 Publish · Sign in';
+            }
+        }
+
         function setProduceTab(tab) {
             state.produceTab = tab;
             document.querySelectorAll('.produce-tab').forEach(t => t.classList.remove('active'));
@@ -3655,7 +4327,7 @@
             strip.innerHTML = state.sections.map((s, i) => `
                 <button class="section-pill ${state.currentSection === i ? 'active' : ''} ${state.editingSections ? 'editing' : ''}" onclick="selectSection(${i})" oncontextmenu="event.preventDefault(); toggleSectionEdit()">
                     <span class="section-icon">${escapeHtml(s.icon)}</span>${escapeHtml(s.name)}
-                    <span class="section-delete" onclick="event.stopPropagation(); deleteSection(${i})">✕</span>
+                    <span class="section-delete" aria-hidden="true" onclick="event.stopPropagation(); deleteSection(${i})">✕</span>
                 </button>
             `).join('') + `<button class="add-section-btn" onclick="addSection()">+ Add</button>`;
         }
@@ -3738,7 +4410,7 @@
                      onclick="playChordAtIndex(${i})" ondblclick="event.stopPropagation(); openChordEditModal(${i})">
                     <div class="chord-index">${i + 1}</div>
                     <div class="chord-drag-handle" title="Drag to reorder">⋮⋮</div>
-                    <button class="chord-diagram-btn" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')}, ${i})">🎸</button>
+                    <button class="chord-diagram-btn" aria-label="Chord details" onclick="event.stopPropagation(); showChordDiagram(${JSON.stringify(chord).replace(/"/g, '&quot;')}, ${i})">🎸</button>
                     <div class="chord-name">${escapeHtml(chord)}</div>
                     <div class="chord-type">${escapeHtml(getChordTypeLabel(chord))}</div>
                     ${degree ? `<div class="chord-degree">${degree}</div>` : ''}
@@ -3787,7 +4459,11 @@
             if (playTogglePending) return;
             playTogglePending = true;
             try {
-                await initAudio();
+                if (!await initAudio()) {
+                    state.isPlaying = false;
+                    updatePlayButtons();
+                    return;
+                }
                 if (!state.isPlaying && state.countInEnabled) await doCountIn();
                 state.isPlaying = !state.isPlaying;
                 updatePlayButtons();
@@ -3799,11 +4475,13 @@
         function updatePlayButtons() {
             const icon = state.isPlaying ? '⏸️' : '▶️';
             const playBtn = document.getElementById('playBtn');
-            if (playBtn) { playBtn.textContent = icon; playBtn.classList.toggle('playing', state.isPlaying); }
+            const label = state.isPlaying ? 'Pause' : 'Play';
+            if (playBtn) { playBtn.textContent = icon; playBtn.classList.toggle('playing', state.isPlaying); playBtn.setAttribute('aria-label', label); }
             const sfBtn = document.getElementById('sfPlayBtn');
-            if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); }
+            if (sfBtn) { sfBtn.textContent = icon; sfBtn.classList.toggle('playing', state.isPlaying); sfBtn.setAttribute('aria-label', label); }
             const cdBtn = document.getElementById('cdPlayBtn');
-            if (cdBtn) { cdBtn.textContent = icon; cdBtn.classList.toggle('playing', state.isPlaying); }
+            if (cdBtn) { cdBtn.textContent = icon; cdBtn.classList.toggle('playing', state.isPlaying); cdBtn.setAttribute('aria-label', label); }
+            syncTransportVisibility();
         }
         async function doCountIn() {
             const overlay = document.getElementById('countInOverlay'), numEl = document.getElementById('countInNumber');
@@ -3959,12 +4637,16 @@
         // iOS suspends the AudioContext after interruptions (phone call, Siri,
         // backgrounding). Without an explicit resume, sound stays dead until the
         // page is reloaded — the classic "PWA went silent" bug.
-        function resumeAudioContext() {
+        async function resumeAudioContext() {
             try {
                 if (typeof Tone !== 'undefined' && Tone.context && Tone.context.state === 'suspended') {
-                    Tone.context.resume();
+                    await Tone.context.resume();
+                    if (Tone.context.state === 'running') clearAudioStatus();
+                    else if (audioInit) showAudioStatus('Sound was paused by the browser. Tap to enable sound.');
                 }
-            } catch (e) {}
+            } catch (e) {
+                if (audioInit) showAudioStatus('Sound was paused by the browser. Tap to enable sound.');
+            }
         }
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) handleAppHidden();
@@ -4007,7 +4689,7 @@
                 ? publicDomainSongs
                 : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSongsFilter);
             if (filtered.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                list.innerHTML = '<div class="studio-state">No songs match this filter.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="filterSongs(\'all\')">Show all songs</button></div>';
                 return;
             }
             list.innerHTML = filtered.map(song => {
@@ -4056,7 +4738,7 @@
                 <div class="song-player">
                     <div class="song-player-header">
                         <div class="song-player-title">${escapeHtml(song.title)}</div>
-                        <button class="song-player-close" onclick="closeSongPlayer()">✕</button>
+                        <button class="song-player-close" onclick="closeSongPlayer()" aria-label="Close song">✕</button>
                     </div>
                     <div class="song-info-row">
                         <span class="song-info-chip">🎵 ${song.key}</span>
@@ -4187,7 +4869,7 @@
                 ? publicDomainSongs
                 : publicDomainSongs.filter(s => s.difficulty.toLowerCase() === learnSheetFilter);
             if (filtered.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:var(--spacing-lg);">No songs match this filter</p>';
+                list.innerHTML = '<div class="studio-state">No songs match this filter.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="filterLearnSheet(\'all\', this)">Show all songs</button></div>';
                 return;
             }
             list.innerHTML = filtered.map(song => {
@@ -5080,6 +5762,7 @@
             container.appendChild(canvas);
             generateQR(canvas, url);
             document.getElementById('qrModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('qrModal')), 0);
         }
         function closeQRModal() { document.getElementById('qrModal').classList.remove('active'); restoreFocusFor('qr'); }
         function generateQR(canvas, text) {
@@ -5439,14 +6122,15 @@
                         <span style="color: var(--accent);">Sync songs ›</span>
                     </div>`;
             }
+            renderStudioAccess();
         }
         function renderCloudSongsPrompt() {
             const prompt = document.getElementById('songsPanelCloudPrompt');
             if (!prompt) return;
-            if (!authState.user) {
+            if (!authState.user || authState.session?.offline) {
                 prompt.innerHTML = `
                     <div class="cloud-prompt">
-                        <div class="cloud-prompt-text">Sign in to save songs to the cloud and access them anywhere</div>
+                        <div class="cloud-prompt-text">Local songs work in guest mode. Sign in online only for cloud sync.</div>
                         <button class="cloud-prompt-btn" onclick="openAuthModal()">Sign In</button>
                     </div>`;
             } else {
@@ -5457,14 +6141,13 @@
             if (!authState.user) return;
             const cloudList = document.getElementById('cloudSongsList');
             if (!cloudList) return;
+            if (authState.session?.offline) {
+                cloudList.innerHTML = '<div class="studio-state">Cloud songs need an online sign-in.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="openAuthModal()">Sign In</button></div>';
+                return;
+            }
+            cloudList.innerHTML = '<div class="studio-state">Loading cloud songs…</div>';
             try {
-                const res = await fetch(`/api/songs?action=load`, { headers: authHeaders() });
-                // 401 => the Supabase JWT has expired. Without this branch the
-                // user looked signed in but every cloud action silently failed
-                // and the songs list just stayed empty. Drop the stale session
-                // so the UI re-renders the "Sign in" prompt, prompting them
-                // explicitly instead of leaving cloud features mysteriously
-                // broken.
+                const res = await fetch('/api/songs?action=load', { headers: authHeaders() });
                 if (res.status === 401) {
                     authState.user = null;
                     authState.session = null;
@@ -5476,27 +6159,29 @@
                     showToast('🔒 Session expired — please sign in again');
                     return;
                 }
+                if (!res.ok) throw new Error('Cloud songs request failed: ' + res.status);
                 const data = await res.json();
                 if (data.songs && data.songs.length > 0) {
                     cloudList.innerHTML = `
                         <div class="cloud-songs-header">
                             <div class="cloud-songs-title"><span class="cloud-sync-badge">Cloud</span> Cloud Songs</div>
                         </div>
-                        ${data.songs.map((s, i) => `
+                        ${data.songs.map(s => `
                             <div class="saved-song-item" onclick="loadCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})">
                                 <div>
                                     <div class="saved-song-name">${escapeHtml(s.title)}</div>
                                     <div class="saved-song-meta">${escapeHtml(s.genre || '')} | ${escapeHtml(s.key_signature || '')} | ${new Date(s.created_at).toLocaleDateString()}</div>
                                 </div>
-                                <button class="saved-song-delete" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})" title="Delete">🗑️</button>
+                                <button class="saved-song-delete" aria-label="Delete cloud song" onclick="event.stopPropagation(); deleteCloudSong(${JSON.stringify(s.id).replace(/"/g, '&quot;')})" title="Delete">🗑️</button>
                             </div>
                         `).join('')}`;
+                    applyAccessibleNames(cloudList);
                 } else {
-                    cloudList.innerHTML = '';
+                    cloudList.innerHTML = '<div class="studio-state">No cloud songs yet. Local guest songs remain available below.</div>';
                 }
             } catch (e) {
-                // Offline - no cloud songs available
-                cloudList.innerHTML = '';
+                console.warn('Cloud songs unavailable:', e);
+                cloudList.innerHTML = '<div class="studio-state">Cloud songs are unavailable right now.<br><button class="studio-state-btn" style="margin-top:8px;" onclick="loadCloudSongs()">Retry</button></div>';
             }
         }
         async function loadCloudSong(id) {
@@ -5607,6 +6292,7 @@
             rememberFocusFor('community');
             closeSheet();
             document.getElementById('communityModal').classList.add('active');
+            setTimeout(() => focusDialog(document.getElementById('communityModal')), 0);
             loadCommunitySongs();
         }
         function closeCommunity() {
@@ -5621,6 +6307,7 @@
             });
             renderCommunitySongs();
         }
+        let communityLoadState = 'idle';
         async function loadCommunitySongs() {
             const grid = document.getElementById('communityGrid');
             if (!grid) return;
@@ -5628,16 +6315,19 @@
             try {
                 const genreParam = communityFilter !== 'all' ? `&genre=${communityFilter}` : '';
                 const res = await fetch(`/api/songs?action=community${genreParam}&limit=20`);
+                if (!res.ok) throw new Error('Discover request failed: ' + res.status);
                 const data = await res.json();
-                if (data.songs && data.songs.length > 0) {
-                    communitySongs = data.songs;
-                } else {
-                    communitySongs = DEMO_COMMUNITY_SONGS;
-                }
+                communitySongs = Array.isArray(data.songs) ? data.songs : [];
+                communityLoadState = communitySongs.length ? 'ok' : 'empty';
             } catch (e) {
+                console.warn('Discover unavailable:', e);
                 communitySongs = DEMO_COMMUNITY_SONGS;
+                communityLoadState = 'offline';
             }
             renderCommunitySongs();
+            if (communityLoadState === 'offline') {
+                grid.insertAdjacentHTML('afterbegin', '<div class="community-state">Discover is offline, so starter songs are shown instead.<br><button class="studio-state-btn" onclick="loadCommunitySongs()">Retry</button></div>');
+            }
         }
         // The filtered slice currently displayed in the grid. We index into this
         // from the click handlers instead of inlining each song into the onclick
@@ -5658,7 +6348,8 @@
                     <div class="community-empty">
                         <div class="community-empty-icon">🔍</div>
                         <div>No songs found for this genre</div>
-                        <div style="font-size:13px;margin-top:8px;">Be the first to publish one!</div>
+                        <div style="font-size:13px;margin-top:8px;">Browsing remains available to guests; there is simply nothing in this filter.</div>
+                        <button class="studio-state-btn" style="margin-top:10px;" onclick="loadCommunitySongs()">Retry</button>
                     </div>`;
                 return;
             }
@@ -5740,6 +6431,11 @@
                 showToast('Sign in to publish songs');
                 return;
             }
+            if (authState.session?.offline) {
+                showStudioStatus('Publish needs an online account session. Local editing and export still work.', () => openAuthModal(), 'Sign In');
+                showToast('Sign in online to publish');
+                return;
+            }
             rememberFocusFor('publish');
             document.getElementById('publishModal').classList.add('active');
             const titleInput = document.getElementById('publishTitle');
@@ -5798,28 +6494,18 @@
                     shareOk = shareRes.ok;
                 } catch (e) { /* shareOk stays false */ }
                 closePublishModal();
-                showToast(shareOk ? '🌍 Published to Community!' : '⚠️ Saved but not published — try again');
+                if (shareOk) {
+                    clearStudioStatus();
+                    showToast('🌍 Published to Community!');
+                } else {
+                    showToast('⚠️ Saved but not published — retry');
+                    showStudioStatus('The song was saved, but making it public failed. Retry Publish to finish.', () => openPublishModal(), 'Retry Publish');
+                }
                 return;
             }
-            // Fallback: save locally and add to demo community
-            const localSong = {
-                id: 'local_' + Date.now(),
-                title,
-                genre: state.genre,
-                key_signature: state.key,
-                tempo: state.baseTempo,
-                chords: getTransposedProgression(),
-                user_name: authState.user?.email?.split('@')[0] || 'You',
-                likes: 0,
-                created_at: new Date().toISOString()
-            };
-            // Add to local community cache
-            const localCommunity = safeJsonParse('chordflow-community') || [];
-            localCommunity.unshift(localSong);
-            try { localStorage.setItem('chordflow-community', JSON.stringify(localCommunity)); } catch(e) {}
-            DEMO_COMMUNITY_SONGS.unshift(localSong);
             closePublishModal();
-            showToast('🌍 Published locally! (Will sync when online)');
+            showToast('⚠️ Publish failed — retry when online');
+            showStudioStatus('Publish could not reach the server. Your local progression is unchanged.', () => openPublishModal(), 'Retry Publish');
         }
 
         // ============ v0.73: SONG TEMPLATES ============
@@ -6117,6 +6803,7 @@
             const genreDisplay = document.getElementById('genreDisplay');
             if (genreDisplay) genreDisplay.textContent = genres.find(g => g.id === state.genre)?.name || 'Pop';
             updateUndoButtons();
+            applyAccessibleNames();
             scheduleAutosave();
         }
 
@@ -6157,6 +6844,13 @@
             const idx = state.currentChordIndex;
             if (chords[idx]) showChordDiagram(chords[idx], idx);
         }
+        function scrollToProgressionEditor() {
+            const target = document.getElementById('sectionsStrip') || document.getElementById('chordGrid');
+            if (!target) return;
+            try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            catch (e) { target.scrollIntoView(); }
+        }
+
         function renderPlaybackTick() {
             const displayChords = getTransposedProgression();
             const idx = state.currentChordIndex;
@@ -6214,11 +6908,19 @@
             if (type === 'chordSheet') renderChordSheet();
             if (type === 'tuner') renderTuner();
             if (type === 'strum') renderStrumSheet();
+            if (type === 'more') renderMoreSheet();
+            setTimeout(() => focusDialog(sheet), 0);
         }
         function closeSheet() {
             const overlay = document.getElementById('sheetOverlay');
             if (overlay) overlay.classList.remove('active');
             document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            const more = document.getElementById('tabMore');
+            if (more) {
+                more.classList.remove('more-active');
+                more.setAttribute('aria-expanded', 'false');
+            }
+            syncPrimaryTabbar();
             stopSheetAudio();
             restoreFocusFor('sheet');
         }
@@ -6394,8 +7096,8 @@
             state.instrument = id;
             if (audioInit) createSynth();
             const inst = instruments.find(i => i.id === id);
-            const btn = document.getElementById('instrumentBtn');
-            if (btn) btn.textContent = inst?.icon || '🎵';
+            const moreValue = document.getElementById('moreInstrumentValue');
+            if (moreValue) moreValue.textContent = inst?.name || 'Instrument';
             closeSheet();
             showToast(`${inst?.icon || '🎵'} ${inst?.name || id}`);
         }
@@ -6892,6 +7594,8 @@
 
         // Init
         function init() {
+            enhanceDialogs();
+            applyAccessibleNames();
             // Load shared progression from URL
             const loaded = loadSharedProgression();
             if (loaded) showToast('🔗 Loaded shared progression!');
